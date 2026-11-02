@@ -1,0 +1,28 @@
+{
+  "name": "claimsathi",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": "^22.12.0"
+  },
+  "workspaces": [
+    "contracts",
+    "rules",
+    "api",
+    "worker",
+    "jobs",
+    "web"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces",
+    "test": "npm run test --workspaces && npm run test:scripts",
+    "test:scripts": "vitest run --dir scripts"
+  },
+  "devDependencies": {
+    "@types/node": "^22.20.5",
+    "typescript": "^7.0.2",
+    "vitest": "^5.0.5"
+  }
+}

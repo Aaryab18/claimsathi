@@ -1,0 +1,19 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+build/
+coverage/
+*.tsbuildinfo
+
+# Secrets: every .env file except the empty example
+.env
+.env.*
+*.env
+!.env.example
+
+# Logs and local machine files
+*.log
+.DS_Store
+.claude/settings.local.json
