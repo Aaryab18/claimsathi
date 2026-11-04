@@ -23,7 +23,7 @@ Run `npm run build` first, because other packages load this one from its built `
 
 ## 1. ExtractedClaim: what the AI reads from the documents
 
-It has four parts: `claim`, `policy`, `rejection` and `lineItems`. A `source` shows where a fact came from: the document, the page and the exact quote.
+It has five parts: `claim`, `policy`, `rejection`, `lineItems` and `policyClauses`. A `source` shows where a fact came from: the document, the page and the exact quote.
 
 ```ts
 {
@@ -33,12 +33,33 @@ It has four parts: `claim`, `policy`, `rejection` and `lineItems`. A `source` sh
   billed: 12600,
   approved: 0,
   deducted: 12600,
+  deductionType: "non_payable",
   deductionReason: "Treated as not payable",
+  partOfPackage: true,
   source: { document: "bill", page: 2, quote: "Consumables, included in angioplasty package - Rs. 12,600" }
 }
 ```
 
 `policy.roomRentLimit` is rupees per day.
+
+These fields give the rules facts they can check directly:
+
+- `deductionType` on a line item says what kind of deduction it is: `none`, `room_rent_excess`, `proportionate`, `non_payable`, `pre_existing_disease`, `documentation`, `sub_limit`, `copay` or `other`. Use `none` when nothing was deducted.
+- `partOfPackage` on a line item is `true`, `false`, or `null` when the documents don't say.
+- `category` on a rejection reason is `documentation_missing`, `pre_existing_disease`, `non_payable`, `proportionate`, `room_rent`, `sub_limit`, `copay` or `other`.
+- `rejection.letterDate` is the date on the rejection letter.
+- `policy.subLimits` lists the policy's sub-limits. It is empty when the documents show none.
+
+`policyClauses` holds the exact wording of policy clauses:
+
+```ts
+{
+  clauseId: "Clause 4.2",
+  title: null,
+  text: "Room rent is payable up to Rs. 5,000 per day.",
+  source: { document: "policy", page: 4, quote: "Room rent is payable up to Rs. 5,000 per day." }
+}
+```
 
 ## 2. Finding: what the rules engine decides
 
@@ -139,6 +160,23 @@ const runRules: RulesEngine = ({ extracted, overrides, asOfDate }) => {
   return { findings, deadlines, totals };
 };
 ```
+
+The rules engine creates explanationEn and explanationHi from written templates, with no AI call, so the what-if screen updates instantly. For R7, code can only prove that a clause exists. Whether a clause says what the insurer claims can only be marked questionable.
+
+### Which fields each rule reads
+
+This table is a draft for Member C to confirm when writing the rules. R1 to R4 are worked out from the sample case and R7 from the note above. R5, R6 and R8 have no agreed definition yet, so their fields are left open rather than guessed.
+
+| Rule | Fields it reads |
+| --- | --- |
+| R1 | `lineItems[].deductionType`, `claim.admissionDate`, `policy.startDate`, `policy.continuousCoverSince`, `policy.pedWaitingMonths` |
+| R2 | `lineItems[].deductionType`, `claim.admissionDate`, `policy.startDate`, `policy.continuousCoverSince`, `policy.pedWaitingMonths` |
+| R3 | `lineItems[].deductionType`, `lineItems[].category`, `policy.roomRentLimit` |
+| R4 | `lineItems[].deductionType`, `lineItems[].partOfPackage`, `lineItems[].category` |
+| R5 | Not defined yet |
+| R6 | Not defined yet |
+| R7 | `rejection.reasons[].clauseCited`, `policyClauses[].clauseId` |
+| R8 | Not defined yet |
 
 ## Sample data
 

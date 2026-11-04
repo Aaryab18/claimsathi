@@ -170,6 +170,124 @@ describe("missing facts", () => {
   });
 });
 
+describe("rule fields", () => {
+  it("sample line items have the agreed deduction types and package flags", () => {
+    expect(items.map(({ id, deductionType, partOfPackage }) => ({ id, deductionType, partOfPackage }))).toEqual([
+      { id: "L1", deductionType: "room_rent_excess", partOfPackage: false },
+      { id: "L2", deductionType: "proportionate", partOfPackage: null },
+      { id: "L3", deductionType: "proportionate", partOfPackage: null },
+      { id: "L4", deductionType: "non_payable", partOfPackage: true },
+      { id: "L5", deductionType: "pre_existing_disease", partOfPackage: null },
+      { id: "L6", deductionType: "non_payable", partOfPackage: null },
+      { id: "L7", deductionType: "none", partOfPackage: null },
+      { id: "L8", deductionType: "none", partOfPackage: null },
+    ]);
+  });
+
+  it("uses the deduction type none exactly for items with no deduction", () => {
+    for (const item of items) {
+      expect(item.deductionType === "none", item.id).toBe(item.deducted === 0);
+    }
+  });
+
+  it("sample rejection reasons have the agreed categories", () => {
+    expect(sampleExtractedClaim.rejection.reasons.map((reason) => reason.category)).toEqual([
+      "room_rent",
+      "proportionate",
+      "non_payable",
+      "pre_existing_disease",
+      "non_payable",
+    ]);
+  });
+
+  it("every clause cited by a rejection reason exists in policyClauses, or is null", () => {
+    const clauseIds = sampleExtractedClaim.policyClauses.map((clause) => clause.clauseId);
+    expect(clauseIds).toEqual(["Clause 4.2", "Clause 5.1", "Clause 7.5"]);
+    for (const { clauseCited } of sampleExtractedClaim.rejection.reasons) {
+      if (clauseCited !== null) {
+        expect(clauseIds).toContain(clauseCited);
+      }
+    }
+    expect(sampleExtractedClaim.rejection.reasons.some((reason) => reason.clauseCited === null)).toBe(true);
+  });
+
+  it("sample clauses use the same wording the findings quote", () => {
+    const clauses = sampleExtractedClaim.policyClauses;
+    for (const clause of clauses) {
+      expect(clause.source.document, clause.clauseId).toBe("policy");
+      expect(clause.source.quote, clause.clauseId).toBe(clause.text);
+    }
+    const quoted = findings.flatMap((finding) => finding.evidence.policyClause ?? []);
+    expect(quoted.length).toBeGreaterThan(0);
+    for (const policyClause of quoted) {
+      expect(clauses.map((clause) => `${clause.clauseId}: ${clause.text}`)).toContain(policyClause);
+    }
+  });
+
+  it("sample has the fictional letter date and no sub-limits", () => {
+    expect(sampleExtractedClaim.rejection.letterDate).toBe("2026-10-15");
+    expect(sampleExtractedClaim.policy.subLimits).toEqual([]);
+  });
+
+  it("rejects unknown deductionType and category values", () => {
+    const badType = copy(sampleExtractedClaim) as unknown as { lineItems: { deductionType: string }[] };
+    badType.lineItems[0]!.deductionType = "made_up";
+    expect(ExtractedClaimSchema.safeParse(badType).success).toBe(false);
+
+    const badCategory = copy(sampleExtractedClaim) as unknown as { rejection: { reasons: { category: string }[] } };
+    badCategory.rejection.reasons[0]!.category = "made_up";
+    expect(ExtractedClaimSchema.safeParse(badCategory).success).toBe(false);
+  });
+
+  it.each(["deductionType", "partOfPackage"] as const)("rejects a line item missing %s, but accepts null", (field) => {
+    const missing = copy(sampleExtractedClaim);
+    delete (missing.lineItems[0] as Partial<(typeof items)[number]>)[field];
+    expect(ExtractedClaimSchema.safeParse(missing).success).toBe(false);
+
+    const stated = copy(sampleExtractedClaim);
+    stated.lineItems[0]![field] = null;
+    expect(ExtractedClaimSchema.safeParse(stated).success).toBe(true);
+  });
+
+  it("rejects a rejection reason missing its category, but accepts null", () => {
+    const missing = copy(sampleExtractedClaim);
+    delete (missing.rejection.reasons[0] as Partial<(typeof missing.rejection.reasons)[number]>).category;
+    expect(ExtractedClaimSchema.safeParse(missing).success).toBe(false);
+
+    const stated = copy(sampleExtractedClaim);
+    stated.rejection.reasons[0]!.category = null;
+    expect(ExtractedClaimSchema.safeParse(stated).success).toBe(true);
+  });
+
+  it("checks letterDate is a date or null", () => {
+    const extracted = copy(sampleExtractedClaim);
+    extracted.rejection.letterDate = null;
+    expect(ExtractedClaimSchema.safeParse(extracted).success).toBe(true);
+    extracted.rejection.letterDate = "15/10/2026";
+    expect(ExtractedClaimSchema.safeParse(extracted).success).toBe(false);
+  });
+
+  it("checks sub-limit amounts are whole rupees or null", () => {
+    const extracted = copy(sampleExtractedClaim);
+    extracted.policy.subLimits = [{ name: "Cataract", amount: 40000, source: null }];
+    expect(ExtractedClaimSchema.safeParse(extracted).success).toBe(true);
+    extracted.policy.subLimits[0]!.amount = null;
+    expect(ExtractedClaimSchema.safeParse(extracted).success).toBe(true);
+    extracted.policy.subLimits[0]!.amount = 40000.5;
+    expect(ExtractedClaimSchema.safeParse(extracted).success).toBe(false);
+  });
+
+  it("allows a null clause title, but requires clause text and source", () => {
+    const clause = sampleExtractedClaim.policyClauses[0]!;
+    const withClause = (policyClause: unknown) =>
+      ExtractedClaimSchema.safeParse({ ...sampleExtractedClaim, policyClauses: [policyClause] }).success;
+    expect(withClause({ ...clause, title: null })).toBe(true);
+    expect(withClause({ ...clause, title: "Room rent" })).toBe(true);
+    expect(withClause({ ...clause, text: null })).toBe(false);
+    expect(withClause({ ...clause, source: null })).toBe(false);
+  });
+});
+
 describe("findings", () => {
   it("rejects unknown verdicts and confidence levels", () => {
     expect(FindingSchema.safeParse({ ...findings[0], verdict: "maybe" }).success).toBe(false);

@@ -22,12 +22,15 @@ export const sampleExtractedClaim: ExtractedClaim = {
     pedWaitingMonths: 48,
     // The sample documents do not state a co-payment, so this stays null.
     copayPercent: null,
+    subLimits: [],
   },
   rejection: {
     type: "partial",
+    letterDate: "2026-10-15",
     reasons: [
       {
         text: "Room rent is above the limit allowed by the policy.",
+        category: "room_rent",
         clauseCited: "Clause 4.2",
         source: {
           document: "rejection_letter",
@@ -37,6 +40,7 @@ export const sampleExtractedClaim: ExtractedClaim = {
       },
       {
         text: "Pharmacy and stent charges were reduced in proportion to the room rent excess.",
+        category: "proportionate",
         clauseCited: "Clause 4.2",
         source: {
           document: "rejection_letter",
@@ -46,6 +50,7 @@ export const sampleExtractedClaim: ExtractedClaim = {
       },
       {
         text: "Consumables were treated as not payable.",
+        category: "non_payable",
         clauseCited: "Clause 7.5",
         source: {
           document: "rejection_letter",
@@ -55,6 +60,7 @@ export const sampleExtractedClaim: ExtractedClaim = {
       },
       {
         text: "Charges linked to hypertension were treated as a pre-existing disease.",
+        category: "pre_existing_disease",
         clauseCited: "Clause 5.1",
         source: {
           document: "rejection_letter",
@@ -64,6 +70,7 @@ export const sampleExtractedClaim: ExtractedClaim = {
       },
       {
         text: "Administration charges were treated as not payable.",
+        category: "non_payable",
         clauseCited: null,
         source: {
           document: "rejection_letter",
@@ -81,7 +88,9 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 41800,
       approved: 25000,
       deducted: 16800,
+      deductionType: "room_rent_excess",
       deductionReason: "Room rent above the policy limit of 5,000 per day",
+      partOfPackage: false,
       source: { document: "bill", page: 1, quote: "Private room rent - 5 days @ Rs. 8,360 - Rs. 41,800" },
     },
     {
@@ -91,7 +100,9 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 60046,
       approved: 35913,
       deducted: 24133,
+      deductionType: "proportionate",
       deductionReason: "Reduced in proportion to the room rent excess",
+      partOfPackage: null,
       source: { document: "bill", page: 2, quote: "Pharmacy and medicines - Rs. 60,046" },
     },
     {
@@ -101,7 +112,9 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 35000,
       approved: 20933,
       deducted: 14067,
+      deductionType: "proportionate",
       deductionReason: "Reduced in proportion to the room rent excess",
+      partOfPackage: null,
       source: { document: "bill", page: 2, quote: "Coronary stent (1 unit) - Rs. 35,000" },
     },
     {
@@ -111,7 +124,9 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 12600,
       approved: 0,
       deducted: 12600,
+      deductionType: "non_payable",
       deductionReason: "Treated as not payable",
+      partOfPackage: true,
       source: { document: "bill", page: 2, quote: "Consumables, included in angioplasty package - Rs. 12,600" },
     },
     {
@@ -121,7 +136,9 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 20600,
       approved: 0,
       deducted: 20600,
+      deductionType: "pre_existing_disease",
       deductionReason: "Treated as a pre-existing disease",
+      partOfPackage: null,
       source: { document: "bill", page: 3, quote: "Hypertension monitoring and treatment - Rs. 20,600" },
     },
     {
@@ -131,7 +148,9 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 7800,
       approved: 0,
       deducted: 7800,
+      deductionType: "non_payable",
       deductionReason: "Treated as not payable",
+      partOfPackage: null,
       source: { document: "bill", page: 3, quote: "Administration charges - Rs. 7,800" },
     },
     {
@@ -141,7 +160,9 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 25000,
       approved: 25000,
       deducted: 0,
+      deductionType: "none",
       deductionReason: null,
+      partOfPackage: null,
       source: { document: "bill", page: 1, quote: "Angioplasty package - Rs. 25,000" },
     },
     {
@@ -151,8 +172,34 @@ export const sampleExtractedClaim: ExtractedClaim = {
       billed: 7154,
       approved: 7154,
       deducted: 0,
+      deductionType: "none",
       deductionReason: null,
+      partOfPackage: null,
       source: { document: "bill", page: 3, quote: "ECG, echocardiogram and blood tests - Rs. 7,154" },
+    },
+  ],
+  policyClauses: [
+    {
+      clauseId: "Clause 4.2",
+      title: null,
+      text: "Room rent is payable up to Rs. 5,000 per day.",
+      source: { document: "policy", page: 4, quote: "Room rent is payable up to Rs. 5,000 per day." },
+    },
+    {
+      clauseId: "Clause 5.1",
+      title: null,
+      text: "Pre-existing diseases are covered after 48 months of continuous cover.",
+      source: {
+        document: "policy",
+        page: 5,
+        quote: "Pre-existing diseases are covered after 48 months of continuous cover.",
+      },
+    },
+    {
+      clauseId: "Clause 7.5",
+      title: null,
+      text: "Items listed as non-medical expenses are not payable.",
+      source: { document: "policy", page: 7, quote: "Items listed as non-medical expenses are not payable." },
     },
   ],
 };
