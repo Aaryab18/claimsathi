@@ -1,0 +1,48 @@
+services:
+  - type: web
+    name: claimsathi-web
+    runtime: static
+    buildCommand: npm ci --include=dev && npm run build --workspace=@claimsathi/web
+    staticPublishPath: ./web/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    envVars:
+      - key: VITE_API_URL
+        value: https://claimsathi-api.onrender.com
+
+  - type: web
+    name: claimsathi-api
+    runtime: node
+    plan: free
+    region: singapore
+    buildCommand: npm ci --include=dev && npm run build --workspace=@claimsathi/api
+    startCommand: npm start --workspace=@claimsathi/api
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: "22"
+      - key: DATABASE_URL
+        fromDatabase:
+          name: claimsathi-db
+          property: connectionString
+      - key: REDIS_URL
+        fromService:
+          type: keyvalue
+          name: claimsathi-queue
+          property: connectionString
+      - key: ALLOWED_ORIGIN
+        value: https://claimsathi-web.onrender.com
+
+  - type: keyvalue
+    name: claimsathi-queue
+    plan: free
+    region: singapore
+    maxmemoryPolicy: noeviction
+    ipAllowList: []
+
+databases:
+  - name: claimsathi-db
+    plan: free
+    region: singapore
