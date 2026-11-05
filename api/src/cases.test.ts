@@ -520,13 +520,112 @@ describe(`PATCH ${API_ROUTES.applyFacts.path}`, () => {
     );
   });
 
-  it("TEMPORARY: returns the saved result unchanged until runRules exists", async () => {
-    const { store, cases } = createFakeStore();
-    seedCase(cases);
+  describe("on the sample case, with the real rules engine", () => {
+    const SAMPLE_TOTALS = { totalDeducted: 96000, recoverableStrong: 71400, questionable: 7800, validDeductions: 16800 };
+    // The sample's pre-existing disease deduction. It stops being clearly wrong with cover this recent.
+    const PED_AMOUNT = 20600;
+    const RECENT_COVER = { continuousCoverSince: "2024-01-01" };
+    const RECENT_COVER_TOTALS = {
+      totalDeducted: 96000,
+      recoverableStrong: 71400 - PED_AMOUNT,
+      questionable: 7800 + PED_AMOUNT,
+      validDeductions: 16800,
+    };
 
-    const response = await request(appFor(store)).patch(factsPath(TOKEN)).send({ admissionDate: "2025-01-01" });
+    async function createSample() {
+      const app = appFor(createFakeStore().store);
+      const created = await request(app).post(API_ROUTES.createSampleCase.path).send({});
+      return { app, token: created.body.caseToken as string };
+    }
 
-    expect(response.body).toEqual({ ...sampleCaseResult, caseToken: TOKEN });
+    it("keeps the sample totals when there are no overrides", async () => {
+      const { app, token } = await createSample();
+
+      const response = await request(app).patch(factsPath(token)).send({});
+
+      expect(response.status).toBe(200);
+      expect(response.body.totals).toEqual(SAMPLE_TOTALS);
+      expect(response.body.warnings).toEqual([]);
+    });
+
+    it("takes the 20600 out of the recoverable amount when cover started in 2024", async () => {
+      const { app, token } = await createSample();
+
+      const response = await request(app).patch(factsPath(token)).send(RECENT_COVER);
+
+      expect(response.status).toBe(200);
+      expect(response.body.totals).toEqual(RECENT_COVER_TOTALS);
+      expect(response.body.totals.recoverableStrong).toBe(50800);
+    });
+
+    it("saves the recalculated result, so reading the case returns it", async () => {
+      const { app, token } = await createSample();
+
+      await request(app).patch(factsPath(token)).send(RECENT_COVER);
+      const read = await request(app).get(casePath(token));
+
+      expect(read.body.result.totals).toEqual(RECENT_COVER_TOTALS);
+    });
+
+    it("still applies earlier corrections when a later request adds nothing", async () => {
+      const { app, token } = await createSample();
+
+      await request(app).patch(factsPath(token)).send(RECENT_COVER);
+      const response = await request(app).patch(factsPath(token)).send({});
+
+      expect(response.body.totals).toEqual(RECENT_COVER_TOTALS);
+    });
+
+    it("can undo a correction, because it recalculates from the original facts", async () => {
+      const { app, token } = await createSample();
+
+      await request(app).patch(factsPath(token)).send(RECENT_COVER);
+      const response = await request(app)
+        .patch(factsPath(token))
+        .send({ continuousCoverSince: sampleExtractedClaim.policy.continuousCoverSince });
+
+      expect(response.body.totals).toEqual(SAMPLE_TOTALS);
+    });
+
+    it("keeps caseToken, resultSource and the extracted facts from the saved result", async () => {
+      const { app, token } = await createSample();
+
+      const response = await request(app).patch(factsPath(token)).send(RECENT_COVER);
+
+      expect(response.body.caseToken).toBe(token);
+      expect(response.body.resultSource).toBe("saved_sample");
+      expect(response.body.extracted).toEqual(sampleExtractedClaim);
+    });
+
+    it("keeps legal references unverified", async () => {
+      const { app, token } = await createSample();
+
+      const { body } = await request(app).patch(factsPath(token)).send(RECENT_COVER);
+
+      expect(body.findings.length).toBeGreaterThan(0);
+      for (const finding of body.findings) {
+        expect(finding.evidence.regulation.verified).toBe(false);
+      }
+      expect(body.deadlines.length).toBeGreaterThan(0);
+      for (const deadline of body.deadlines) {
+        expect(deadline.verified).toBe(false);
+      }
+    });
+
+    it.each([
+      ["a badly formatted date", { continuousCoverSince: "01/01/2024" }],
+      ["an impossible date", { continuousCoverSince: "2024-02-31" }],
+      ["a misspelled field", { continuousCoverSinceDate: "2024-01-01" }],
+    ])("returns 400 for %s and leaves the totals alone", async (_name, body) => {
+      const { app, token } = await createSample();
+
+      const response = await request(app).patch(factsPath(token)).send(body);
+      const read = await request(app).get(casePath(token));
+
+      expect(response.status).toBe(400);
+      expect(response.body.error).toBe("The facts are not valid.");
+      expect(read.body.result.totals).toEqual(SAMPLE_TOTALS);
+    });
   });
 
   it("saves and returns what the rules produce", async () => {
