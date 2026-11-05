@@ -7,3 +7,14 @@ body {
   margin: 0;
   padding: 0;
 }
+
+/* A printed report keeps the verdict colours and doesn't repeat the sticky header on each page. */
+@media print {
+  * {
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  header {
+    position: static !important;
+  }
+}

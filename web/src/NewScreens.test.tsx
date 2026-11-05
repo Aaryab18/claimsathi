@@ -397,6 +397,77 @@ describe("ClaimSathi New Screens", () => {
       expect(screen.getByTestId("error-bill").textContent).toContain("Only PDF");
     });
 
+    describe("result charts", () => {
+      it("accounts for every rupee in the money chart", async () => {
+        render(<App initialEntries={["/case/case-1"]} />);
+
+        const chart = await screen.findByTestId("money-flow-chart");
+
+        // 1,14,000 approved and 96,000 deducted make the 2,10,000 claimed.
+        expect(chart.textContent).toContain("₹2,10,000");
+        expect(chart.textContent).toContain("₹1,14,000");
+        expect(chart.textContent).toContain("₹71,400");
+        expect(chart.textContent).toContain("₹16,800");
+      });
+
+      it("lists the biggest cut first, and always says the verdict in words", async () => {
+        render(<App initialEntries={["/case/case-1"]} />);
+
+        const rows = (await screen.findByTestId("deductions-chart")).querySelectorAll("li");
+
+        expect(rows[0]?.textContent).toContain("₹38,200");
+        expect(rows[0]?.textContent).toContain("Likely wrongly denied");
+        expect(rows[rows.length - 1]?.textContent).toContain("₹7,800");
+        expect(rows[rows.length - 1]?.textContent).toContain("Questionable");
+      });
+
+      it("works out the cover timeline from the case's own dates", async () => {
+        render(<App initialEntries={["/case/case-1"]} />);
+
+        expect((await screen.findByTestId("timeline-wait")).textContent).toContain("1 Mar 2023");
+        expect(screen.getByTestId("timeline-moratorium").textContent).toContain("1 Mar 2024");
+        expect(screen.getByTestId("timeline-admission").textContent).toContain("10 Nov 2025");
+      });
+
+      it("shows how strong the grounds are, but not on a valid deduction", async () => {
+        render(<App initialEntries={["/case/case-1"]} />);
+
+        expect((await screen.findByTestId("confidence-F1")).textContent).toBe("Strong grounds");
+        expect(screen.queryByTestId("confidence-F4")).toBeNull();
+      });
+
+      it("skips the timeline when a date needed for it is unknown", async () => {
+        const unknownDates = {
+          ...sampleCaseResult,
+          extracted: {
+            ...sampleCaseResult.extracted,
+            claim: { ...sampleCaseResult.extracted.claim, admissionDate: null },
+          },
+        };
+        vi.stubGlobal(
+          "fetch",
+          vi.fn(async () =>
+            new Response(JSON.stringify({ caseToken: "case-1", status: { stage: "done", progressMessage: "Done" }, result: unknownDates })),
+          ),
+        );
+        render(<App initialEntries={["/case/case-1"]} />);
+
+        await screen.findByTestId("money-flow-chart");
+
+        expect(screen.queryByTestId("cover-timeline")).toBeNull();
+      });
+
+      it("offers a printable report", async () => {
+        const print = vi.fn();
+        vi.stubGlobal("print", print);
+        render(<App initialEntries={["/case/case-1"]} />);
+
+        fireEvent.click(await screen.findByTestId("print-report-btn"));
+
+        expect(print).toHaveBeenCalled();
+      });
+    });
+
     it("offers made-up documents to try", () => {
       render(<App initialEntries={["/"]} />);
 

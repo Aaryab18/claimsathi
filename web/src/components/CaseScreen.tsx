@@ -10,6 +10,7 @@ import { PlainSummary } from "./PlainSummary";
 import { FindingsTable } from "./FindingsTable";
 import { EvidenceModal } from "./EvidenceModal";
 import { DeadlinesSection } from "./DeadlinesSection";
+import { CoverTimeline, DeductionsChart, MoneyFlowChart } from "./CaseCharts";
 import { LettersSection } from "./LettersSection";
 import { NextSteps } from "./NextSteps";
 import { formatRupees } from "../lib/format";
@@ -250,7 +251,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
 
             <RecoverableMeter totals={caseResult.totals} language={language} claim={caseResult.extracted.claim} />
 
-            <nav aria-label={t.sectionNavLabel} className="flex flex-wrap gap-2">
+            <nav aria-label={t.sectionNavLabel} className="flex flex-wrap gap-2 print:hidden">
               {[
                 ["#breakdown", t.navBreakdown],
                 ["#next-steps", t.navNextSteps],
@@ -266,12 +267,27 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
                   {label}
                 </a>
               ))}
+              <button
+                type="button"
+                data-testid="print-report-btn"
+                onClick={() => window.print()}
+                className="px-3.5 py-1.5 rounded-full bg-[#114B36] text-xs sm:text-sm font-semibold text-white hover:bg-[#0E3A2A] cursor-pointer"
+              >
+                {t.printReport}
+              </button>
             </nav>
 
             {/* 2. Plain-language summary */}
             <PlainSummary caseResult={caseResult} language={language} />
 
             <NextSteps deadlines={caseResult.deadlines} language={language} />
+
+            <MoneyFlowChart caseResult={caseResult} language={language} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
+              <DeductionsChart caseResult={caseResult} language={language} />
+              <CoverTimeline caseResult={caseResult} language={language} />
+            </div>
 
             {/* 3. Bill items table */}
             <FindingsTable

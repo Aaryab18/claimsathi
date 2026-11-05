@@ -101,7 +101,7 @@ export function ConfirmFactsPanel({
     <section
       id="facts"
       data-testid="confirm-facts-panel"
-      className="scroll-mt-24 bg-white rounded-2xl border border-[#E7E5D8] shadow-xs overflow-hidden"
+      className="scroll-mt-24 bg-white rounded-2xl border border-[#E7E5D8] shadow-xs overflow-hidden print:hidden"
     >
       {/* Header / Accordion toggle */}
       <div className="p-4 sm:p-5 border-b border-[#E7E5D8] flex items-center justify-between gap-3 bg-[#FDFCF7]">

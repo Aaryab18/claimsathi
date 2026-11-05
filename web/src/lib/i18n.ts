@@ -118,6 +118,19 @@ export interface Translations {
   dropFileHere: string;
   fileChosenLabel: string;
   filesChosen: (count: number) => string;
+  chartMoneyTitle: string;
+  chartMoneyNote: (total: string) => string;
+  chartApproved: string;
+  chartDeductionsTitle: string;
+  chartDeductionsNote: string;
+  timelineTitle: string;
+  timelineNote: string;
+  timelineCoverStart: string;
+  timelineWaitingEnds: (months: number) => string;
+  timelineMoratorium: string;
+  timelineAdmission: string;
+  printReport: string;
+  confidenceLabels: Record<"strong" | "moderate" | "weak", string>;
   lettersTitle: string;
   lettersDesc: string;
   letterGrievanceButton: string;
@@ -305,6 +318,19 @@ export const translations: Record<Language, Translations> = {
     dropFileHere: "or drop it here",
     fileChosenLabel: "File chosen",
     filesChosen: (count) => `${count} of 3 files chosen`,
+    chartMoneyTitle: "Where your claim went",
+    chartMoneyNote: (total) => `Every rupee of ${total}, from what was paid to what can be challenged.`,
+    chartApproved: "Approved by the insurer",
+    chartDeductionsTitle: "Biggest cuts first",
+    chartDeductionsNote: "Each deduction, by size and verdict.",
+    timelineTitle: "Your cover against the hospital stay",
+    timelineNote: "The longer you've been covered without a break, the more protection you have.",
+    timelineCoverStart: "Continuous cover began",
+    timelineWaitingEnds: (months) => `Waiting period of ${months} months ended`,
+    timelineMoratorium: "60 months of cover reached",
+    timelineAdmission: "Hospital admission",
+    printReport: "Print or save report",
+    confidenceLabels: { strong: "Strong grounds", moderate: "Moderate grounds", weak: "Weak grounds" },
     lettersTitle: "Your appeal letters",
     lettersDesc: "Drafts written from the findings above. Send the complaint to the insurer first, then go to the Ombudsman if needed. This is information, not legal advice.",
     letterGrievanceButton: "Draft complaint to insurer",
@@ -500,6 +526,19 @@ export const translations: Record<Language, Translations> = {
     dropFileHere: "या यहां खींचकर छोड़ें",
     fileChosenLabel: "फ़ाइल चुनी गई",
     filesChosen: (count) => `3 में से ${count} फ़ाइलें चुनी गईं`,
+    chartMoneyTitle: "आपके क्लेम का हिसाब",
+    chartMoneyNote: (total) => `${total} का पूरा हिसाब, जो मिला उससे लेकर जिसे चुनौती दी जा सकती है।`,
+    chartApproved: "बीमा कंपनी द्वारा स्वीकृत",
+    chartDeductionsTitle: "सबसे बड़ी कटौतियां पहले",
+    chartDeductionsNote: "हर कटौती, राशि और निर्णय के साथ।",
+    timelineTitle: "अस्पताल में भर्ती के मुकाबले आपका बीमा",
+    timelineNote: "बिना रुकावट बीमा जितना लंबा हो, आपको उतनी ज़्यादा सुरक्षा मिलती है।",
+    timelineCoverStart: "लगातार बीमा शुरू हुआ",
+    timelineWaitingEnds: (months) => `${months} महीने की प्रतीक्षा अवधि पूरी हुई`,
+    timelineMoratorium: "60 महीने का बीमा पूरा हुआ",
+    timelineAdmission: "अस्पताल में भर्ती",
+    printReport: "रिपोर्ट प्रिंट करें या सहेजें",
+    confidenceLabels: { strong: "मज़बूत आधार", moderate: "मध्यम आधार", weak: "कमज़ोर आधार" },
     lettersTitle: "आपके अपील पत्र",
     lettersDesc: "ऊपर के निष्कर्षों से बने मसौदे। पहले बीमा कंपनी को शिकायत भेजें, फिर ज़रूरत हो तो लोकपाल के पास जाएं। यह जानकारी है, कानूनी सलाह नहीं।",
     letterGrievanceButton: "बीमा कंपनी को शिकायत का मसौदा",

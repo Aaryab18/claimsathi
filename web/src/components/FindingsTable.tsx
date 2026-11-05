@@ -13,7 +13,7 @@ interface FindingsTableProps {
 const VERDICT_EDGE = {
   wrong: "border-l-[#15803D]",
   questionable: "border-l-[#D97706]",
-  valid: "border-l-[#94A3B8]",
+  valid: "border-l-[#7C6BB0]",
 } as const;
 
 export function FindingsTable({
@@ -63,9 +63,14 @@ export function FindingsTable({
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-[#F2EFE6]">
                 <div className="flex flex-wrap items-center gap-2">
                   <VerdictBadge verdict={finding.verdict} language={language} />
-                  <span className="text-xs font-mono font-medium text-[#7A867E]">
-                    {finding.id}
-                  </span>
+                  {finding.verdict !== "valid" && (
+                    <span
+                      data-testid={`confidence-${finding.id}`}
+                      className="px-2 py-0.5 rounded-full text-xs font-semibold bg-[#F6F5ED] text-[#2C3E35] border border-[#E5E2D2]"
+                    >
+                      {t.confidenceLabels[finding.confidence]}
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex items-baseline gap-1.5 sm:text-right">
@@ -187,10 +192,10 @@ export function VerdictBadge({
   return (
     <span
       data-testid="verdict-valid"
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F1F5F9] text-[#475569] border border-[#CBD5E1]"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-[#F1EEF8] text-[#4C3F7A] border border-[#D6CEEA]"
     >
       <svg
-        className="w-3.5 h-3.5 text-[#64748B] shrink-0"
+        className="w-3.5 h-3.5 text-[#7C6BB0] shrink-0"
         fill="none"
         stroke="currentColor"
         viewBox="0 0 24 24"
