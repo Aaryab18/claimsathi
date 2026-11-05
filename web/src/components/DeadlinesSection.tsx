@@ -11,7 +11,7 @@ interface DeadlinesSectionProps {
 }
 
 function getDeadlineLabel(label: string, language: Language, grievanceLabel: string, ombudsmanLabel: string): string {
-  if (language === "hi") {
+  if (language !== "en") {
     if (label === "Grievance to the insurer") {
       return grievanceLabel;
     }

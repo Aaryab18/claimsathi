@@ -1,4 +1,6 @@
-export type Language = "en" | "hi";
+import { kn } from "./i18n-kn";
+
+export type Language = "en" | "hi" | "kn";
 
 export interface Translations {
   appName: string;
@@ -187,6 +189,38 @@ export interface Translations {
   correctionsSubmittedMsg: string;
   correctionsAppliedMsg: string;
   categoryLabels: Record<string, string>;
+
+  // Case strength and the helpdesk dashboard
+  caseTextInEnglishNote: string;
+  collapseLabel: string;
+  expandLabel: string;
+  strengthTitle: string;
+  strengthNote: string;
+  strengthBands: Record<"strong" | "fair" | "limited", string>;
+  strengthHow: string;
+  strengthHowDetail: string;
+  navHelpdesk: string;
+  helpdeskTitle: string;
+  helpdeskSubtitle: string;
+  helpdeskPrivacy: string;
+  helpdeskDemoBanner: string;
+  helpdeskLoadDemo: string;
+  helpdeskClear: string;
+  helpdeskEmptyTitle: string;
+  helpdeskEmptyDesc: string;
+  helpdeskKpiCases: string;
+  helpdeskKpiDeducted: string;
+  helpdeskKpiRecoverable: string;
+  helpdeskKpiOpen: string;
+  helpdeskByInsurerTitle: string;
+  helpdeskByStatusTitle: string;
+  helpdeskTableTitle: string;
+  helpdeskColCase: string;
+  helpdeskColLastDate: string;
+  helpdeskColStatus: string;
+  helpdeskOpen: string;
+  helpdeskUnknownInsurer: string;
+  helpdeskStatuses: Record<"new" | "complained" | "ombudsman" | "resolved", string>;
 }
 
 export const translations: Record<Language, Translations> = {
@@ -397,6 +431,37 @@ export const translations: Record<Language, Translations> = {
       admin: "Administrative",
       other: "Other",
     },
+
+    caseTextInEnglishNote: "This case's explanations, deadline notes and letters are in English for now.",
+    collapseLabel: "Collapse",
+    expandLabel: "Expand",
+    strengthTitle: "How strong is your case?",
+    strengthNote: "A score from the rules' verdicts. It isn't a prediction of winning: the insurer or Ombudsman decides.",
+    strengthBands: { strong: "Strong case", fair: "Worth pursuing", limited: "Limited grounds" },
+    strengthHow: "How this is worked out",
+    strengthHowDetail: "For each rupee deducted: likely wrong with strong grounds counts 100%, moderate 70%, weak 40%, questionable 25%, and valid 0%. These weights are our own judgement, not data from past cases.",
+    navHelpdesk: "For hospitals and NGOs",
+    helpdeskTitle: "Helpdesk dashboard",
+    helpdeskSubtitle: "Hospital help desks and NGOs can see many patients' claims and deadlines in one place.",
+    helpdeskPrivacy: "This list stays only in this browser, and no patient names are saved.",
+    helpdeskDemoBanner: "Demo data: these cases and insurers are made up.",
+    helpdeskLoadDemo: "Load demo cases",
+    helpdeskClear: "Clear this list",
+    helpdeskEmptyTitle: "No cases yet",
+    helpdeskEmptyDesc: "Claims you analyse in this browser appear here. Or load some made-up cases to see how it works.",
+    helpdeskKpiCases: "Cases",
+    helpdeskKpiDeducted: "Total deducted",
+    helpdeskKpiRecoverable: "Likely recoverable",
+    helpdeskKpiOpen: "Open cases",
+    helpdeskByInsurerTitle: "Likely recoverable by insurer",
+    helpdeskByStatusTitle: "Where cases stand",
+    helpdeskTableTitle: "Cases, nearest deadline first",
+    helpdeskColCase: "Case",
+    helpdeskColLastDate: "Ombudsman last date",
+    helpdeskColStatus: "Status",
+    helpdeskOpen: "Open case",
+    helpdeskUnknownInsurer: "Insurer unknown",
+    helpdeskStatuses: { new: "Not started", complained: "Complaint sent", ombudsman: "With Ombudsman", resolved: "Resolved" },
   },
   hi: {
     appName: "ClaimSathi",
@@ -605,5 +670,37 @@ export const translations: Record<Language, Translations> = {
       admin: "प्रशासनिक",
       other: "अन्य",
     },
+
+    caseTextInEnglishNote: "इस केस की व्याख्याएं हिंदी में हैं।",
+    collapseLabel: "छिपाएं",
+    expandLabel: "देखें",
+    strengthTitle: "आपका केस कितना मज़बूत है?",
+    strengthNote: "यह नियमों के निर्णयों से बना अंक है। यह जीतने की भविष्यवाणी नहीं है: निर्णय बीमा कंपनी या लोकपाल करते हैं।",
+    strengthBands: { strong: "मज़बूत केस", fair: "आगे बढ़ने योग्य", limited: "सीमित आधार" },
+    strengthHow: "इसकी गणना कैसे होती है",
+    strengthHowDetail: "काटे गए हर रुपये के लिए: मज़बूत आधार वाली गलत कटौती 100%, मध्यम 70%, कमज़ोर 40%, संदेहास्पद 25% और उचित 0%। ये भार हमारा अपना आकलन हैं, पिछले मामलों का डेटा नहीं।",
+    navHelpdesk: "अस्पतालों और NGO के लिए",
+    helpdeskTitle: "हेल्पडेस्क डैशबोर्ड",
+    helpdeskSubtitle: "अस्पताल हेल्पडेस्क और NGO कई मरीज़ों के क्लेम और समय-सीमाएं एक जगह देख सकते हैं।",
+    helpdeskPrivacy: "यह सूची केवल इसी ब्राउज़र में रहती है, और मरीज़ों के नाम सहेजे नहीं जाते।",
+    helpdeskDemoBanner: "डेमो डेटा: ये केस और बीमा कंपनियां काल्पनिक हैं।",
+    helpdeskLoadDemo: "डेमो केस लोड करें",
+    helpdeskClear: "यह सूची मिटाएं",
+    helpdeskEmptyTitle: "अभी कोई केस नहीं",
+    helpdeskEmptyDesc: "इस ब्राउज़र में विश्लेषण किए गए क्लेम यहां दिखेंगे। या काल्पनिक केस लोड करके देखें।",
+    helpdeskKpiCases: "केस",
+    helpdeskKpiDeducted: "कुल कटौती",
+    helpdeskKpiRecoverable: "संभावित वापसी योग्य",
+    helpdeskKpiOpen: "खुले केस",
+    helpdeskByInsurerTitle: "बीमा कंपनी के अनुसार संभावित वापसी योग्य",
+    helpdeskByStatusTitle: "केस कहां हैं",
+    helpdeskTableTitle: "केस, सबसे नज़दीकी समय-सीमा पहले",
+    helpdeskColCase: "केस",
+    helpdeskColLastDate: "लोकपाल की अंतिम तिथि",
+    helpdeskColStatus: "स्थिति",
+    helpdeskOpen: "केस खोलें",
+    helpdeskUnknownInsurer: "बीमा कंपनी अज्ञात",
+    helpdeskStatuses: { new: "शुरू नहीं", complained: "शिकायत भेजी", ombudsman: "लोकपाल के पास", resolved: "सुलझ गया" },
   },
+  kn,
 };

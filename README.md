@@ -24,6 +24,8 @@ A family gets a letter saying part of a hospital claim won't be paid. It cites c
 | **Deadlines** | Ombudsman dates from the official rules, and a calendar file with reminders |
 | **Charts** | Where the claim went, the biggest cuts, and the cover timeline against the hospital stay |
 | **Printable report** | Save the result as a PDF, with strength of grounds on each deduction |
+| **Case strength** | A 0 to 100 summary of the rules' verdicts, with its working shown. It isn't a prediction of winning |
+| **Helpdesk dashboard** | For hospitals and NGOs: totals, charts and deadlines across cases, stored only in that browser with no patient names |
 | **Action plan** | Four clear next steps, using the case's own dates |
 | **Ombudsman finder** | Choose your state to see your office, from the Council for Insurance Ombudsmen's list |
 | **Listen and share** | Read the summary aloud where the browser has a voice for that language, or share it on WhatsApp without names |

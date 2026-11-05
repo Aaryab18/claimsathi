@@ -137,7 +137,7 @@ export function ConfirmFactsPanel({
           aria-controls="confirm-facts-content"
           className="text-xs font-semibold text-[#114B36] hover:underline px-2.5 py-1 rounded bg-[#E7E5D8] cursor-pointer"
         >
-          {isOpen ? (language === "hi" ? "छिपाएं" : "Collapse") : (language === "hi" ? "देखें" : "Expand")}
+          {isOpen ? t.collapseLabel : t.expandLabel}
         </button>
       </div>
 

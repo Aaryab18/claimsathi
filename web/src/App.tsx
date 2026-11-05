@@ -2,6 +2,7 @@ import { useState } from "react";
 import { BrowserRouter, MemoryRouter, Routes, Route, Navigate } from "react-router-dom";
 import { HomeScreen } from "./components/HomeScreen";
 import { CaseScreen } from "./components/CaseScreen";
+import { HelpdeskScreen } from "./components/HelpdeskScreen";
 import type { Language } from "./lib/i18n";
 
 interface AppContentProps {
@@ -19,6 +20,10 @@ function AppContent({ language, setLanguage }: AppContentProps) {
       <Route
         path="/case/:token"
         element={<CaseScreen language={language} onLanguageChange={setLanguage} />}
+      />
+      <Route
+        path="/helpdesk"
+        element={<HelpdeskScreen language={language} onLanguageChange={setLanguage} />}
       />
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

@@ -10,7 +10,9 @@ import { PlainSummary } from "./PlainSummary";
 import { FindingsTable } from "./FindingsTable";
 import { EvidenceModal } from "./EvidenceModal";
 import { DeadlinesSection } from "./DeadlinesSection";
+import { CaseStrengthCard } from "./CaseStrengthCard";
 import { CoverTimeline, DeductionsChart, MoneyFlowChart } from "./CaseCharts";
+import { recordCase } from "../lib/helpdesk";
 import { LettersSection } from "./LettersSection";
 import { NextSteps } from "./NextSteps";
 import { formatRupees } from "../lib/format";
@@ -46,6 +48,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
       setLastChange({ from: caseResult.totals.recoverableStrong, to: updated.totals.recoverableStrong });
     }
     setCaseResult(updated);
+    recordCase(updated);
     document.getElementById("result")?.scrollIntoView?.({ behavior: "smooth" });
   };
 
@@ -60,6 +63,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
       failedPollsRef.current = 0;
       if (response.status.stage === "done") {
         setCaseResult(response.result || sampleCaseResult);
+        if (response.result) recordCase(response.result);
       }
       setLoading(false);
       return response.status.stage;
@@ -219,6 +223,16 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
           </div>
         )}
 
+        {language === "kn" && (
+          <p
+            role="note"
+            data-testid="case-text-english-note"
+            className="p-3.5 rounded-xl bg-[#E5F3EC] border border-[#BDE3D0] text-[#0F5132] text-xs sm:text-sm font-semibold"
+          >
+            {t.caseTextInEnglishNote}
+          </p>
+        )}
+
         {caseResult && caseResult.warnings.length > 0 && (
           <div
             role="note"
@@ -285,9 +299,11 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
             <MoneyFlowChart caseResult={caseResult} language={language} />
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
-              <DeductionsChart caseResult={caseResult} language={language} />
+              <CaseStrengthCard findings={caseResult.findings} language={language} />
               <CoverTimeline caseResult={caseResult} language={language} />
             </div>
+
+            <DeductionsChart caseResult={caseResult} language={language} />
 
             {/* 3. Bill items table */}
             <FindingsTable
