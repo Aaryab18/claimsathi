@@ -9,7 +9,7 @@ It only copies facts. Missing facts become unknown, and tested code makes every 
 Google Gemini's free plan, because we had no paid AI budget. It sits behind one file, so it can be swapped out.
 
 **How accurate is it?**
-We don't have an accuracy figure. We tested two made-up cases: clean PDFs and noisy images. After we fixed the bugs those tests found, both gave the expected totals. That isn't enough to claim a percentage, and real documents will be harder.
+We don't have an accuracy figure. We tested made-up cases: clean PDFs, noisy images, a full rejection and a Hindi letter, and unrelated files were refused. After we fixed the bugs those tests found, they gave the expected totals. That isn't enough to claim a percentage, and real documents will be harder.
 
 **What happens if it reads something wrong?**
 The user can correct dates and categories under Confirm the facts, and the rules recalculate instantly. If the amounts don't add up, the result shows a warning.

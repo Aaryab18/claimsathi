@@ -40,7 +40,7 @@ See [the architecture](docs/ARCHITECTURE.md).
 |---|---|---|
 | R1 | Cover of 60 months or more | **Verified:** IRDAI Master Circular on Health Insurance, 29.05.2024, clause 13 |
 | R2 | Pre-existing disease waiting period, from the policy's own figure | Uses the policy's wording |
-| R3 | Proportionate cuts on pharmacy, consumables, implants and diagnostics | **Source found, status open:** IRDAI circular 151/06/2020, paragraphs 4 and 5. We haven't confirmed whether the May 2024 Master Circular kept it |
+| R3 | Proportionate cuts on pharmacy, consumables, implants, diagnostics and ICU charges | **Source found, status open:** IRDAI circular 151/06/2020, paragraphs 4, 5 and 7. We haven't confirmed whether the May 2024 Master Circular kept it |
 | R4 | Non-payable items that belong to a package | Unverified |
 | R5 | Rejection for documents the insurer never asked for | **Verified text:** 2024 Master Circular, clause 17(c), on insurers collecting documents from hospitals. Whether it covers every missing document is a judgment, so R5 needs the person's confirmation |
 | R6 | Co-pay and sub-limit arithmetic | Arithmetic on the policy's own figures |
