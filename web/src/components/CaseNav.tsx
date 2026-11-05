@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { Link, NavLink, useLocation } from "react-router-dom";
 import type { Translations } from "../lib/i18n";
 
-export const CASE_SECTIONS = ["overview", "breakdown", "evidence", "facts", "plan", "letters"] as const;
+export const CASE_SECTIONS = ["overview", "breakdown", "evidence", "facts", "plan", "letters", "contact"] as const;
 export type CaseSection = (typeof CASE_SECTIONS)[number];
 
 interface CaseNavProps {
@@ -17,6 +17,7 @@ const ICONS: Record<CaseSection, string> = {
   facts: "M4 20h4L19 9l-4-4L4 16z",
   plan: "M8 3v3m8-3v3M4 9h16M5 5h14a1 1 0 011 1v13a1 1 0 01-1 1H5a1 1 0 01-1-1V6a1 1 0 011-1z",
   letters: "M4 6h16v12H4zm0 0l8 7 8-7",
+  contact: "M3 5a2 2 0 012-2h3l2 5-2.5 1.5a11 11 0 005 5L14 12l5 2v3a2 2 0 01-2 2A16 16 0 013 5z",
 };
 
 export function CaseNav({ token, t }: CaseNavProps) {
@@ -36,6 +37,7 @@ export function CaseNav({ token, t }: CaseNavProps) {
     facts: t.navFacts,
     plan: t.navPlan,
     letters: t.navLetters,
+    contact: t.navContact,
   };
 
   return (

@@ -56,6 +56,9 @@ It's an early version. It works today, but the list stays in one browser, with n
 **Why not just use ChatGPT?**
 A chatbot can give different answers and can invent rules. This gives repeatable results, shows its evidence, and turns it into letters and deadlines.
 
+**Can it call the insurer for the user?**
+No, on purpose. Insurers check that the caller is the policyholder, a call would pass health details through more services, and an AI arguing live could say things the rules never decided. Instead, the app gives the official grievance number, a script made from the findings with no AI, and the written and online routes. We only show a number we read on the insurer's own grievance page, for five insurers so far.
+
 **Why will insurers listen?**
 The letter quotes their own words and policy, asks specific questions, and leads to the Ombudsman, a formal route they have to answer. We can't promise any particular outcome.
 

@@ -23,6 +23,7 @@ A family gets a letter saying part of a hospital claim won't be paid. It cites c
 | **Recoverable meter** | One headline figure, and how the deducted money splits |
 | **Confirm the facts** | Correct a date or category, and the rules recalculate instantly with no AI call |
 | **Appeal letters** | An editable complaint to the insurer and an Ombudsman complaint with an annexure checklist, in English, Hindi or Kannada, with Print or Save as PDF |
+| **Contact your insurer** | The insurer's official grievance number to call, a call script in English, Hindi or Kannada, a place to note the complaint number, email the complaint, and links to IRDAI's Bima Bharosa and the Ombudsman online. You make the call, not the app |
 | **Deadlines** | Ombudsman dates from the official rules, and a calendar file with reminders |
 | **Charts** | Where the claim went, the biggest cuts, and the cover timeline against the hospital stay |
 | **Printable report** | Save the result as a PDF, with strength of grounds on each deduction |

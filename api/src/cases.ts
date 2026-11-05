@@ -208,8 +208,14 @@ export function createCasesRouter(
       throw new HttpError(409, "This case is not ready for letters yet.");
     }
 
-    const { letterType, language } = request.data;
-    const text = buildLetter(CaseResultSchema.parse(found.result), letterType, new Date().toISOString().slice(0, 10), language);
+    const { letterType, language, grievanceReference } = request.data;
+    const text = buildLetter(
+      CaseResultSchema.parse(found.result),
+      letterType,
+      new Date().toISOString().slice(0, 10),
+      language,
+      grievanceReference,
+    );
     res.json(CreateLetterResponseSchema.parse({ letterType, text }));
   });
 

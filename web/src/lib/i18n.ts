@@ -76,6 +76,40 @@ export interface Translations {
   navFacts: string;
   navDeadlines: string;
   navLetters: string;
+  navContact: string;
+  contactTitle: string;
+  contactSubtitle: string;
+  contactStepCall: string;
+  contactMatched: (name: string) => string;
+  contactNotListed: (insurer: string | null) => string;
+  contactCallNow: string;
+  contactTollFree: string;
+  contactCallCharges: string;
+  contactOfficialPage: string;
+  contactOnlineForm: string;
+  contactCheckedOn: (date: string) => string;
+  contactNoAiNote: string;
+  contactStepScript: string;
+  contactScriptDesc: string;
+  contactShowScript: string;
+  contactLoading: string;
+  contactStepAfter: string;
+  contactReferenceLabel: string;
+  contactReferenceHelp: string;
+  contactSentDateHint: string;
+  contactStepWriting: string;
+  contactWritingDesc: string;
+  contactEmailLetter: (email: string) => string;
+  contactEmailSubject: (claimId: string | null) => string;
+  contactEmailCopied: string;
+  contactOpenLetters: string;
+  contactStepEscalate: string;
+  contactEscalateDesc: string;
+  contactBimaBharosa: string;
+  contactIrdaiCall: string;
+  contactOmbudsmanOnline: string;
+  contactOmbudsmanWhen: string;
+  orWord: string;
   nextStepsTitle: string;
   stepCheckTitle: string;
   stepCheckDetail: string;
@@ -324,6 +358,41 @@ export const translations: Record<Language, Translations> = {
     navFacts: "Check facts",
     navDeadlines: "Deadlines",
     navLetters: "Letters",
+    navContact: "Contact insurer",
+    contactTitle: "Contact your insurer",
+    contactSubtitle: "Call the insurer yourself with a script made from your case, then send the complaint in writing so there's a record.",
+    contactStepCall: "1. Call the insurer's grievance line",
+    contactMatched: (name) => `Your letter is from ${name}. This is the number on its official grievance page.`,
+    contactNotListed: (insurer) =>
+      `${insurer ? `We haven't confirmed the grievance number for ${insurer}` : "We couldn't tell which insurer this is"}, so we don't show one. Use the customer care number printed on your policy document or the insurer's letter, or complain to IRDAI using step 5.`,
+    contactCallNow: "Call",
+    contactTollFree: "Toll-free.",
+    contactCallCharges: "Normal call charges may apply.",
+    contactOfficialPage: "Insurer's grievance page",
+    contactOnlineForm: "Insurer's online complaint form",
+    contactCheckedOn: (date) => `Read on the insurer's own page on ${date}. Numbers can change, so compare it with your policy document.`,
+    contactNoAiNote: "ClaimSathi doesn't call anyone for you. You make the call, so you stay in control of what's said.",
+    contactStepScript: "2. What to say on the call",
+    contactScriptDesc: "A short script made from your case's findings, with no AI. Read it out, in the language you're comfortable with.",
+    contactShowScript: "Show what to say",
+    contactLoading: "Preparing...",
+    contactStepAfter: "3. After the call",
+    contactReferenceLabel: "Complaint reference number the insurer gave you",
+    contactReferenceHelp: "Saved only in this browser. It's added to your Ombudsman complaint.",
+    contactSentDateHint: "Enter the date you complained on Check facts, so your deadlines update:",
+    contactStepWriting: "4. Send it in writing",
+    contactWritingDesc: "A call alone leaves no proof. Email the complaint letter, or use the insurer's online form.",
+    contactEmailLetter: (email) => `Email the complaint to ${email}`,
+    contactEmailSubject: (claimId) => `Grievance about claim ${claimId ?? ""}`.trim(),
+    contactEmailCopied: "Your email app should open with the letter. It's also copied, so paste it if the email is empty. Fill in the [square brackets] before sending.",
+    contactOpenLetters: "Open the letters to edit or print",
+    contactStepEscalate: "5. If the insurer doesn't fix it",
+    contactEscalateDesc: "If the insurer doesn't reply, or you're not happy with the reply, complain to IRDAI, the insurance regulator, and then to the Insurance Ombudsman.",
+    contactBimaBharosa: "Register a complaint on IRDAI's Bima Bharosa portal",
+    contactIrdaiCall: "IRDAI call centre, toll-free:",
+    contactOmbudsmanOnline: "Complain to the Insurance Ombudsman online",
+    contactOmbudsmanWhen: "The Ombudsman needs your written complaint to the insurer first. Use the Ombudsman complaint on the Letters page.",
+    orWord: "or",
     nextStepsTitle: "What to do next",
     stepCheckTitle: "Check the facts",
     stepCheckDetail: "Make sure the dates and amounts match your documents. A wrong date can change the result.",
@@ -579,6 +648,41 @@ export const translations: Record<Language, Translations> = {
     navFacts: "तथ्य जांचें",
     navDeadlines: "समय-सीमाएं",
     navLetters: "पत्र",
+    navContact: "बीमा कंपनी से संपर्क",
+    contactTitle: "अपनी बीमा कंपनी से संपर्क करें",
+    contactSubtitle: "अपने केस से बनी स्क्रिप्ट के साथ खुद बीमा कंपनी को कॉल करें, फिर रिकॉर्ड के लिए शिकायत लिखित में भी भेजें।",
+    contactStepCall: "1. बीमा कंपनी की शिकायत लाइन पर कॉल करें",
+    contactMatched: (name) => `आपका पत्र ${name} का है। यह नंबर उसके आधिकारिक शिकायत पेज पर दिया गया है।`,
+    contactNotListed: (insurer) =>
+      `${insurer ? `हमने ${insurer} का शिकायत नंबर पक्का नहीं किया है` : "हम पता नहीं लगा सके कि यह कौन सी बीमा कंपनी है"}, इसलिए हम कोई नंबर नहीं दिखाते। अपनी पॉलिसी या बीमा कंपनी के पत्र पर छपा कस्टमर केयर नंबर इस्तेमाल करें, या चरण 5 से IRDAI को शिकायत करें।`,
+    contactCallNow: "कॉल करें",
+    contactTollFree: "टोल-फ़्री।",
+    contactCallCharges: "सामान्य कॉल शुल्क लग सकता है।",
+    contactOfficialPage: "बीमा कंपनी का शिकायत पेज",
+    contactOnlineForm: "बीमा कंपनी का ऑनलाइन शिकायत फ़ॉर्म",
+    contactCheckedOn: (date) => `${date} को बीमा कंपनी के अपने पेज पर पढ़ा गया। नंबर बदल सकते हैं, इसलिए अपनी पॉलिसी से मिला लें।`,
+    contactNoAiNote: "क्लेमसाथी आपकी ओर से किसी को कॉल नहीं करता। कॉल आप करते हैं, इसलिए क्या कहा जाए यह आपके हाथ में रहता है।",
+    contactStepScript: "2. कॉल पर क्या कहें",
+    contactScriptDesc: "आपके केस के निष्कर्षों से, बिना AI के, बनी छोटी स्क्रिप्ट। जिस भाषा में सहज हों, उसमें पढ़ें।",
+    contactShowScript: "क्या कहना है, दिखाएं",
+    contactLoading: "तैयार हो रहा है...",
+    contactStepAfter: "3. कॉल के बाद",
+    contactReferenceLabel: "बीमा कंपनी से मिली शिकायत संदर्भ संख्या",
+    contactReferenceHelp: "केवल इस ब्राउज़र में सहेजा जाता है। यह आपकी लोकपाल शिकायत में जुड़ जाता है।",
+    contactSentDateHint: "शिकायत की तारीख 'तथ्य जांचें' में दर्ज करें, ताकि आपकी समय-सीमाएं अपडेट हों:",
+    contactStepWriting: "4. लिखित में भेजें",
+    contactWritingDesc: "केवल कॉल का कोई सबूत नहीं रहता। शिकायत पत्र ईमेल करें, या बीमा कंपनी का ऑनलाइन फ़ॉर्म इस्तेमाल करें।",
+    contactEmailLetter: (email) => `शिकायत ${email} पर ईमेल करें`,
+    contactEmailSubject: (claimId) => `क्लेम ${claimId ?? ""} पर शिकायत`,
+    contactEmailCopied: "आपका ईमेल ऐप पत्र के साथ खुलना चाहिए। पत्र कॉपी भी हो गया है, ईमेल खाली हो तो पेस्ट करें। भेजने से पहले [वर्ग कोष्ठक] भरें।",
+    contactOpenLetters: "बदलने या प्रिंट करने के लिए पत्र खोलें",
+    contactStepEscalate: "5. अगर बीमा कंपनी हल न करे",
+    contactEscalateDesc: "अगर बीमा कंपनी उत्तर न दे, या उत्तर से आप संतुष्ट न हों, तो बीमा नियामक IRDAI से और फिर बीमा लोकपाल से शिकायत करें।",
+    contactBimaBharosa: "IRDAI के बीमा भरोसा पोर्टल पर शिकायत दर्ज करें",
+    contactIrdaiCall: "IRDAI कॉल सेंटर, टोल-फ़्री:",
+    contactOmbudsmanOnline: "बीमा लोकपाल को ऑनलाइन शिकायत करें",
+    contactOmbudsmanWhen: "लोकपाल के लिए पहले बीमा कंपनी को लिखित शिकायत ज़रूरी है। 'पत्र' पेज पर लोकपाल शिकायत इस्तेमाल करें।",
+    orWord: "या",
     nextStepsTitle: "आगे क्या करें",
     stepCheckTitle: "तथ्य जांचें",
     stepCheckDetail: "देख लें कि तारीखें और राशियां आपके दस्तावेज़ों से मेल खाती हैं। एक गलत तारीख से परिणाम बदल सकता है।",
