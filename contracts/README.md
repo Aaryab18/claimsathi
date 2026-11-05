@@ -101,7 +101,7 @@ Every field is optional. Send only what the person corrected. A misspelled field
 
 ## 4. CaseResult: what the website displays
 
-It holds `caseToken`, `extracted`, `findings`, `deadlines`, `totals` and `resultSource`.
+It holds `caseToken`, `extracted`, `findings`, `deadlines`, `totals`, `warnings` and `resultSource`.
 
 ```ts
 {
@@ -121,6 +121,26 @@ A CaseResult also fails its check if:
 - a finding names a line item that doesn't exist
 - a finding's `amount` differs from its line items' deductions
 - the totals don't match the findings
+
+### Warnings
+
+A warning means part of a claim could not be assessed. The website must show every warning clearly and must never present the result as complete.
+
+`warnings` is required on `CaseResult` and `RulesEngineResult`. It is an empty list when there is nothing to warn about.
+
+```ts
+{
+  code: "missing_deduction_amount",
+  messageEn: "We could not read the amount deducted for one bill item.",
+  messageHi: "बिल की एक मद में काटी गई राशि पढ़ी नहीं जा सकी।"
+}
+```
+
+| Code | Meaning |
+| --- | --- |
+| `no_line_items` | The documents gave no bill items to check. |
+| `missing_deduction_amount` | A bill item's deducted amount is `null`. |
+| `totals_do_not_match` | The bill items don't add up to the amounts on the claim. |
 
 ## 5. CaseStatus: how far a case has got
 
@@ -157,7 +177,7 @@ This is only a type. The rules themselves belong in `rules/`.
 ```ts
 const runRules: RulesEngine = ({ extracted, overrides, asOfDate }) => {
   // The rules go here
-  return { findings, deadlines, totals };
+  return { findings, deadlines, totals, warnings };
 };
 ```
 

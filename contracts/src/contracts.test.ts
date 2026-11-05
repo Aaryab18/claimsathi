@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   API_ROUTES,
   ApplyFactsRequestSchema,
+  AssessmentWarningSchema,
   CaseResultSchema,
   CaseStatusSchema,
   CreateCaseRequestSchema,
@@ -17,6 +18,7 @@ import {
   sampleCaseResult,
   sampleExtractedClaim,
   type RulesEngine,
+  type RulesEngineResult,
 } from "./index.js";
 
 const sum = (values: (number | null)[]) => values.reduce<number>((total, value) => total + (value ?? 0), 0);
@@ -430,6 +432,52 @@ describe("API contract", () => {
   });
 });
 
+describe("assessment warnings", () => {
+  const warning = { code: "no_line_items", messageEn: "No bill items were found.", messageHi: "बिल की कोई मद नहीं मिली।" };
+
+  it("the sample passes with an empty warnings list", () => {
+    expect(sampleCaseResult.warnings).toEqual([]);
+    expect(CaseResultSchema.safeParse(sampleCaseResult).success).toBe(true);
+  });
+
+  it.each(["no_line_items", "missing_deduction_amount", "totals_do_not_match"])("accepts the code %s", (code) => {
+    expect(AssessmentWarningSchema.safeParse({ ...warning, code }).success).toBe(true);
+  });
+
+  it("rejects unknown codes", () => {
+    expect(AssessmentWarningSchema.safeParse({ ...warning, code: "made_up" }).success).toBe(false);
+    expect(CaseResultSchema.safeParse({ ...sampleCaseResult, warnings: [{ ...warning, code: "made_up" }] }).success).toBe(
+      false,
+    );
+  });
+
+  it("rejects a warning with a missing or empty message", () => {
+    const { messageHi: _messageHi, ...withoutHindi } = warning;
+    expect(AssessmentWarningSchema.safeParse(withoutHindi).success).toBe(false);
+    expect(AssessmentWarningSchema.safeParse({ ...warning, messageEn: "" }).success).toBe(false);
+  });
+
+  it("rejects a CaseResult with a missing warnings field", () => {
+    const { warnings: _warnings, ...withoutWarnings } = sampleCaseResult;
+    expect(CaseResultSchema.safeParse(withoutWarnings).success).toBe(false);
+  });
+
+  it("accepts a CaseResult that carries a warning", () => {
+    expect(CaseResultSchema.safeParse({ ...sampleCaseResult, warnings: [warning] }).success).toBe(true);
+  });
+
+  it("requires warnings on RulesEngineResult", () => {
+    // This one is checked by typecheck: it fails if warnings stops being required.
+    // @ts-expect-error warnings is missing.
+    const withoutWarnings: RulesEngineResult = {
+      findings: [],
+      deadlines: [],
+      totals: { totalDeducted: 0, recoverableStrong: 0, questionable: 0, validDeductions: 0 },
+    };
+    expect(withoutWarnings).not.toHaveProperty("warnings");
+  });
+});
+
 describe("rules engine type", () => {
   it("takes the extracted claim, optional overrides and an as-of date", () => {
     // A stand-in, only to prove the type's shape at compile time. It holds no rules.
@@ -437,6 +485,7 @@ describe("rules engine type", () => {
       findings: overrides ? [] : sampleCaseResult.findings,
       deadlines: sampleCaseResult.deadlines,
       totals: sampleCaseResult.totals,
+      warnings: [],
     });
 
     expect(engine({ extracted: sampleExtractedClaim, asOfDate: "2026-01-01" }).findings).toHaveLength(5);

@@ -1,4 +1,4 @@
-import type { Deadline, Totals } from "./case-result.js";
+import type { AssessmentWarning, Deadline, Totals } from "./case-result.js";
 import type { IsoDate } from "./common.js";
 import type { ExtractedClaim } from "./extracted.js";
 import type { Finding } from "./finding.js";
@@ -14,6 +14,7 @@ export interface RulesEngineResult {
   findings: Finding[];
   deadlines: Deadline[];
   totals: Totals;
+  warnings: AssessmentWarning[];
 }
 
 // The rules themselves live in rules/.
