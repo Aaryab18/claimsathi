@@ -114,6 +114,13 @@ describe("ClaimSathi Dashboard", () => {
     const hindiWrongBadges = screen.getAllByTestId("verdict-wrong");
     expect(hindiWrongBadges[0].textContent).toContain("संभावित रूप से गलत कटौती");
 
+    // Hindi deadline verification notice and no legal team claims
+    const hindiDeadlineNotices = screen.getAllByText(
+      "हम अभी भी इस समय-सीमा के आधिकारिक स्रोत की जांच कर रहे हैं।",
+    );
+    expect(hindiDeadlineNotices.length).toBe(2);
+    expect(screen.queryByText(/हमारी कानूनी टीम/)).toBeNull();
+
     // Switch back to English
     const englishBtn = screen.getByRole("button", { name: "English" });
     fireEvent.click(englishBtn);
@@ -192,6 +199,15 @@ describe("ClaimSathi Dashboard", () => {
       const pendingBadges = within(dialog).getAllByText("Source check pending");
       expect(pendingBadges.length).toBeGreaterThan(0);
 
+      // Verify source check pending notice text and no legal team claims
+      expect(
+        within(dialog).getByText(
+          "We are still checking the official source for this rule. We do not present unverified clauses as established law.",
+        ),
+      ).toBeTruthy();
+      expect(within(dialog).queryByText(/legal research team/i)).toBeNull();
+      expect(within(dialog).queryByText(/legal team/i)).toBeNull();
+
       // Verify placeholder text is NOT rendered as established law
       expect(within(dialog).queryByText("Member C")).toBeNull();
     });
@@ -204,6 +220,12 @@ describe("ClaimSathi Dashboard", () => {
       const datePendingBadges = screen.getAllByTestId("deadline-date-pending");
       expect(datePendingBadges.length).toBe(2);
       expect(datePendingBadges[0].textContent).toBe("Date pending");
+
+      const deadlinePendingNotices = screen.getAllByText(
+        "We are still checking the official source for this deadline.",
+      );
+      expect(deadlinePendingNotices.length).toBe(2);
+      expect(screen.queryByText(/legal team/i)).toBeNull();
     });
 
     it("displays 'Sample case' badge when resultSource is saved_sample", async () => {
