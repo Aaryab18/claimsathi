@@ -15,7 +15,7 @@ Each correction stays saved on its case, so go back to the home page and click *
 
 These results come from made-up documents only, and from a browser pane that was hidden while testing. A hidden pane pauses animation and smooth scrolling, so those can't be judged there.
 
-Last re-tested on the live site after commit `9bc810f`. Re-run these tests after any later deploy.
+Last re-tested on the live site after commit `488c2fb`. Re-run these tests after any later deploy.
 
 ## The 28 tests
 
@@ -165,7 +165,7 @@ Last re-tested on the live site after commit `9bc810f`. Re-run these tests after
   - The script has the case's own numbers and every disputed item.
   - The reference number appears in the Ombudsman complaint.
   - The IRDAI Bima Bharosa and Ombudsman links open their complaint forms.
-- **Status:** Automated, and the page Tested locally at phone and desktop width in English and Kannada. **Manual:** tapping **Call** on a real phone, the email button with a real email app, and a Hindi and Kannada reader checking the script.
+- **Status:** Tested live: the script in all three languages, the sample's made-up insurer showing no number, the reference number in the Ombudsman complaint, a too-long reference refused, and all 8 official links returning 200. Also Automated, and the layout Tested locally at phone and desktop width. **Manual:** tapping **Call** on a real phone, the email button with a real email app, and a Hindi and Kannada reader checking the script.
 
 ## R3 and ICU charges
 
