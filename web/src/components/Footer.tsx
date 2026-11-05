@@ -17,7 +17,7 @@ export function Footer({ language }: FooterProps) {
         </p>
       </div>
 
-      <div className="flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center print:hidden">
         <SystemStatus />
       </div>
     </footer>

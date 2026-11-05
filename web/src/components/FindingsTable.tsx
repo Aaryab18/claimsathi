@@ -58,7 +58,7 @@ export function FindingsTable({
                 }
               }}
               data-testid={`finding-row-${finding.id}`}
-              className={`bg-white rounded-xl p-4 sm:p-5 border border-[#E3E0CE] border-l-[6px] ${VERDICT_EDGE[finding.verdict]} hover:shadow-md transition-all cursor-pointer text-left focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:ring-offset-2`}
+              className={`break-inside-avoid bg-white rounded-xl p-4 sm:p-5 border border-[#E3E0CE] border-l-[6px] ${VERDICT_EDGE[finding.verdict]} hover:shadow-md transition-all cursor-pointer text-left focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:ring-offset-2`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-[#F2EFE6]">
                 <div className="flex flex-wrap items-center gap-2">
@@ -99,8 +99,33 @@ export function FindingsTable({
                 {explanation}
               </p>
 
+              {/* The evidence opens in a popup on screen, so a printed report carries it here instead */}
+              <dl data-testid={`print-evidence-${finding.id}`} className="hidden print:block mt-2 text-xs text-[#3E4F46] leading-relaxed">
+                {finding.evidence.insurerText && (
+                  <>
+                    <dt className="font-semibold">{t.insurerWordsTitle}</dt>
+                    <dd className="mb-1">"{finding.evidence.insurerText}"</dd>
+                  </>
+                )}
+                {finding.evidence.policyClause && (
+                  <>
+                    <dt className="font-semibold">{t.policyClauseTitle}</dt>
+                    <dd className="mb-1">{finding.evidence.policyClause}</dd>
+                  </>
+                )}
+                {finding.evidence.regulation && !/pending verification/i.test(finding.evidence.regulation.sourceName) && (
+                  <>
+                    <dt className="font-semibold">{t.regulationTitle}</dt>
+                    <dd>
+                      {finding.evidence.regulation.sourceName} (
+                      {finding.evidence.regulation.verified ? t.verifiedLabel : t.sourceCheckPending})
+                    </dd>
+                  </>
+                )}
+              </dl>
+
               {/* Call to action */}
-              <div className="mt-3 flex items-center justify-between text-xs font-medium text-[#115E41]">
+              <div className="mt-3 flex items-center justify-between text-xs font-medium text-[#115E41] print:hidden">
                 <span className="flex items-center gap-1 text-[#0F5132] font-semibold">
                   <svg
                     className="w-3.5 h-3.5"

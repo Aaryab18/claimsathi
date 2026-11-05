@@ -300,6 +300,35 @@ describe("what the app says about its legal sources", () => {
   });
 });
 
+describe("what the ICU test showed", () => {
+  const reason = (text: string, clauseCited: string) => ({ text, category: "proportionate" as const, clauseCited, source: null });
+  const claim = claimWith(
+    [
+      item({ id: "A", description: "ICU charges, 3 days", category: "room", deductionType: "proportionate" }),
+      item({ id: "B", description: "Medicines", category: "pharmacy", deductionType: "proportionate" }),
+    ],
+    {
+      rejection: {
+        ...sampleExtractedClaim.rejection,
+        reasons: [reason("ICU charges reduced in proportion", "Clause 4.2"), reason("Medicines reduced in proportion", "Clause 4.2")],
+      },
+      policyClauses: [{ clauseId: "4.2", title: null, text: "Room rent limit.", source: { document: "policy", page: 1, quote: "Room rent limit." } }],
+    },
+  );
+
+  it("finds the insurer's words for an ICU cut, and not another item's", () => {
+    const finding = run(claim).findings.find((f) => f.ruleIds.includes("R3-ICU"));
+
+    expect(finding?.evidence.insurerText).toContain("ICU charges reduced");
+  });
+
+  it("shows a cited clause however it's written", () => {
+    for (const finding of run(claim).findings) {
+      expect(finding.evidence.policyClause).toContain("Room rent limit.");
+    }
+  });
+});
+
 describe("what harder documents showed", () => {
   it("marks a proportionate cut on ICU charges as wrong, citing paragraph 7 and not as confirmed", () => {
     const icu = item({ description: "ICU charges, 2 days", category: "room", deductionType: "proportionate" });

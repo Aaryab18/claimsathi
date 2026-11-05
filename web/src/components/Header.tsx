@@ -76,7 +76,7 @@ export function Header({ language, onLanguageChange, resultSource, isOffline }: 
           <div
             role="group"
             aria-label="Language selection"
-            className="inline-flex p-0.5 rounded-lg bg-[#E7E5D8] border border-[#D9D6C5]"
+            className="print:hidden inline-flex p-0.5 rounded-lg bg-[#E7E5D8] border border-[#D9D6C5]"
           >
             {LANGUAGES.map(({ code, label }) => (
               <button

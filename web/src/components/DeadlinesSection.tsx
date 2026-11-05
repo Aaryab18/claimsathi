@@ -54,7 +54,7 @@ export function DeadlinesSection({ deadlines, language, caseToken }: DeadlinesSe
             data-testid="calendar-download"
             href={`data:text/calendar;charset=utf-8,${encodeURIComponent(calendarFile)}`}
             download="claimsathi-deadlines.ics"
-            className="inline-block mt-2 text-xs font-semibold underline text-[#114B36]"
+            className="inline-block mt-2 text-xs font-semibold underline text-[#114B36] print:hidden"
           >
             {t.addToCalendar}
           </a>

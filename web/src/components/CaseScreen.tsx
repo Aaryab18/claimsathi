@@ -49,7 +49,11 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
     }
     setCaseResult(updated);
     recordCase(updated);
-    document.getElementById("result")?.scrollIntoView?.({ behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Smooth scrolling can stall on a busy or hidden page, and the change must still be seen.
+    window.setTimeout(() => {
+      if (window.scrollY > 0) window.scrollTo({ top: 0 });
+    }, 1200);
   };
 
   const pollTimerRef = useRef<number | null>(null);
