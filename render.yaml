@@ -18,7 +18,8 @@ services:
     plan: free
     region: singapore
     buildCommand: npm ci --include=dev && npm run build --workspace=@claimsathi/api
-    startCommand: npm start --workspace=@claimsathi/api
+    # Render's free plan has no pre-deploy command, so migrations run here, before the server starts.
+    startCommand: npm run migrate:deploy --workspace=@claimsathi/api && npm start --workspace=@claimsathi/api
     healthCheckPath: /healthz
     envVars:
       - key: NODE_VERSION

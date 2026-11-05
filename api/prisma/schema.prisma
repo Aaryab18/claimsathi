@@ -1,0 +1,57 @@
+generator client {
+  provider            = "prisma-client"
+  output              = "../src/generated/prisma"
+  moduleFormat        = "esm"
+  importFileExtension = "js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+enum CaseStage {
+  queued
+  reading
+  checking
+  drafting
+  done
+  failed
+}
+
+enum DocumentType {
+  rejection_letter
+  policy
+  bill
+}
+
+model ClaimCase {
+  id              String         @id @default(uuid()) @db.Uuid
+  token           String         @unique
+  status          CaseStage
+  progressMessage String         @map("progress_message")
+  errorMessage    String?        @map("error_message")
+  extracted       Json?
+  overrides       Json?
+  result          Json?
+  createdAt       DateTime       @default(now()) @map("created_at")
+  deleteAfter     DateTime       @map("delete_after")
+  documents       CaseDocument[]
+
+  @@index([deleteAfter])
+  @@map("cases")
+}
+
+model CaseDocument {
+  id           String       @id @default(uuid()) @db.Uuid
+  caseId       String       @map("case_id") @db.Uuid
+  case         ClaimCase    @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  documentType DocumentType @map("document_type")
+  fileName     String       @map("file_name")
+  fileType     String       @map("file_type")
+  contents     Bytes
+  deleteAfter  DateTime     @map("delete_after")
+
+  @@unique([caseId, documentType])
+  @@index([deleteAfter])
+  @@map("documents")
+}
