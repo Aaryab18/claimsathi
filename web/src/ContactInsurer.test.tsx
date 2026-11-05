@@ -66,6 +66,29 @@ describe("contact your insurer", () => {
     expect(screen.getByTestId("ombudsman-online").getAttribute("href")).toBe("https://cioins.co.in/Complaint/Online");
   });
 
+  it("lets the person choose their insurer when the letter's name isn't recognised, and remembers it", async () => {
+    serve(sampleCaseResult);
+    render(<App initialEntries={["/case/case-1/contact"]} />);
+
+    fireEvent.change(await screen.findByTestId("choose-insurer"), { target: { value: "Tata AIG" } });
+
+    expect(screen.getByTestId("call-insurer").getAttribute("href")).toBe("tel:02264898282");
+    expect(screen.getByTestId("insurer-contact").textContent).toContain("You chose Tata AIG");
+    expect(window.localStorage.getItem("claimsathi.insurer.sample-case")).toBe("Tata AIG");
+
+    fireEvent.change(screen.getByTestId("choose-insurer"), { target: { value: "" } });
+    expect(screen.queryByTestId("call-insurer")).toBeNull();
+    expect(window.localStorage.getItem("claimsathi.insurer.sample-case")).toBeNull();
+  });
+
+  it("doesn't offer a choice when the letter's insurer was recognised", async () => {
+    serve(withInsurer("Niva Bupa Health Insurance Company Limited"));
+    render(<App initialEntries={["/case/case-1/contact"]} />);
+
+    expect((await screen.findByTestId("insurer-contact")).textContent).toContain("Your letter is from Niva Bupa");
+    expect(screen.queryByTestId("choose-insurer")).toBeNull();
+  });
+
   it("asks the server for the call script in the chosen language", async () => {
     const fetchMock = serve(sampleCaseResult);
     render(<App initialEntries={["/case/case-1/contact"]} />);

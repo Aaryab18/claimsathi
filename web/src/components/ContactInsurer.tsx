@@ -5,7 +5,14 @@ import { createLetter } from "../api/client";
 import { formatDate } from "../lib/format";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
-import { CONTACTS_CHECKED_ON, IRDAI_CONTACT, OMBUDSMAN_ONLINE, findInsurerContact } from "../lib/insurer-contacts";
+import { readChosenInsurer, saveChosenInsurer } from "../lib/grievance-reference";
+import {
+  CONTACTS_CHECKED_ON,
+  INSURER_CONTACTS,
+  IRDAI_CONTACT,
+  OMBUDSMAN_ONLINE,
+  findInsurerContact,
+} from "../lib/insurer-contacts";
 
 interface ContactInsurerProps {
   caseToken: string;
@@ -33,7 +40,10 @@ export function ContactInsurer({
   onReferenceChange,
 }: ContactInsurerProps) {
   const t = translations[language];
-  const contact = findInsurerContact(insurer);
+  const matched = findInsurerContact(insurer);
+  // If the letter's insurer isn't one we recognise, the person can say which it is.
+  const [chosenInsurer, setChosenInsurer] = useState(() => readChosenInsurer(caseToken));
+  const contact = matched ?? INSURER_CONTACTS.find(({ name }) => name === chosenInsurer) ?? null;
   const [chosenLanguage, setChosenLanguage] = useState<LetterLanguage | null>(null);
   const scriptLanguage = chosenLanguage ?? language;
   const [script, setScript] = useState("");
@@ -84,7 +94,7 @@ export function ContactInsurer({
         <h3 className="text-base font-bold text-[#113A2B]">{t.contactStepCall}</h3>
         {contact ? (
           <div data-testid="insurer-contact" className="flex flex-col gap-2">
-            <p className="text-sm text-[#2C3E35]">{t.contactMatched(contact.name)}</p>
+            <p className="text-sm text-[#2C3E35]">{matched ? t.contactMatched(contact.name) : t.contactChosen(contact.name)}</p>
             <a href={`tel:${contact.phone.dial}`} data-testid="call-insurer" className={`${buttonClass} w-full sm:w-auto self-start`}>
               <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 5a2 2 0 012-2h3l2 5-2.5 1.5a11 11 0 005 5L14 12l5 2v3a2 2 0 01-2 2A16 16 0 013 5z" />
@@ -111,6 +121,30 @@ export function ContactInsurer({
           <p data-testid="insurer-not-listed" className="text-sm text-[#3E4F46] leading-relaxed">
             {t.contactNotListed(insurer)}
           </p>
+        )}
+        {!matched && (
+          <div className="flex flex-col gap-1">
+            <label htmlFor="choose-insurer" className="text-xs font-semibold text-[#113A2B]">
+              {t.contactChooseLabel}
+            </label>
+            <select
+              id="choose-insurer"
+              data-testid="choose-insurer"
+              value={contact ? contact.name : ""}
+              onChange={(e) => {
+                setChosenInsurer(e.target.value);
+                saveChosenInsurer(caseToken, e.target.value);
+              }}
+              className="w-full sm:w-72 px-3 py-2 rounded-lg border border-[#D5D2C2] bg-white text-sm"
+            >
+              <option value="">{t.contactChooseNone}</option>
+              {INSURER_CONTACTS.map(({ name }) => (
+                <option key={name} value={name}>
+                  {name}
+                </option>
+              ))}
+            </select>
+          </div>
         )}
         <p className="text-xs text-[#526059]">{t.contactNoAiNote}</p>
       </div>
