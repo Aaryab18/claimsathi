@@ -280,17 +280,16 @@ describe("ClaimSathi New Screens", () => {
   });
 
   describe("Confirm the facts panel on results screen", () => {
-    it("renders the preview-only note and editable date inputs", async () => {
+    it("renders editable date inputs and does not render preview-only note", async () => {
       render(<App initialEntries={["/case/sample"]} />);
 
       await screen.findByTestId("recoverable-amount");
 
-      // Verify panel and preview-only note
+      // Verify panel and that preview-only note is absent
       const panel = screen.getByTestId("confirm-facts-panel");
       expect(panel).toBeTruthy();
-
-      const previewNote = screen.getByTestId("preview-only-note");
-      expect(previewNote.textContent).toContain("Preview only: corrections are not active yet");
+      expect(screen.queryByTestId("preview-only-note")).toBeNull();
+      expect(screen.queryByText(/Preview only/i)).toBeNull();
 
       // Verify date inputs with existing extracted dates
       const startDateInput = screen.getByTestId("fact-policy-start-date") as HTMLInputElement;
@@ -334,7 +333,7 @@ describe("ClaimSathi New Screens", () => {
         ),
       ).toBe(true);
 
-      // Verify corrections applied status and preview-only note removed
+      // Verify corrections applied status and preview-only note remains absent
       await screen.findByTestId("corrections-applied-status");
       expect(screen.queryByTestId("preview-only-note")).toBeNull();
       expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹71,400");
@@ -346,17 +345,15 @@ describe("ClaimSathi New Screens", () => {
       await screen.findByTestId("recoverable-amount");
 
       expect(screen.getByText("Confirm the facts")).toBeTruthy();
-      expect(screen.getByTestId("preview-only-note").textContent).toContain(
-        "Preview only: corrections are not active yet",
-      );
+      expect(screen.queryByTestId("preview-only-note")).toBeNull();
+      expect(screen.queryByText(/Preview only/i)).toBeNull();
 
       // Switch to Hindi
       fireEvent.click(screen.getByRole("button", { name: "हिंदी" }));
 
       expect(screen.getByText("तथ्यों की पुष्टि करें")).toBeTruthy();
-      expect(screen.getByTestId("preview-only-note").textContent).toContain(
-        "केवल पूर्वावलोकन: सुधार अभी सक्रिय नहीं हैं",
-      );
+      expect(screen.queryByTestId("preview-only-note")).toBeNull();
+      expect(screen.queryByText(/केवल पूर्वावलोकन/i)).toBeNull();
       expect(screen.getByText("पॉलिसी प्रारंभ तिथि")).toBeTruthy();
       expect(screen.getByText("अस्पताल में भर्ती की तिथि")).toBeTruthy();
     });

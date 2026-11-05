@@ -326,7 +326,7 @@ describe("ClaimSathi Dashboard", () => {
       expect(applyBtn.disabled).toBe(true);
     });
 
-    it("updates numbers and breakdown from API response and removes 'Preview only' note after a successful correction", async () => {
+    it("updates numbers and breakdown from API response after a successful correction", async () => {
       const updatedCaseResult = {
         ...sampleCaseResult,
         totals: {
@@ -364,7 +364,7 @@ describe("ClaimSathi Dashboard", () => {
 
       await screen.findByTestId("recoverable-amount");
       expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹71,400");
-      expect(screen.getByTestId("preview-only-note")).toBeTruthy();
+      expect(screen.queryByTestId("preview-only-note")).toBeNull();
 
       // Submit corrections
       const applyBtn = screen.getByTestId("apply-corrections-btn");
@@ -375,7 +375,7 @@ describe("ClaimSathi Dashboard", () => {
         expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹55,000");
       });
 
-      // Verify preview only note is removed
+      // Verify preview only note remains absent
       expect(screen.queryByTestId("preview-only-note")).toBeNull();
 
       // Verify success status
