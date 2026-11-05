@@ -2,7 +2,7 @@
 
 ## Before you present
 
-1. Open https://claimsathi-web.onrender.com and click **Try sample case** to wake the API. It can take up to a minute.
+1. Open https://claimsathi-web.onrender.com and click **Try sample case** to wake the API, 2 to 3 minutes before you start. It can take up to a minute.
 2. Download the three sample PDFs from the home page.
 3. Upload them once as a test. If this says busy, plan to use the sample case only.
 4. Keep the backup video and screenshots open in another tab.
@@ -21,7 +21,7 @@ It usually takes under a minute. If it's slow, say: "We're on a free AI plan, so
 
 ## 3. The result (45 seconds)
 
-Point at **₹71,400 likely recoverable out of ₹96,000**.
+Point at **₹71,400 likely recoverable out of ₹96,000**, then **Your progress** just below it: "The family can see every step from here to getting paid."
 
 "Here's what this family could challenge." Show **How strong is your case?**: "This summarises the rules' verdicts. It isn't a prediction of winning." Open **Evidence** to show the insurer's words, the policy clause and the official source link.
 
@@ -39,11 +39,17 @@ The page jumps back to the top and the number counts down.
 
 The app returns to **Overview**. Show the timeline: "Now the hospital stay comes first, and you can see why the answer changed." Then switch to **हिंदी**. "It's all available in Hindi too."
 
-## 5. Taking action (30 seconds)
+## 5. Taking action (45 seconds)
 
 Open **Your plan**: "Every family leaves with a clear plan." Then open **Letters**, choose a language, and click **Draft complaint to insurer**.
 
 "It writes the complaint from those findings, using the corrected facts, and the user can edit it and save it as a PDF. Deadlines come from the official Ombudsman Rules, and they can be added to a calendar."
+
+Open **Contact insurer**. In **Is your insurer one of these?**, choose **HDFC ERGO**, then click **Show what to say**.
+
+"The sample's insurer is made up, so we pick a real one to show the call button. The number comes from the insurer's own grievance page. The family makes the call themselves, with a script built from the findings, and the complaint number goes into the Ombudsman letter. If the insurer doesn't fix it, here are IRDAI's and the Ombudsman's official online forms."
+
+Go back to **Overview**: **Your progress** now shows the letter ticked.
 
 ## Optional: helpdesk (20 seconds)
 

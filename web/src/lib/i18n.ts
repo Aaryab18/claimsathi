@@ -53,6 +53,18 @@ export interface Translations {
   homeHeadline: string;
   homeSubtitle: string;
   demoNotice: string;
+  journeyTitle: string;
+  progressCount: (done: number, total: number) => string;
+  progressResult: string;
+  progressFacts: string;
+  progressLetter: string;
+  progressCall: string;
+  progressSent: string;
+  progressGo: string;
+  progressDone: string;
+  progressToDo: string;
+  progressEscalate: string;
+  progressEscalateDated: (date: string) => string;
   uploadRejectionTitle: string;
   uploadRejectionDesc: string;
   uploadPolicyTitle: string;
@@ -335,7 +347,19 @@ export const translations: Record<Language, Translations> = {
     homeHeadline: "Has your health insurance claim been rejected or cut short?",
     homeSubtitle:
       "Upload your rejection letter, policy, and hospital bill. ClaimSathi reviews each deduction against tested rules to find what you can recover.",
-    demoNotice: "This is a demo. Please do not upload real medical documents.",
+    demoNotice: "This is a demo. Please don't upload real medical documents. Use the made-up sample documents further down this page instead.",
+    journeyTitle: "Your progress",
+    progressCount: (done, total) => `${done} of ${total} done`,
+    progressResult: "See what was cut and why",
+    progressFacts: "Check the facts the AI read",
+    progressLetter: "Draft your complaint letter",
+    progressCall: "Call the insurer and note the reference number",
+    progressSent: "Send the complaint and enter the date",
+    progressGo: "Do this",
+    progressDone: "done",
+    progressToDo: "to do",
+    progressEscalate: "If the insurer doesn't fix it, you can go to the Insurance Ombudsman.",
+    progressEscalateDated: (date) => `If the insurer doesn't fix it, you can go to the Insurance Ombudsman, by ${date} to be safe.`,
     uploadRejectionTitle: "1. Rejection letter",
     uploadRejectionDesc: "Insurer's letter or email showing deduction reasons",
     uploadPolicyTitle: "2. Policy document",
@@ -628,7 +652,19 @@ export const translations: Record<Language, Translations> = {
     homeHeadline: "क्या आपका हेल्थ इंश्योरेंस क्लेम खारिज या कम कर दिया गया है?",
     homeSubtitle:
       "अपना रिजेक्शन लेटर, पॉलिसी दस्तावेज़ और अस्पताल का बिल अपलोड करें। क्लेमसाथी परीक्षित नियमों के आधार पर जांच करता है कि आप क्या वापस पा सकते हैं।",
-    demoNotice: "यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें।",
+    demoNotice: "यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें। इसके बजाय इसी पेज पर नीचे दिए गए बनावटी नमूना दस्तावेज़ इस्तेमाल करें।",
+    journeyTitle: "आपकी प्रगति",
+    progressCount: (done, total) => `${total} में से ${done} पूरे`,
+    progressResult: "देखें कि क्या कटा और क्यों",
+    progressFacts: "AI द्वारा पढ़े गए तथ्य जांचें",
+    progressLetter: "अपना शिकायत पत्र तैयार करें",
+    progressCall: "बीमा कंपनी को कॉल करें और संदर्भ संख्या लिखें",
+    progressSent: "शिकायत भेजें और तारीख दर्ज करें",
+    progressGo: "यह करें",
+    progressDone: "पूरा",
+    progressToDo: "बाकी",
+    progressEscalate: "अगर बीमा कंपनी हल न करे, तो आप बीमा लोकपाल के पास जा सकते हैं।",
+    progressEscalateDated: (date) => `अगर बीमा कंपनी हल न करे, तो आप बीमा लोकपाल के पास जा सकते हैं, सुरक्षित रहने के लिए ${date} तक।`,
     uploadRejectionTitle: "1. रिजेक्शन पत्र (अस्वीकृति पत्र)",
     uploadRejectionDesc: "बीमा कंपनी का पत्र जिसमें कटौती का कारण लिखा हो",
     uploadPolicyTitle: "2. पॉलिसी दस्तावेज़",

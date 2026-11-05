@@ -16,6 +16,8 @@ import { CaseNav, CASE_SECTIONS, type CaseSection } from "./CaseNav";
 import { ContactInsurer } from "./ContactInsurer";
 import { EvidenceList } from "./EvidenceList";
 import { readGrievanceReference, saveGrievanceReference } from "../lib/grievance-reference";
+import { readProgress, saveProgress, type CaseProgressFlags } from "../lib/case-progress";
+import { ProgressChecklist } from "./ProgressChecklist";
 import { recordCase } from "../lib/helpdesk";
 import { LettersSection } from "./LettersSection";
 import { NextSteps } from "./NextSteps";
@@ -36,6 +38,14 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
   const { token = "sample", section } = useParams<{ token: string; section: string }>();
   const navigate = useNavigate();
   const [grievanceReference, setGrievanceReference] = useState(() => readGrievanceReference(token));
+  const [progress, setProgress] = useState(() => readProgress(token));
+  const markDone = (step: keyof CaseProgressFlags) => {
+    setProgress((current) => {
+      const next = { ...current, [step]: true };
+      saveProgress(token, next);
+      return next;
+    });
+  };
   const activeSection: CaseSection = CASE_SECTIONS.includes(section as CaseSection) ? (section as CaseSection) : "overview";
   const t = translations[language];
 
@@ -56,6 +66,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
     }
     setCaseResult(updated);
     recordCase(updated);
+    markDone("facts");
     // The new number is on the overview, so that's where the person needs to be.
     navigate(`/case/${token}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -284,6 +295,13 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
               )}
 
               <RecoverableMeter totals={caseResult.totals} language={language} claim={caseResult.extracted.claim} />
+              <ProgressChecklist
+                caseToken={token}
+                deadlines={caseResult.deadlines}
+                flags={progress}
+                grievanceReference={grievanceReference}
+                language={language}
+              />
               <PlainSummary caseResult={caseResult} language={language} />
               <MoneyFlowChart caseResult={caseResult} language={language} />
 
@@ -331,6 +349,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
                 language={language}
                 isOffline={isOffline}
                 grievanceReference={grievanceReference}
+                onDrafted={() => markDone("letter")}
               />
             </div>
 

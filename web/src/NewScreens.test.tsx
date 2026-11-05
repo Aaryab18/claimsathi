@@ -81,7 +81,7 @@ describe("ClaimSathi New Screens", () => {
         screen.queryByText(/verified rules/i),
       ).toBeNull();
       expect(
-        screen.getByText("This is a demo. Please do not upload real medical documents."),
+        screen.getByText("This is a demo. Please don't upload real medical documents. Use the made-up sample documents further down this page instead."),
       ).toBeTruthy();
     });
 
@@ -524,7 +524,7 @@ describe("ClaimSathi New Screens", () => {
         screen.getByText(/परीक्षित नियमों/),
       ).toBeTruthy();
       expect(
-        screen.getByText("यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें।"),
+        screen.getByText("यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें। इसके बजाय इसी पेज पर नीचे दिए गए बनावटी नमूना दस्तावेज़ इस्तेमाल करें।"),
       ).toBeTruthy();
       expect(
         screen.getByText(/Google के Gemini AI/),
