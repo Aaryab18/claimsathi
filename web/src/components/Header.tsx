@@ -20,7 +20,7 @@ export function Header({ language, onLanguageChange, resultSource, isOffline }: 
 
   return (
     <header className="border-b border-[#E3E1D5] bg-[#F4F2EB]/80 backdrop-blur-xs sticky top-0 z-30">
-      <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
+      <div className="max-w-6xl mx-auto px-4 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
         <Link to="/" aria-label={t.appName} className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-[#114B36] flex items-center justify-center text-white font-bold text-lg shadow-xs">
             CS
@@ -65,6 +65,10 @@ export function Header({ language, onLanguageChange, resultSource, isOffline }: 
             </svg>
             <span>{t.legalDisclaimer}</span>
           </div>
+
+          <Link to="/rules" className="text-xs font-semibold text-[#0F5132] underline print:hidden">
+            {t.navRules}
+          </Link>
 
           <Link
             to="/helpdesk"

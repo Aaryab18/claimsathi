@@ -3,6 +3,7 @@ import type { Finding, LineItem } from "@claimsathi/contracts";
 import { formatRupees } from "../lib/format";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
+import { RegulationEvidence } from "./RegulationEvidence";
 import { VerdictBadge } from "./FindingsTable";
 
 interface EvidenceModalProps {
@@ -227,54 +228,9 @@ export function EvidenceModal({
                 {t.regulationTitle}
               </span>
 
-              {/* Honesty check */}
-              {evidence.regulation && !evidence.regulation.verified && (
-                <span
-                  data-testid="regulation-status-pending"
-                  className="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-semibold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]"
-                >
-                  {t.sourceCheckPending}
-                </span>
-              )}
             </div>
 
-            {/* HONESTY RULE:
-                If regulation.verified is false, show "Source check pending".
-                Never display the placeholder as if it were a real law. */}
-            {evidence.regulation ? (
-              evidence.regulation.verified ? (
-                <div className="p-3 rounded-lg bg-[#FAF9F5] border border-[#ECE9DD]">
-                  <p className="text-xs sm:text-sm text-[#273B30]">
-                    {evidence.regulation.text}
-                  </p>
-                  <span className="mt-1 block text-[11px] text-[#63756C]">
-                    {t.sourceLabel}: {evidence.regulation.sourceName}
-                  </span>
-                </div>
-              ) : (
-                <div
-                  data-testid="unverified-regulation-notice"
-                  className="p-3 rounded-lg bg-[#FFFDF5] border border-[#F3E7C4] text-xs text-[#7A5B0B] flex flex-col gap-1"
-                >
-                  <div className="font-semibold flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-[#D97706]"></span>
-                    <span>{t.sourceCheckPending}</span>
-                  </div>
-                  <p className="text-[#6D5310] leading-relaxed">
-                    {t.sourceCheckPendingNotice}
-                  </p>
-                  {!/pending verification/i.test(evidence.regulation.sourceName) && (
-                    <p data-testid="draft-regulation" className="text-[#6D5310] leading-relaxed">
-                      {evidence.regulation.text} ({evidence.regulation.sourceName})
-                    </p>
-                  )}
-                </div>
-              )
-            ) : (
-              <p className="text-xs text-[#7B8B82] italic">
-                {t.noRegulationCited}
-              </p>
-            )}
+            <RegulationEvidence regulation={evidence.regulation} t={t} />
 
             {evidence.quoteVerified ? (
               <p data-testid="quote-verified" className="text-[11px] font-semibold text-[#15803D]">

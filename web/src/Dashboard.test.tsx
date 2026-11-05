@@ -237,32 +237,26 @@ describe("ClaimSathi Dashboard", () => {
   });
 
   describe("Honesty Rules", () => {
-    it("displays 'Source check pending' and never shows unverified placeholder as a real law", async () => {
+    it("shows the official source with an honest status, and never presents a placeholder as law", async () => {
       render(<App />);
 
       await screen.findByTestId("recoverable-amount");
 
-      // Open finding F1 (which has verified: false)
-      const f1Row = screen.getByTestId("finding-row-F1");
-      fireEvent.click(f1Row);
-
-      const dialog = screen.getByRole("dialog");
-
-      // Check for "Source check pending" badge
-      const pendingBadges = within(dialog).getAllByText("Source check pending");
-      expect(pendingBadges.length).toBeGreaterThan(0);
-
-      // Verify source check pending notice text and no legal team claims
-      expect(
-        within(dialog).getByText(
-          "We are still checking the official source for this rule. We do not present unverified clauses as established law.",
-        ),
-      ).toBeTruthy();
+      // F1 relies on a 2020 circular that may have been replaced in 2024.
+      fireEvent.click(screen.getByTestId("finding-row-F1"));
+      let dialog = screen.getByRole("dialog");
+      expect(within(dialog).getByTestId("regulation-confirming")).toBeTruthy();
+      expect(within(dialog).getByText("Official source found, still confirming it applies")).toBeTruthy();
+      expect(within(dialog).getByRole("link", { name: "Read the official source" }).getAttribute("href")).toMatch(/^https:\/\/irdai\.gov\.in\//);
       expect(within(dialog).queryByText(/legal research team/i)).toBeNull();
-      expect(within(dialog).queryByText(/legal team/i)).toBeNull();
+      expect(within(dialog).queryByText(/Member C/)).toBeNull();
+      fireEvent.keyDown(document, { key: "Escape" });
+      expect(screen.queryByRole("dialog")).toBeNull();
 
-      // Verify placeholder text is NOT rendered as established law
-      expect(within(dialog).queryByText("Member C")).toBeNull();
+      // F3 relies on the moratorium clause, read in the 2024 Master Circular.
+      fireEvent.click(screen.getByTestId("finding-row-F3"));
+      dialog = screen.getByRole("dialog");
+      expect(within(dialog).getByTestId("regulation-verified")).toBeTruthy();
     });
 
     it("displays 'Date pending' when a deadline date is null and never makes one up", async () => {

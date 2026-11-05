@@ -1,5 +1,5 @@
 import { useState } from "react";
-import type { LetterType } from "@claimsathi/contracts";
+import type { LetterLanguage, LetterType } from "@claimsathi/contracts";
 import { createLetter } from "../api/client";
 import { OmbudsmanFinder } from "./OmbudsmanFinder";
 import type { Language } from "../lib/i18n";
@@ -25,6 +25,9 @@ function printLetter(text: string): void {
 export function LettersSection({ caseToken, language, isOffline }: LettersSectionProps) {
   const t = translations[language];
   const [letterType, setLetterType] = useState<LetterType | null>(null);
+  // Follows the page's language until the person picks another one for the letter.
+  const [chosenLanguage, setChosenLanguage] = useState<LetterLanguage | null>(null);
+  const letterLanguage = chosenLanguage ?? language;
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -39,11 +42,11 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
     }
   };
 
-  const openLetter = async (type: LetterType) => {
+  const openLetter = async (type: LetterType, lang: LetterLanguage = letterLanguage) => {
     setIsLoading(true);
     setError(null);
     try {
-      const letter = await createLetter(caseToken, type);
+      const letter = await createLetter(caseToken, type, lang);
       setLetterType(type);
       setText(letter.text);
       setCopied(false);
@@ -62,6 +65,28 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
       <div>
         <h2 className="text-base sm:text-lg font-bold text-[#113A2B]">{t.lettersTitle}</h2>
         <p className="mt-1 text-xs sm:text-sm text-[#526059]">{t.lettersDesc}</p>
+      </div>
+
+      <div className="flex flex-col gap-1">
+        <label htmlFor="letter-language" className="text-xs font-semibold text-[#113A2B]">
+          {t.letterLanguageLabel}
+        </label>
+        <select
+          id="letter-language"
+          data-testid="letter-language"
+          value={letterLanguage}
+          onChange={(e) => {
+            const next = e.target.value as LetterLanguage;
+            setChosenLanguage(next);
+            if (letterType) void openLetter(letterType, next);
+          }}
+          className="w-full sm:w-56 px-3 py-2 rounded-lg border border-[#D5D2C2] bg-white text-sm"
+        >
+          <option value="en">English</option>
+          <option value="hi">हिंदी</option>
+          <option value="kn">ಕನ್ನಡ</option>
+        </select>
+        <p className="text-[11px] sm:text-xs text-[#526059]">{t.letterLanguageNote}</p>
       </div>
 
       <div className="flex flex-col sm:flex-row gap-2">

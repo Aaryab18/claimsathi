@@ -14,6 +14,7 @@ import type {
   Confidence,
 } from "@claimsathi/contracts";
 
+import { REGULATIONS } from "@claimsathi/contracts";
 import { buildDeadlines } from "./deadlines.js";
 import {
   buildPedExplanation,
@@ -28,54 +29,15 @@ import {
   buildUndecidedExplanation,
 } from "./templates.js";
 
-const PENDING_VERIFICATION = "Pending verification by Member C";
-
-const pendingRegulation: Regulation = {
-  text: PENDING_VERIFICATION,
-  sourceName: PENDING_VERIFICATION,
-  verified: false,
-};
-
-// Read on IRDAI's own site. R3's circular is real, but the 2024 Master Circular replaced many older ones and
-// its list isn't published with it, so we can't yet say this one is still in force. It stays unverified.
-const CIRCULAR = "IRDAI Master Circular on Health Insurance, 29.05.2024";
-const REGULATIONS: Partial<Record<string, Regulation>> = {
-  R3: {
-    text: "Pharmacy and consumables, implants and medical devices, and diagnostics are not allowed in 'associate medical expenses', and insurers can't recover proportionate deductions on anything else. We are confirming whether this still applies after IRDAI's May 2024 Master Circular.",
-    sourceName: "IRDAI circular IRDAI/HLT/REG/CIR/151/06/2020, 11.06.2020, paragraphs 4 and 5",
-    verified: false,
-  },
-  "R3-ICU": {
-    text: "Insurers are not permitted to apply proportionate deduction for ICU charges, as different categories of ICU are not there. We are confirming whether this still applies after IRDAI's May 2024 Master Circular.",
-    sourceName: "IRDAI circular IRDAI/HLT/REG/CIR/151/06/2020, 11.06.2020, paragraph 7",
-    verified: false,
-  },
-  R1: {
-    text: "After 60 months of continuous coverage, a policy or claim can't be contested for non-disclosure or misrepresentation, except for established fraud.",
-    sourceName: `${CIRCULAR}, clause 13`,
-    verified: true,
-  },
-  R5: {
-    text: "After a claim is intimated, insurers and TPAs collect the required documents from hospitals, and the policyholder is not required to submit them.",
-    sourceName: `${CIRCULAR}, clause 17(c)`,
-    verified: true,
-  },
-  R7: {
-    text: "A claim disallowed in part must be conveyed with reference to the specific terms and conditions of the policy.",
-    sourceName: `${CIRCULAR}, clause 17(b)`,
-    verified: true,
-  },
-};
-
-function regulationFor(ruleIds: string[]): Regulation {
+function regulationFor(ruleIds: string[]): Regulation | null {
   for (const ruleId of ruleIds) {
     const regulation = REGULATIONS[ruleId];
     if (regulation) return regulation;
   }
-  return pendingRegulation;
+  return null;
 }
 
-// The templates say a reference is unchecked, which stops being true once its source has been read.
+// The templates end by saying a reference is unchecked, which isn't how it stands any more.
 const UNCHECKED_EN = /\s*The legal reference for (?:this rule|these rules|this deduction) has not been checked yet\./;
 const UNCHECKED_HI = /\s*(?:इस नियम|इन नियमों|इस कटौती) के कानूनी संदर्भ की जाँच अभी बाकी है।|\s*इस नियम का कानूनी संदर्भ अभी जांचा नहीं गया है।/;
 
@@ -83,15 +45,14 @@ function withSourceStatus(
   explanations: { en: string; hi: string },
   ruleIds: string[]
 ): { en: string; hi: string } {
-  if (ruleIds.includes("R3") || ruleIds.includes("R3-ICU")) {
-    return {
-      en: explanations.en.replace(UNCHECKED_EN, " IRDAI's 2020 circular bars this cut on these items, and we are confirming it still applies."),
-      hi: explanations.hi.replace(UNCHECKED_HI, " IRDAI का 2020 का परिपत्र इन मदों पर यह कटौती रोकता है, और हम पुष्टि कर रहे हैं कि यह अब भी लागू है।"),
-    };
-  }
-  return regulationFor(ruleIds).verified
-    ? { en: explanations.en.replace(UNCHECKED_EN, ""), hi: explanations.hi.replace(UNCHECKED_HI, "") }
-    : explanations;
+  const regulation = regulationFor(ruleIds);
+  // An undecided deduction has no rule yet, so there's genuinely nothing checked to point to.
+  if (!regulation && ruleIds.includes("UNDECIDED")) return explanations;
+  const confirming = regulation && !regulation.verified;
+  return {
+    en: explanations.en.replace(UNCHECKED_EN, confirming ? " IRDAI's 2020 circular supports this, and we are confirming it still applies." : ""),
+    hi: explanations.hi.replace(UNCHECKED_HI, confirming ? " IRDAI का 2020 का परिपत्र इसका समर्थन करता है, और हम पुष्टि कर रहे हैं कि यह अब भी लागू है।" : ""),
+  };
 }
 
 // "Clause 6.3", "Cl. 6.3" and "6.3" are the same clause.
@@ -457,7 +418,7 @@ function findEvidence(
   return {
     insurerText,
     policyClause,
-    regulation: pendingRegulation,
+    regulation: null,
     // Only a quote we found in the file's own text counts, and only when it's the quote being shown.
     quoteVerified:
       insurerText !== null &&

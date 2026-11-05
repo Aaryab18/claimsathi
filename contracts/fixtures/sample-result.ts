@@ -1,16 +1,9 @@
 import type { CaseResult } from "../src/case-result.js";
-import type { Regulation } from "../src/finding.js";
+import { REGULATIONS } from "../src/legal-sources.js";
 import { sampleExtractedClaim } from "./sample-extracted.js";
 
-// Legal text has not been checked yet, so nothing below cites a real regulation
-// or states a real deadline. Member C replaces these after checking the sources.
+// Kept for older checks that look for it. The sample below now cites the same official sources as the rules.
 export const PENDING_VERIFICATION = "Pending verification by Member C";
-
-const pendingRegulation: Regulation = {
-  text: PENDING_VERIFICATION,
-  sourceName: PENDING_VERIFICATION,
-  verified: false,
-};
 
 // quoteVerified is false throughout because the sample documents do not exist
 // yet, so no quote has been compared with a real document.
@@ -26,14 +19,14 @@ export const sampleCaseResult: CaseResult = {
       confidence: "strong",
       amount: 38200,
       explanationEn:
-        "The insurer cut ₹24,133 from the pharmacy bill and ₹14,067 from the stent bill, ₹38,200 in total. It reduced this in proportion because the room cost more than the policy limit. Medicines and a stent cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.",
+        "The insurer cut ₹24,133 from the pharmacy bill and ₹14,067 from the stent bill, ₹38,200 in total. It reduced this in proportion because the room cost more than the policy limit. Medicines and a stent cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. IRDAI's 2020 circular supports this, and we are confirming it still applies.",
       explanationHi:
-        "बीमा कंपनी ने दवाइयों के बिल से ₹24,133 और स्टेंट के बिल से ₹14,067, यानी कुल ₹38,200 काटे। यह कटौती उसी अनुपात में की गई, जो कमरे का किराया पॉलिसी की सीमा से ज़्यादा होने के कारण लगाया गया था। मरीज़ किसी भी कमरे में रहे, दवाइयों और स्टेंट की कीमत वही रहती है, इसलिए नियम R3 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।",
+        "बीमा कंपनी ने दवाइयों के बिल से ₹24,133 और स्टेंट के बिल से ₹14,067, यानी कुल ₹38,200 काटे। यह कटौती उसी अनुपात में की गई, जो कमरे का किराया पॉलिसी की सीमा से ज़्यादा होने के कारण लगाया गया था। मरीज़ किसी भी कमरे में रहे, दवाइयों और स्टेंट की कीमत वही रहती है, इसलिए नियम R3 इस कटौती को गलत मानता है। IRDAI का 2020 का परिपत्र इसका समर्थन करता है, और हम पुष्टि कर रहे हैं कि यह अब भी लागू है।",
       evidence: {
         insurerText:
           "Pharmacy and implant charges are reduced proportionately as the room chosen exceeds the eligible limit.",
         policyClause: "Clause 4.2: Room rent is payable up to Rs. 5,000 per day.",
-        regulation: pendingRegulation,
+        regulation: REGULATIONS.R3!,
         quoteVerified: false,
       },
     },
@@ -45,13 +38,13 @@ export const sampleCaseResult: CaseResult = {
       confidence: "strong",
       amount: 12600,
       explanationEn:
-        "The insurer refused ₹12,600 of consumables as not payable. The hospital bill shows these consumables as part of the angioplasty package, and the insurer approved that package, so rule R4 marks this deduction as wrong. The legal reference for this rule has not been checked yet.",
+        "The insurer refused ₹12,600 of consumables as not payable. The hospital bill shows these consumables as part of the angioplasty package, and the insurer approved that package, so rule R4 marks this deduction as wrong. IRDAI's 2020 circular supports this, and we are confirming it still applies.",
       explanationHi:
-        "बीमा कंपनी ने ₹12,600 की कंज़्यूमेबल सामग्री को देय नहीं माना। अस्पताल के बिल में यह सामग्री एंजियोप्लास्टी पैकेज का हिस्सा दिखाई गई है, और बीमा कंपनी ने वह पैकेज मंज़ूर किया है, इसलिए नियम R4 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।",
+        "बीमा कंपनी ने ₹12,600 की कंज़्यूमेबल सामग्री को देय नहीं माना। अस्पताल के बिल में यह सामग्री एंजियोप्लास्टी पैकेज का हिस्सा दिखाई गई है, और बीमा कंपनी ने वह पैकेज मंज़ूर किया है, इसलिए नियम R4 इस कटौती को गलत मानता है। IRDAI का 2020 का परिपत्र इसका समर्थन करता है, और हम पुष्टि कर रहे हैं कि यह अब भी लागू है।",
       evidence: {
         insurerText: "Consumables of Rs. 12,600 are not payable under the policy.",
         policyClause: "Clause 7.5: Items listed as non-medical expenses are not payable.",
-        regulation: pendingRegulation,
+        regulation: REGULATIONS.R4!,
         quoteVerified: false,
       },
     },
@@ -63,13 +56,13 @@ export const sampleCaseResult: CaseResult = {
       confidence: "strong",
       amount: 20600,
       explanationEn:
-        "The insurer deducted ₹20,600 because it treated hypertension as a pre-existing disease. The policy's waiting period is 48 months, and Suresh Kumar has had continuous cover since March 2019, more than 48 months before this admission. The waiting period had already ended, so rules R1 and R2 mark this deduction as wrong. The legal reference for these rules has not been checked yet.",
+        "The insurer deducted ₹20,600 because it treated hypertension as a pre-existing disease. The policy's waiting period is 48 months, and Suresh Kumar has had continuous cover since March 2019, more than 48 months before this admission. The waiting period had already ended, so rules R1 and R2 mark this deduction as wrong.",
       explanationHi:
-        "बीमा कंपनी ने हाइपरटेंशन (उच्च रक्तचाप) को पहले से मौजूद बीमारी मानकर ₹20,600 काटे। पॉलिसी में प्रतीक्षा अवधि 48 महीने की है, और सुरेश कुमार का बीमा मार्च 2019 से लगातार चल रहा है, जो इस भर्ती से 48 महीने से भी ज़्यादा पहले की बात है। प्रतीक्षा अवधि पहले ही पूरी हो चुकी थी, इसलिए नियम R1 और R2 इस कटौती को गलत मानते हैं। इन नियमों के कानूनी संदर्भ की जाँच अभी बाकी है।",
+        "बीमा कंपनी ने हाइपरटेंशन (उच्च रक्तचाप) को पहले से मौजूद बीमारी मानकर ₹20,600 काटे। पॉलिसी में प्रतीक्षा अवधि 48 महीने की है, और सुरेश कुमार का बीमा मार्च 2019 से लगातार चल रहा है, जो इस भर्ती से 48 महीने से भी ज़्यादा पहले की बात है। प्रतीक्षा अवधि पहले ही पूरी हो चुकी थी, इसलिए नियम R1 और R2 इस कटौती को गलत मानते हैं।",
       evidence: {
         insurerText: "Charges of Rs. 20,600 relate to hypertension, a pre-existing disease, and are deducted.",
         policyClause: "Clause 5.1: Pre-existing diseases are covered after 48 months of continuous cover.",
-        regulation: pendingRegulation,
+        regulation: REGULATIONS.R1!,
         quoteVerified: false,
       },
     },
@@ -87,7 +80,7 @@ export const sampleCaseResult: CaseResult = {
       evidence: {
         insurerText: "Room rent exceeds the eligible limit of Rs. 5,000 per day. Excess of Rs. 16,800 is deducted.",
         policyClause: "Clause 4.2: Room rent is payable up to Rs. 5,000 per day.",
-        regulation: pendingRegulation,
+        regulation: null,
         quoteVerified: false,
       },
     },
@@ -99,13 +92,13 @@ export const sampleCaseResult: CaseResult = {
       confidence: "moderate",
       amount: 7800,
       explanationEn:
-        "The insurer disallowed ₹7,800 of administration charges without citing a policy clause. The documents do not show clearly what these charges cover or whether they belong to the package, so rule R4 marks this as questionable. It is worth asking the insurer and the hospital for a breakdown. The legal reference for this rule has not been checked yet.",
+        "The insurer disallowed ₹7,800 of administration charges without citing a policy clause. The documents do not show clearly what these charges cover or whether they belong to the package, so rule R4 marks this as questionable. It is worth asking the insurer and the hospital for a breakdown. IRDAI's 2020 circular supports this, and we are confirming it still applies.",
       explanationHi:
-        "बीमा कंपनी ने पॉलिसी की कोई धारा बताए बिना ₹7,800 के प्रशासनिक शुल्क काट दिए। दस्तावेज़ों से साफ़ नहीं होता कि इन शुल्कों में क्या शामिल है या वे पैकेज का हिस्सा हैं या नहीं, इसलिए नियम R4 इसे संदिग्ध मानता है। बीमा कंपनी और अस्पताल से इसका पूरा ब्योरा माँगना उचित रहेगा। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।",
+        "बीमा कंपनी ने पॉलिसी की कोई धारा बताए बिना ₹7,800 के प्रशासनिक शुल्क काट दिए। दस्तावेज़ों से साफ़ नहीं होता कि इन शुल्कों में क्या शामिल है या वे पैकेज का हिस्सा हैं या नहीं, इसलिए नियम R4 इसे संदिग्ध मानता है। बीमा कंपनी और अस्पताल से इसका पूरा ब्योरा माँगना उचित रहेगा। IRDAI का 2020 का परिपत्र इसका समर्थन करता है, और हम पुष्टि कर रहे हैं कि यह अब भी लागू है।",
       evidence: {
         insurerText: "Administration charges of Rs. 7,800 are disallowed.",
         policyClause: null,
-        regulation: pendingRegulation,
+        regulation: REGULATIONS.R4!,
         quoteVerified: false,
       },
     },

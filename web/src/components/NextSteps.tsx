@@ -1,4 +1,5 @@
 import type { Deadline } from "@claimsathi/contracts";
+import { Link, useParams } from "react-router-dom";
 import { formatDate } from "../lib/format";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
@@ -10,12 +11,13 @@ interface NextStepsProps {
 
 export function NextSteps({ deadlines, language }: NextStepsProps) {
   const t = translations[language];
+  const { token } = useParams<{ token: string }>();
   const reply = deadlines.find(({ label }) => label === "Grievance to the insurer")?.date ?? null;
   const lastDate = deadlines.find(({ label }) => label === "Complaint to the ombudsman")?.date ?? null;
 
   const steps = [
-    { title: t.stepCheckTitle, detail: t.stepCheckDetail, href: "#facts", link: t.stepCheckLink },
-    { title: t.stepSendTitle, detail: t.stepSendDetail, href: "#letters", link: t.stepSendLink },
+    { title: t.stepCheckTitle, detail: t.stepCheckDetail, href: "facts", link: t.stepCheckLink },
+    { title: t.stepSendTitle, detail: t.stepSendDetail, href: "letters", link: t.stepSendLink },
     {
       title: t.stepWaitTitle,
       detail: reply ? t.stepWaitDetailDated(formatDate(reply, "")) : t.stepWaitDetail,
@@ -25,7 +27,7 @@ export function NextSteps({ deadlines, language }: NextStepsProps) {
     {
       title: t.stepEscalateTitle,
       detail: lastDate ? t.stepEscalateDetailDated(formatDate(lastDate, "")) : t.stepEscalateDetail,
-      href: "#letters",
+      href: "letters",
       link: t.stepEscalateLink,
     },
   ];
@@ -51,9 +53,9 @@ export function NextSteps({ deadlines, language }: NextStepsProps) {
               <h3 className="text-sm sm:text-base font-bold text-[#113A2B]">{step.title}</h3>
               <p className="mt-0.5 text-xs sm:text-sm text-[#526059] leading-relaxed">{step.detail}</p>
               {step.href && (
-                <a href={step.href} className="mt-1 inline-block text-xs sm:text-sm font-semibold text-[#0F5132] underline">
+                <Link to={`/case/${token}/${step.href}`} className="mt-1 inline-block text-xs sm:text-sm font-semibold text-[#0F5132] underline print:hidden">
                   {step.link}
-                </a>
+                </Link>
               )}
             </div>
           </li>

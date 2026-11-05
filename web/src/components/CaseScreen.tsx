@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { sampleCaseResult, type CaseResult, type CaseStatus, type Finding } from "@claimsathi/contracts";
 import { getCase, resetCaseProgress } from "../api/client";
 import { Header } from "./Header";
@@ -12,6 +12,8 @@ import { EvidenceModal } from "./EvidenceModal";
 import { DeadlinesSection } from "./DeadlinesSection";
 import { CaseStrengthCard } from "./CaseStrengthCard";
 import { CoverTimeline, DeductionsChart, MoneyFlowChart } from "./CaseCharts";
+import { CaseNav, CASE_SECTIONS, type CaseSection } from "./CaseNav";
+import { EvidenceList } from "./EvidenceList";
 import { recordCase } from "../lib/helpdesk";
 import { LettersSection } from "./LettersSection";
 import { NextSteps } from "./NextSteps";
@@ -29,7 +31,9 @@ interface CaseScreenProps {
 }
 
 export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
-  const { token = "sample" } = useParams<{ token: string }>();
+  const { token = "sample", section } = useParams<{ token: string; section: string }>();
+  const navigate = useNavigate();
+  const activeSection: CaseSection = CASE_SECTIONS.includes(section as CaseSection) ? (section as CaseSection) : "overview";
   const t = translations[language];
 
   const [status, setStatus] = useState<CaseStatus | null>(null);
@@ -49,6 +53,8 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
     }
     setCaseResult(updated);
     recordCase(updated);
+    // The new number is on the overview, so that's where the person needs to be.
+    navigate(`/case/${token}`);
     window.scrollTo({ top: 0, behavior: "smooth" });
     // Smooth scrolling can stall on a busy or hidden page, and the change must still be seen.
     window.setTimeout(() => {
@@ -190,6 +196,11 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
     );
   }
 
+  // On screen one page shows at a time. All stay mounted, so typed facts and letters survive moving
+  // between pages, and a printed report includes everything except the forms.
+  const pageClass = (name: CaseSection) =>
+    `flex-col gap-6 sm:gap-8 min-w-0 ${activeSection === name ? "flex" : "hidden print:flex"}`;
+
   // Results Dashboard when stage is done
   return (
     <div className="min-h-screen bg-[#FAF9F5] text-[#132A1E] flex flex-col font-sans">
@@ -200,7 +211,9 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
         isOffline={isOffline}
       />
 
-      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:py-8 flex flex-col gap-6 sm:gap-8">
+      <div className="flex-1 max-w-6xl w-full mx-auto px-4 py-4 sm:py-8 flex flex-col md:grid md:grid-cols-[13rem_minmax(0,1fr)] gap-4 md:gap-8">
+      <CaseNav token={token} t={t} />
+      <main className="min-w-0 flex flex-col gap-6 sm:gap-8">
         {isOffline && (
           <div
             role="note"
@@ -254,97 +267,75 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
 
         {caseResult && (
           <>
-            {/* 1. Recoverable amount meter */}
-            {lastChange && (
-              <div
-                role="status"
-                data-testid="correction-change"
-                className="p-3.5 sm:p-4 rounded-xl bg-[#E5F3EC] border border-[#BDE3D0] text-[#0F5132] text-sm font-semibold"
-              >
-                {lastChange.from === lastChange.to
-                  ? t.correctionNoChange(formatRupees(lastChange.to))
-                  : t.correctionChanged(formatRupees(lastChange.from), formatRupees(lastChange.to))}
-              </div>
-            )}
-
-            <RecoverableMeter totals={caseResult.totals} language={language} claim={caseResult.extracted.claim} />
-
-            <nav aria-label={t.sectionNavLabel} className="flex flex-wrap gap-2 print:hidden">
-              {[
-                ["#breakdown", t.navBreakdown],
-                ["#next-steps", t.navNextSteps],
-                ["#facts", t.navFacts],
-                ["#deadlines", t.navDeadlines],
-                ["#letters", t.navLetters],
-              ].map(([href, label]) => (
-                <a
-                  key={href}
-                  href={href}
-                  className="px-3.5 py-1.5 rounded-full bg-white border border-[#D5D2C2] text-xs sm:text-sm font-semibold text-[#114B36] hover:border-[#114B36]"
+            <div data-testid="page-overview" className={pageClass("overview")}>
+              {lastChange && (
+                <div
+                  role="status"
+                  data-testid="correction-change"
+                  className="p-3.5 sm:p-4 rounded-xl bg-[#E5F3EC] border border-[#BDE3D0] text-[#0F5132] text-sm font-semibold"
                 >
-                  {label}
-                </a>
-              ))}
-              <button
-                type="button"
-                data-testid="print-report-btn"
-                onClick={() => window.print()}
-                className="px-3.5 py-1.5 rounded-full bg-[#114B36] text-xs sm:text-sm font-semibold text-white hover:bg-[#0E3A2A] cursor-pointer"
-              >
-                {t.printReport}
-              </button>
-            </nav>
+                  {lastChange.from === lastChange.to
+                    ? t.correctionNoChange(formatRupees(lastChange.to))
+                    : t.correctionChanged(formatRupees(lastChange.from), formatRupees(lastChange.to))}
+                </div>
+              )}
 
-            {/* 2. Plain-language summary */}
-            <PlainSummary caseResult={caseResult} language={language} />
+              <RecoverableMeter totals={caseResult.totals} language={language} claim={caseResult.extracted.claim} />
+              <PlainSummary caseResult={caseResult} language={language} />
+              <MoneyFlowChart caseResult={caseResult} language={language} />
 
-            <NextSteps deadlines={caseResult.deadlines} language={language} />
-
-            <MoneyFlowChart caseResult={caseResult} language={language} />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8 items-start">
-              <CaseStrengthCard findings={caseResult.findings} language={language} />
-              <CoverTimeline caseResult={caseResult} language={language} />
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 items-start">
+                <CaseStrengthCard findings={caseResult.findings} language={language} />
+                <CoverTimeline caseResult={caseResult} language={language} />
+              </div>
             </div>
 
-            <DeductionsChart caseResult={caseResult} language={language} />
+            <div data-testid="page-breakdown" className={pageClass("breakdown")}>
+              <DeductionsChart caseResult={caseResult} language={language} />
+              <FindingsTable
+                findings={caseResult.findings}
+                lineItems={caseResult.extracted.lineItems}
+                language={language}
+                onSelectFinding={setSelectedFinding}
+              />
+            </div>
 
-            {/* 3. Bill items table */}
-            <FindingsTable
-              findings={caseResult.findings}
-              lineItems={caseResult.extracted.lineItems}
-              language={language}
-              onSelectFinding={setSelectedFinding}
-            />
+            <div data-testid="page-evidence" className={pageClass("evidence")}>
+              <EvidenceList findings={caseResult.findings} lineItems={caseResult.extracted.lineItems} language={language} />
+            </div>
 
-            {/* 4. Evidence view modal / drawer */}
+            <div data-testid="page-facts" className={pageClass("facts")}>
+              <ConfirmFactsPanel
+                caseResult={caseResult}
+                language={language}
+                isOffline={isOffline}
+                onApplyResult={applyCorrection}
+              />
+            </div>
+
+            <div data-testid="page-plan" className={pageClass("plan")}>
+              <NextSteps deadlines={caseResult.deadlines} language={language} />
+              <DeadlinesSection
+                deadlines={caseResult.deadlines}
+                language={language}
+                caseToken={caseResult.caseToken}
+              />
+            </div>
+
+            <div data-testid="page-letters" className={pageClass("letters")}>
+              <LettersSection caseToken={caseResult.caseToken} language={language} isOffline={isOffline} />
+            </div>
+
             <EvidenceModal
               finding={selectedFinding}
               lineItems={caseResult.extracted.lineItems}
               language={language}
               onClose={() => setSelectedFinding(null)}
             />
-
-            {/* 5. Confirm the facts panel */}
-            <ConfirmFactsPanel
-              caseResult={caseResult}
-              language={language}
-              isOffline={isOffline}
-              onApplyResult={applyCorrection}
-            />
-
-            {/* 6. Deadlines section */}
-            <DeadlinesSection
-              deadlines={caseResult.deadlines}
-              language={language}
-              caseToken={caseResult.caseToken}
-            />
-
-            {/* 7. Letters */}
-            <LettersSection caseToken={caseResult.caseToken} language={language} isOffline={isOffline} />
           </>
         )}
       </main>
+      </div>
 
       <Footer language={language} />
     </div>
