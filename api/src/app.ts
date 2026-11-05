@@ -3,6 +3,7 @@ import express from "express";
 import type { CaseStore } from "./case-store.js";
 import { createCasesRouter } from "./cases.js";
 import { errorHandler } from "./errors.js";
+import type { CaseProcessor } from "./process-case.js";
 import type { ReadinessCheck, ReadinessChecks } from "./readiness.js";
 
 const READINESS_TIMEOUT_MS = 3000;
@@ -11,6 +12,9 @@ export interface AppOptions {
   allowedOrigin: string | undefined;
   checks: ReadinessChecks;
   store: CaseStore;
+  // Live reading stays switched off without one, so the app still runs with no AI key.
+  processor?: CaseProcessor | undefined;
+  uploadsPerHour?: number;
   readinessTimeoutMs?: number;
 }
 
@@ -33,7 +37,14 @@ async function runCheck(name: string, check: ReadinessCheck, timeoutMs: number):
   }
 }
 
-export function createApp({ allowedOrigin, checks, store, readinessTimeoutMs = READINESS_TIMEOUT_MS }: AppOptions) {
+export function createApp({
+  allowedOrigin,
+  checks,
+  store,
+  processor,
+  uploadsPerHour,
+  readinessTimeoutMs = READINESS_TIMEOUT_MS,
+}: AppOptions) {
   const app = express();
 
   app.disable("x-powered-by");
@@ -56,7 +67,7 @@ export function createApp({ allowedOrigin, checks, store, readinessTimeoutMs = R
       .json({ status: ready ? "ok" : "unavailable", database, queue });
   });
 
-  app.use(createCasesRouter(store));
+  app.use(createCasesRouter(store, { processor, uploadsPerHour }));
 
   app.use((_req, res) => {
     res.status(404).json({ error: "Not found." });

@@ -49,6 +49,11 @@ function createFakeStore() {
         documents,
       });
     },
+    findDocuments: async (token) => cases.get(token)?.documents ?? [],
+    findUnfinished: async () => [],
+    setProgress: async () => {},
+    completeCase: async () => {},
+    failCase: async () => {},
     async findCase(token) {
       return cases.get(token) ?? null;
     },
@@ -87,12 +92,23 @@ function seedCase(cases: Map<string, FakeCase>, changes: Partial<FakeCase> = {})
 
 function appFor(store: CaseStore, allowedOrigin: string | undefined = ALLOWED_ORIGIN) {
   const works = () => Promise.resolve();
-  return createApp({ allowedOrigin, checks: { database: works, queue: works }, store });
+  const processor = { enqueue: () => {}, resumeUnfinished: () => Promise.resolve(), idle: () => Promise.resolve() };
+  return createApp({ allowedOrigin, checks: { database: works, queue: works }, store, processor, uploadsPerHour: 1000 });
 }
 
 function failingStore(): CaseStore {
   const fail = () => Promise.reject(new Error(`Could not connect to ${SECRET}`));
-  return { createCase: fail, findCase: fail, saveFacts: fail, deleteExpired: fail };
+  return {
+    createCase: fail,
+    findDocuments: fail,
+    findUnfinished: fail,
+    setProgress: fail,
+    completeCase: fail,
+    failCase: fail,
+    findCase: fail,
+    saveFacts: fail,
+    deleteExpired: fail,
+  };
 }
 
 const casePath = (token: string) => API_ROUTES.getCase.path.replace(":token", token);

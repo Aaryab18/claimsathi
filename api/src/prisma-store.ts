@@ -32,6 +32,40 @@ export function createPrismaStore(connectionString: string | undefined): CaseSto
       });
     },
 
+    async findDocuments(token) {
+      const documents = await prisma.caseDocument.findMany({ where: { case: { token } } });
+      return documents.map(({ documentType, fileName, fileType, contents }) => ({
+        documentType,
+        fileName,
+        fileType,
+        contents: Buffer.from(contents),
+      }));
+    },
+
+    async findUnfinished() {
+      const found = await prisma.claimCase.findMany({
+        where: { status: { in: ["queued", "reading", "checking", "drafting"] }, deleteAfter: { gt: new Date() } },
+        select: { token: true },
+        orderBy: { createdAt: "asc" },
+      });
+      return found.map(({ token }) => token);
+    },
+
+    async setProgress(token, stage, progressMessage) {
+      await prisma.claimCase.updateMany({ where: { token }, data: { status: stage, progressMessage } });
+    },
+
+    async completeCase(token, progressMessage, extracted, result) {
+      await prisma.claimCase.updateMany({
+        where: { token },
+        data: { status: "done", progressMessage, extracted: asJson(extracted), result: asJson(result) },
+      });
+    },
+
+    async failCase(token, progressMessage, errorMessage) {
+      await prisma.claimCase.updateMany({ where: { token }, data: { status: "failed", progressMessage, errorMessage } });
+    },
+
     async findCase(token) {
       const found = await prisma.claimCase.findUnique({ where: { token } });
       return (

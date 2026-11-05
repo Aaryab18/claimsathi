@@ -35,6 +35,11 @@ services:
           property: connectionString
       - key: ALLOWED_ORIGIN
         value: https://claimsathi-web.onrender.com
+      # Set on Render only. Never put the key in this file.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GEMINI_MODEL
+        value: gemini-flash-latest
 
   - type: keyvalue
     name: claimsathi-queue

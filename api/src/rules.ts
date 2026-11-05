@@ -12,3 +12,14 @@ export interface RecalculateInput {
 export function recalculateResult({ saved, extracted, overrides, asOfDate }: RecalculateInput): CaseResult {
   return { ...saved, ...runRules({ extracted, overrides, asOfDate }) };
 }
+
+export interface AssessInput {
+  caseToken: string;
+  extracted: ExtractedClaim;
+  asOfDate: IsoDate;
+}
+
+// A freshly read claim has no saved result yet, so the rules make the whole assessment.
+export function assessClaim({ caseToken, extracted, asOfDate }: AssessInput): CaseResult {
+  return { caseToken, extracted, resultSource: "live", ...runRules({ extracted, asOfDate }) };
+}

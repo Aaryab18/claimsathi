@@ -1,0 +1,93 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Count 2 /Kids [6 0 R 8 0 R] >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Length 1101 >>
+stream
+BT
+/F2 15 Tf 50 790 Td
+(Sample Health Insurance Ltd: claim decision) Tj
+/F1 8 Tf 0 -16 Td
+(FICTIONAL SAMPLE FOR THE CLAIMSATHI DEMO. No real person, insurer, hospital or policy is described.) Tj
+/F1 11 Tf 0 -30 Td 16 TL
+(Date of this letter: 15 October 2026) Tj T*
+(Claim number: SAMPLE-CLM-0001) Tj T*
+(Policy number: SAMPLE-POL-0001) Tj T*
+(Patient: Suresh Kumar, age 58, Pune) Tj T*
+(Admitted 10 November 2025, discharged 15 November 2025. Diagnosis: Acute myocardial) Tj T*
+(infarction, treated with angioplasty and one stent.) Tj T*
+() Tj T*
+(Amount claimed: Rs. 2,10,000. Amount approved: Rs. 1,14,000.) Tj T*
+(Your claim is partly approved. Rs. 96,000 has been deducted, for these reasons:) Tj T*
+() Tj T*
+(Under Clause 4.2: Room rent exceeds the eligible limit of Rs. 5,000 per day. Excess of) Tj T*
+(Rs. 16,800 is deducted.) Tj T*
+(Under Clause 4.2: Pharmacy and implant charges are reduced proportionately as the room) Tj T*
+(chosen exceeds the eligible limit.) Tj T*
+(Under Clause 7.5: Consumables of Rs. 12,600 are not payable under the policy.) Tj T*
+/F1 9 Tf 0 -10 Td (Page 1 of 2) Tj
+ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 5 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+7 0 obj
+<< /Length 1286 >>
+stream
+BT
+/F2 15 Tf 50 790 Td
+(Sample Health Insurance Ltd: claim decision) Tj
+/F1 8 Tf 0 -16 Td
+(FICTIONAL SAMPLE FOR THE CLAIMSATHI DEMO. No real person, insurer, hospital or policy is described.) Tj
+/F1 11 Tf 0 -30 Td 16 TL
+(Under Clause 5.1: Charges of Rs. 20,600 relate to hypertension, a pre-existing disease,) Tj T*
+(and are deducted.) Tj T*
+(Administration charges of Rs. 7,800 are disallowed.) Tj T*
+() Tj T*
+(Amounts by bill item:) Tj T*
+(Private room rent, 5 days at 8,360 per day: billed Rs. 41,800, approved Rs. 25,000,) Tj T*
+(deducted Rs. 16,800) Tj T*
+(Pharmacy and medicines: billed Rs. 60,046, approved Rs. 35,913, deducted Rs. 24,133) Tj T*
+(Coronary stent, one unit: billed Rs. 35,000, approved Rs. 20,933, deducted Rs. 14,067) Tj T*
+(Consumables used during angioplasty: billed Rs. 12,600, approved Rs. 0, deducted Rs.) Tj T*
+(12,600) Tj T*
+(Hypertension monitoring and treatment: billed Rs. 20,600, approved Rs. 0, deducted Rs.) Tj T*
+(20,600) Tj T*
+(Hospital administration charges: billed Rs. 7,800, approved Rs. 0, deducted Rs. 7,800) Tj T*
+(Angioplasty package: billed Rs. 25,000, approved Rs. 25,000, deducted Rs. 0) Tj T*
+(ECG, echocardiogram and blood tests: billed Rs. 7,154, approved Rs. 7,154, deducted Rs.) Tj T*
+(0) Tj T*
+/F1 9 Tf 0 -10 Td (Page 2 of 2) Tj
+ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Contents 7 0 R /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> >>
+endobj
+xref
+0 9
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000121 00000 n 
+0000000191 00000 n 
+0000000266 00000 n 
+0000001419 00000 n 
+0000001555 00000 n 
+0000002893 00000 n 
+trailer
+<< /Size 9 /Root 1 0 R >>
+startxref
+3029
+%%EOF

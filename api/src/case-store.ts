@@ -31,6 +31,13 @@ export interface CaseRecord {
 
 export interface CaseStore {
   createCase(newCase: NewCase): Promise<void>;
+  // The only method that loads file contents.
+  findDocuments(token: string): Promise<StoredDocument[]>;
+  // Tokens of uploads that were not finished, for example after a restart.
+  findUnfinished(): Promise<string[]>;
+  setProgress(token: string, stage: CaseStage, progressMessage: string): Promise<void>;
+  completeCase(token: string, progressMessage: string, extracted: ExtractedClaim, result: CaseResult): Promise<void>;
+  failCase(token: string, progressMessage: string, errorMessage: string): Promise<void>;
   // Never loads file contents.
   findCase(token: string): Promise<CaseRecord | null>;
   // Returns false if the case no longer exists.
