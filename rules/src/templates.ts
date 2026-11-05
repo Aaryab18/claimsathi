@@ -162,13 +162,8 @@ export function buildR4WrongExplanation(options: {
   let itemDescHi: string;
 
   if (itemDescription) {
-    if (itemDescription.toLowerCase().includes("consumables used during angioplasty")) {
-      itemDescEn = "consumables";
-      itemDescHi = "कंज़्यूमेबल सामग्री";
-    } else {
-      itemDescEn = itemDescription;
-      itemDescHi = itemDescription;
-    }
+    itemDescEn = itemDescription;
+    itemDescHi = itemDescription;
   } else {
     itemDescEn = "these charges";
     itemDescHi = "इन शुल्कों";
@@ -268,8 +263,8 @@ export function buildRoomRentValidExplanation(
   days?: number | null
 ): { en: string; hi: string } {
   if (roomCostPerDay && roomLimit && days) {
-    const en = `The room cost ₹${formatRupees(roomCostPerDay)} a day, but the policy pays up to ₹${formatRupees(roomLimit)} a day. Over ${days} days the excess is ₹${formatRupees(amount)}. This deduction follows the policy limit and no rule found a problem with it, so it is valid and cannot be recovered.`;
-    const hi = `कमरे का किराया ₹${formatRupees(roomCostPerDay)} प्रतिदिन था, जबकि पॉलिसी ₹${formatRupees(roomLimit)} प्रतिदिन तक ही देती है। ${days} दिनों में यह अतिरिक्त राशि ₹${formatRupees(amount)} होती है। यह कटौती पॉलिसी की सीमा के अनुसार है और किसी नियम में इसमें कोई समस्या नहीं मिली, इसलिए यह सही है और यह राशि वापस नहीं मिल सकती।`;
+    const en = `The room cost ₹${formatRupees(roomCostPerDay)} a day, but the policy pays up to ₹${formatRupees(roomLimit)} a day. Over ${days} days the excess is ₹${formatRupees(amount)}. This deduction follows the policy limit and no rule found a problem with it, so it is valid.`;
+    const hi = `कमरे का किराया ₹${formatRupees(roomCostPerDay)} प्रतिदिन था, जबकि पॉलिसी ₹${formatRupees(roomLimit)} प्रतिदिन तक ही देती है। ${days} दिनों में यह अतिरिक्त राशि ₹${formatRupees(amount)} होती है। यह कटौती पॉलिसी की सीमा के अनुसार है और किसी नियम में इसमें कोई समस्या नहीं मिली, इसलिए यह सही है।`;
     return { en, hi };
   }
 
