@@ -607,14 +607,15 @@ describe(`PATCH ${API_ROUTES.applyFacts.path}`, () => {
       expect(response.body.totals).toEqual(SAMPLE_TOTALS);
     });
 
-    it("keeps caseToken, resultSource and the extracted facts from the saved result", async () => {
+    it("keeps caseToken and resultSource, and shows the corrected fact", async () => {
       const { app, token } = await createSample();
 
       const response = await request(app).patch(factsPath(token)).send(RECENT_COVER);
 
       expect(response.body.caseToken).toBe(token);
       expect(response.body.resultSource).toBe("saved_sample");
-      expect(response.body.extracted).toEqual(sampleExtractedClaim);
+      expect(response.body.extracted.policy.continuousCoverSince).toBe("2024-01-01");
+      expect(response.body.extracted.claim).toEqual(sampleExtractedClaim.claim);
     });
 
     it("keeps legal references unverified", async () => {

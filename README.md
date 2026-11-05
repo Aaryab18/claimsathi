@@ -22,6 +22,8 @@ A family gets a letter saying part of a hospital claim won't be paid. It cites c
 | **Confirm the facts** | Correct a date or category, and the rules recalculate instantly with no AI call |
 | **Appeal letters** | An editable complaint to the insurer and an Ombudsman complaint with an annexure checklist, with Print or Save as PDF |
 | **Deadlines** | Ombudsman dates from the official rules, and a calendar file with reminders |
+| **Charts** | Where the claim went, the biggest cuts, and the cover timeline against the hospital stay |
+| **Printable report** | Save the result as a PDF, with strength of grounds on each deduction |
 | **Action plan** | Four clear next steps, using the case's own dates |
 | **Ombudsman finder** | Choose your state to see your office, from the Council for Insurance Ombudsmen's list |
 | **Listen and share** | Read the summary aloud where the browser has a voice for that language, or share it on WhatsApp without names |

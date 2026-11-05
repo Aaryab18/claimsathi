@@ -56,7 +56,7 @@ export function SummaryActions({ summary, language }: SummaryActionsProps) {
     "inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold border border-[#114B36] text-[#114B36] hover:bg-[#E5F3EC] transition-colors cursor-pointer";
 
   return (
-    <div className="mt-3 flex flex-wrap gap-2">
+    <div className="mt-3 flex flex-wrap gap-2 print:hidden">
       {canSpeak && (
         <button type="button" data-testid="listen-btn" onClick={toggleSpeech} className={buttonClass}>
           {isSpeaking ? t.stopListening : t.listenButton}

@@ -58,7 +58,7 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
     "px-4 py-2 rounded-xl bg-[#114B36] hover:bg-[#0E3A2A] text-white text-xs sm:text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed";
 
   return (
-    <section id="letters" aria-label={t.lettersTitle} className="scroll-mt-24 bg-white rounded-2xl p-5 sm:p-6 border border-[#E7E5D8] flex flex-col gap-3">
+    <section id="letters" aria-label={t.lettersTitle} className="scroll-mt-24 print:hidden bg-white rounded-2xl p-5 sm:p-6 border border-[#E7E5D8] flex flex-col gap-3">
       <div>
         <h2 className="text-base sm:text-lg font-bold text-[#113A2B]">{t.lettersTitle}</h2>
         <p className="mt-1 text-xs sm:text-sm text-[#526059]">{t.lettersDesc}</p>

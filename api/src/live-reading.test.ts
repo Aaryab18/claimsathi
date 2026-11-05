@@ -439,6 +439,16 @@ describe("appeal letters", () => {
     expect(body.text).toContain("pay Rs. 50,800");
   });
 
+  it("uses the corrected fact in the letter, not the one first read", async () => {
+    const { app, token } = await readyCase();
+    await request(app).patch(factsPath(token)).send({ continuousCoverSince: "2024-01-01" }).expect(200);
+
+    const { body } = await request(app).post(lettersPath(token)).send({ letterType: "grievance" }).expect(200);
+
+    expect(body.text).toContain("continuous cover since 1 January 2024");
+    expect(body.text).not.toContain("1 March 2019");
+  });
+
   it("refuses an unknown letter type", async () => {
     const { app, token } = await readyCase();
 

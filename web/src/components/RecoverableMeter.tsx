@@ -83,7 +83,7 @@ export function RecoverableMeter({ totals, language, claim }: RecoverableMeterPr
             />
             <div
               style={{ width: `${validPct}%` }}
-              className="h-full bg-[#94A3B8] transition-all duration-700"
+              className="h-full bg-[#7C6BB0] transition-all duration-700"
               title={`${t.verdictLabels.valid}: ${formatRupees(totals.validDeductions)} (${validPct}%)`}
             />
           </div>
@@ -107,11 +107,11 @@ export function RecoverableMeter({ totals, language, claim }: RecoverableMeterPr
             </div>
           </div>
 
-          <div className="p-3.5 rounded-xl bg-[#F1F5F9] border border-[#CBD5E1]">
-            <div className="text-xs font-semibold text-[#475569]">
+          <div className="p-3.5 rounded-xl bg-[#F1EEF8] border border-[#D6CEEA]">
+            <div className="text-xs font-semibold text-[#4C3F7A]">
               {t.validTitle} ({validPct}%)
             </div>
-            <div data-testid="valid-amount" className="mt-1 text-xl font-bold text-[#334155]">
+            <div data-testid="valid-amount" className="mt-1 text-xl font-bold text-[#4C3F7A]">
               <AnimatedRupees amount={totals.validDeductions} />
             </div>
           </div>
