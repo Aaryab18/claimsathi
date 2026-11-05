@@ -1,8 +1,26 @@
 # ClaimSathi
 
+ClaimSathi explains health insurance claim deductions in India, in English and Hindi.
+
 **The AI reads, the rules judge.** The AI only extracts and explains. Legal verdicts come only from tested code in `rules/`.
 
-This repository is currently a project skeleton with no product features yet.
+Live site: https://claimsathi-web.onrender.com
+
+## Project status
+
+Working now:
+
+- The website, with a sample case, result breakdown, evidence view and Hindi
+- A tested rules engine
+- A first version of the API
+
+In progress:
+
+- Connecting the website to the API
+- Live document reading with AI
+- Appeal letters and deadline tracking
+
+Legal references are still being checked against official text.
 
 ## Getting started
 
