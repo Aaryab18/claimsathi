@@ -23,7 +23,7 @@ It usually takes under a minute. If it's slow, say: "We're on a free AI plan, so
 
 Point at **₹71,400 likely recoverable out of ₹96,000**.
 
-"Here's what this family could challenge." Open the first row's evidence.
+"Here's what this family could challenge." Point at **How strong is your case?**: "This summarises the rules' verdicts. It isn't a prediction of winning." Open the first row's evidence.
 
 "This shows the insurer's own words and the policy clause. On a PDF, this tick means we found the exact quote in the document, with no AI involved. It stops the AI inventing quotes."
 
@@ -44,6 +44,12 @@ Scroll to the timeline: "Now the hospital stay comes first, and you can see why 
 Scroll to **What to do next**: "Every family leaves with a clear plan." Then click **Draft complaint to insurer**.
 
 "It writes the complaint from those findings, using the corrected facts, and the user can edit it and save it as a PDF. Deadlines come from the official Ombudsman Rules, and they can be added to a calendar."
+
+## Optional: helpdesk (20 seconds)
+
+Click **For hospitals and NGOs**, then **Load demo cases**.
+
+"Families are our first users, but hospital help desks and NGOs handle many claims. These are made-up cases, and this stays in one browser for now."
 
 ## 6. Close (15 seconds)
 
