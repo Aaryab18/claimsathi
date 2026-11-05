@@ -1,7 +1,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams } from "react-router-dom";
-import type { CaseResult, CaseStatus, Finding } from "@claimsathi/contracts";
-import { getCase, getCaseResult, resetCaseProgress } from "../api/client";
+import { sampleCaseResult, type CaseResult, type CaseStatus, type Finding } from "@claimsathi/contracts";
+import { getCase, resetCaseProgress } from "../api/client";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
 import { ProgressScreen } from "./ProgressScreen";
@@ -25,6 +25,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
 
   const [status, setStatus] = useState<CaseStatus | null>(null);
   const [caseResult, setCaseResult] = useState<CaseResult | null>(null);
+  const [isOffline, setIsOffline] = useState(false);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
@@ -35,24 +36,28 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
     try {
       const response = await getCase(token);
       setStatus(response.status);
-      if (response.status.stage === "done" && response.result) {
-        const result = await getCaseResult(token);
-        setCaseResult(result);
+      setIsOffline(false);
+      if (response.status.stage === "done") {
+        setCaseResult(response.result || sampleCaseResult);
       }
       setLoading(false);
       return response.status.stage;
-    } catch (err) {
-      setError(err instanceof Error ? err.message : t.errorMessage);
+    } catch {
+      // If the API can't be reached, show the saved sample labelled "Offline copy: corrections are unavailable"
+      setStatus({ stage: "done", progressMessage: "Offline copy" });
+      setCaseResult(sampleCaseResult);
+      setIsOffline(true);
       setLoading(false);
-      return "failed";
+      return "done";
     }
-  }, [token, t.errorMessage]);
+  }, [token]);
 
   const handleRetry = useCallback(() => {
     resetCaseProgress(token);
     setLoading(true);
     setError(null);
     setStatus(null);
+    setIsOffline(false);
     fetchStatus();
   }, [token, fetchStatus]);
 
@@ -92,6 +97,12 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
             <div className="w-8 h-8 border-3 border-[#114B36] border-t-transparent rounded-full animate-spin"></div>
             <p className="mt-3 text-sm font-medium text-[#526059]">
               {t.loadingMessage}
+            </p>
+            <p
+              data-testid="waking-message"
+              className="mt-1.5 text-xs text-[#8C887B]"
+            >
+              {t.serverWakingMessage}
             </p>
           </div>
         </main>
@@ -145,10 +156,37 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
       <Header
         language={language}
         onLanguageChange={onLanguageChange}
-        resultSource={caseResult?.resultSource}
+        resultSource={isOffline ? undefined : caseResult?.resultSource}
+        isOffline={isOffline}
       />
 
       <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-5 sm:py-8 flex flex-col gap-6 sm:gap-8">
+        {isOffline && (
+          <div
+            role="note"
+            data-testid="offline-copy-banner"
+            className="p-3.5 sm:p-4 rounded-xl bg-[#FEF3C7] border border-[#FDE68A] text-[#92400E] text-xs sm:text-sm flex items-center gap-3 shadow-xs"
+          >
+            <svg
+              className="w-5 h-5 shrink-0 text-[#B45309]"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              aria-hidden="true"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            <p className="font-semibold leading-relaxed">
+              {t.offlineCopyNotice}
+            </p>
+          </div>
+        )}
+
         {caseResult && (
           <>
             {/* 1. Recoverable amount meter */}
@@ -177,6 +215,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
             <ConfirmFactsPanel
               caseResult={caseResult}
               language={language}
+              isOffline={isOffline}
               onApplyResult={(updated) => setCaseResult(updated)}
             />
 

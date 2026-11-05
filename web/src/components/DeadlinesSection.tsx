@@ -8,6 +8,18 @@ interface DeadlinesSectionProps {
   language: Language;
 }
 
+function getDeadlineLabel(label: string, language: Language, grievanceLabel: string, ombudsmanLabel: string): string {
+  if (language === "hi") {
+    if (label === "Grievance to the insurer") {
+      return grievanceLabel;
+    }
+    if (label === "Complaint to the ombudsman") {
+      return ombudsmanLabel;
+    }
+  }
+  return label;
+}
+
 export function DeadlinesSection({ deadlines, language }: DeadlinesSectionProps) {
   const t = translations[language];
 
@@ -52,7 +64,7 @@ export function DeadlinesSection({ deadlines, language }: DeadlinesSectionProps)
               <div>
                 <div className="flex items-start justify-between gap-2">
                   <h3 className="font-semibold text-sm sm:text-base text-[#113A2B]">
-                    {deadline.label}
+                    {getDeadlineLabel(deadline.label, language, t.deadlineGrievanceLabel, t.deadlineOmbudsmanLabel)}
                   </h3>
                   {isDateNull ? (
                     <span
@@ -76,7 +88,7 @@ export function DeadlinesSection({ deadlines, language }: DeadlinesSectionProps)
               </div>
 
               <div className="pt-2 border-t border-[#F2EFE5] flex items-center justify-between text-[11px] text-[#78887F]">
-                <span>Status:</span>
+                <span>{t.statusLabel}</span>
                 <span className="font-medium">
                   {deadline.verified ? "Verified" : t.sourceCheckPending}
                 </span>

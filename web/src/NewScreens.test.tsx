@@ -7,7 +7,50 @@ import { sampleCaseResult } from "@claimsathi/contracts";
 describe("ClaimSathi New Screens", () => {
   beforeEach(() => {
     client.clearMockCases();
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 200 })));
+    const defaultMockFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      const method = (init?.method || (typeof input === "object" && "method" in input ? (input as Request).method : "GET")).toUpperCase();
+
+      if (url.includes("/readyz")) {
+        return new Response(JSON.stringify({ status: "ok" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      if (url.endsWith("/cases/sample") && method === "POST") {
+        return new Response(
+          JSON.stringify({
+            caseToken: "sample-case-123",
+            status: { stage: "done", progressMessage: "Analysis complete" },
+          }),
+          { status: 201, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      if (url.includes("/facts") && (method === "PATCH" || method === "POST")) {
+        return new Response(
+          JSON.stringify(sampleCaseResult),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      if (url.includes("/cases/")) {
+        const match = url.match(/\/cases\/([^/]+)/);
+        const token = match ? match[1] : "sample";
+        return new Response(
+          JSON.stringify({
+            caseToken: token,
+            status: { stage: "done", progressMessage: "Analysis complete" },
+            result: sampleCaseResult,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(null, { status: 200 });
+    });
+    vi.stubGlobal("fetch", defaultMockFetch);
     vi.stubEnv("VITE_API_URL", "https://api.example.com");
   });
 
@@ -69,36 +112,24 @@ describe("ClaimSathi New Screens", () => {
       expect(error.textContent).toBe("File is larger than the 10 MB limit.");
     });
 
-    it("keeps the Analyse button disabled until all three files are chosen", async () => {
+    it("keeps the Analyse button disabled with live reading coming next hint", () => {
       render(<App initialEntries={["/"]} />);
 
       const analyseBtn = screen.getByTestId("analyse-btn") as HTMLButtonElement;
       expect(analyseBtn.disabled).toBe(true);
-      expect(screen.getByTestId("analyse-hint")).toBeTruthy();
+      expect(screen.getByTestId("analyse-hint").textContent).toContain(
+        "Live document reading is coming next. Try the sample case.",
+      );
 
       const validRejection = new File(["rejection"], "rejection.pdf", { type: "application/pdf" });
       const validPolicy = new File(["policy"], "policy.jpg", { type: "image/jpeg" });
       const validBill = new File(["bill"], "bill.png", { type: "image/png" });
 
-      // Add only rejection
+      // Add rejection, policy, bill - button remains disabled
       fireEvent.change(screen.getByTestId("file-rejection"), { target: { files: [validRejection] } });
-      expect(analyseBtn.disabled).toBe(true);
-
-      // Add policy
       fireEvent.change(screen.getByTestId("file-policy"), { target: { files: [validPolicy] } });
-      expect(analyseBtn.disabled).toBe(true);
-
-      // Add hospital bill - all 3 now present
       fireEvent.change(screen.getByTestId("file-bill"), { target: { files: [validBill] } });
-      expect(analyseBtn.disabled).toBe(false);
-
-      // Clicking analyse triggers case creation and navigation
-      const createCaseSpy = vi.spyOn(client, "createCase");
-      fireEvent.click(analyseBtn);
-
-      await waitFor(() => {
-        expect(createCaseSpy).toHaveBeenCalled();
-      });
+      expect(analyseBtn.disabled).toBe(true);
     });
 
     it("navigates directly when clicking 'Try sample case' button without files", async () => {
@@ -133,6 +164,9 @@ describe("ClaimSathi New Screens", () => {
       ).toBeTruthy();
       expect(
         screen.getByText("यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें।"),
+      ).toBeTruthy();
+      expect(
+        screen.getByText("लाइव दस्तावेज़ पढ़ना जल्द आ रहा है। सैंपल केस आज़माएं।"),
       ).toBeTruthy();
       expect(screen.getByText("सैंपल केस देखें →")).toBeTruthy();
 
@@ -300,8 +334,9 @@ describe("ClaimSathi New Screens", () => {
         ),
       ).toBe(true);
 
-      // Verify status note remains preview only and results are not falsely altered
-      expect(screen.getByTestId("corrections-submitted-status")).toBeTruthy();
+      // Verify corrections applied status and preview-only note removed
+      await screen.findByTestId("corrections-applied-status");
+      expect(screen.queryByTestId("preview-only-note")).toBeNull();
       expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹71,400");
     });
 

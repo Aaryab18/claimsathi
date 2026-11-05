@@ -8,6 +8,7 @@ import { formatRupees } from "../lib/format";
 interface ConfirmFactsPanelProps {
   caseResult: CaseResult;
   language: Language;
+  isOffline?: boolean;
   onApplyResult?: (updatedResult: CaseResult) => void;
 }
 
@@ -25,6 +26,7 @@ const CATEGORIES: LineItemCategory[] = [
 export function ConfirmFactsPanel({
   caseResult,
   language,
+  isOffline,
   onApplyResult,
 }: ConfirmFactsPanelProps) {
   const t = translations[language];
@@ -54,12 +56,16 @@ export function ConfirmFactsPanel({
   );
 
   const [isApplying, setIsApplying] = useState(false);
-  const [submitted, setSubmitted] = useState(false);
+  const [hasAppliedCorrections, setHasAppliedCorrections] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(true);
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (isOffline) return;
+
     setIsApplying(true);
+    setErrorMessage(null);
 
     const overrides: FactOverrides = {
       policyStartDate: policyStartDate || undefined,
@@ -72,11 +78,13 @@ export function ConfirmFactsPanel({
     };
 
     try {
-      const result = await applyFacts(caseToken, overrides);
-      setSubmitted(true);
+      const updated = await applyFacts(caseToken, overrides);
+      setHasAppliedCorrections(true);
       if (onApplyResult) {
-        onApplyResult(result);
+        onApplyResult(updated);
       }
+    } catch (err) {
+      setErrorMessage(err instanceof Error ? err.message : t.errorMessage);
     } finally {
       setIsApplying(false);
     }
@@ -131,28 +139,54 @@ export function ConfirmFactsPanel({
           onSubmit={handleSubmit}
           className="p-4 sm:p-6 flex flex-col gap-6"
         >
-          {/* Prominent Preview Only Note */}
-          <div
-            role="note"
-            data-testid="preview-only-note"
-            className="p-3 sm:p-3.5 rounded-xl bg-[#FAF5E6] border border-[#E5DFCA] text-[#786C3B] text-xs flex items-center gap-2.5"
-          >
-            <svg
-              className="w-4 h-4 shrink-0 text-[#9C8B4D]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              aria-hidden="true"
+          {/* Offline notice or Preview Only note */}
+          {isOffline && (
+            <div
+              role="note"
+              data-testid="offline-copy-note"
+              className="p-3 sm:p-3.5 rounded-xl bg-[#FEF3C7] border border-[#FDE68A] text-[#92400E] text-xs flex items-center gap-2.5"
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-              />
-            </svg>
-            <span className="font-semibold">{t.previewOnlyNote}</span>
-          </div>
+              <svg
+                className="w-4 h-4 shrink-0 text-[#B45309]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="font-semibold">{t.offlineCopyNotice}</span>
+            </div>
+          )}
+
+          {!isOffline && !hasAppliedCorrections && (
+            <div
+              role="note"
+              data-testid="preview-only-note"
+              className="p-3 sm:p-3.5 rounded-xl bg-[#FAF5E6] border border-[#E5DFCA] text-[#786C3B] text-xs flex items-center gap-2.5"
+            >
+              <svg
+                className="w-4 h-4 shrink-0 text-[#9C8B4D]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <span className="font-semibold">{t.previewOnlyNote}</span>
+            </div>
+          )}
 
           {/* Key Dates Section */}
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -277,30 +311,54 @@ export function ConfirmFactsPanel({
             </div>
           </div>
 
+          {/* Error Message */}
+          {errorMessage && (
+            <div
+              role="alert"
+              data-testid="apply-facts-error"
+              className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs font-medium text-red-800 flex items-center gap-2"
+            >
+              <svg className="w-4 h-4 shrink-0 text-red-600" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>{errorMessage}</span>
+            </div>
+          )}
+
           {/* Submission Feedback */}
-          {submitted && (
+          {hasAppliedCorrections && (
             <div
               role="status"
-              data-testid="corrections-submitted-status"
+              data-testid="corrections-applied-status"
               className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs font-medium text-emerald-900 flex items-center gap-2"
             >
               <svg className="w-4 h-4 shrink-0 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
               </svg>
-              <span>{t.correctionsSubmittedMsg}</span>
+              <span>{t.correctionsAppliedMsg}</span>
             </div>
           )}
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-            <span className="text-[11px] text-[#8C887B] italic">
-              {t.previewOnlyNote}
-            </span>
+            {!hasAppliedCorrections && (
+              <span className="text-[11px] text-[#8C887B] italic">
+                {isOffline ? t.offlineCopyNotice : t.previewOnlyNote}
+              </span>
+            )}
             <button
               type="submit"
               data-testid="apply-corrections-btn"
-              disabled={isApplying}
-              className="w-full sm:w-auto px-5 py-2 rounded-xl bg-[#114B36] hover:bg-[#0E3A2A] text-white text-xs font-semibold shadow-xs focus:ring-2 focus:ring-[#114B36] focus:outline-hidden cursor-pointer disabled:opacity-50"
+              disabled={isApplying || isOffline}
+              className={`w-full sm:w-auto px-5 py-2 rounded-xl text-xs font-semibold shadow-xs focus:ring-2 focus:ring-[#114B36] focus:outline-hidden ${
+                isOffline
+                  ? "bg-[#E7E5D8] text-[#8C887B] cursor-not-allowed opacity-80"
+                  : "bg-[#114B36] hover:bg-[#0E3A2A] text-white cursor-pointer disabled:opacity-50"
+              }`}
             >
               {isApplying ? t.applyingCorrections : t.applyCorrectionsBtn}
             </button>
