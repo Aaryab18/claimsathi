@@ -18,7 +18,8 @@
     "build": "npm run build --workspaces",
     "typecheck": "npm run typecheck --workspaces",
     "test": "npm run test --workspaces && npm run test:scripts",
-    "test:scripts": "vitest run --dir scripts"
+    "test:scripts": "vitest run --dir scripts",
+    "postinstall": "npm run build --workspace=@claimsathi/contracts && npm run build --workspace=@claimsathi/rules"
   },
   "devDependencies": {
     "@types/node": "^22.20.5",
