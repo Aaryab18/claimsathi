@@ -26,7 +26,7 @@ export const sampleCaseResult: CaseResult = {
       confidence: "strong",
       amount: 38200,
       explanationEn:
-        "The insurer cut ₹24,133 from the pharmacy bill and ₹14,067 from the stent bill, ₹38,200 in total. It used the same proportion it applied because the room cost more than the policy limit. Medicines and a stent cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.",
+        "The insurer cut ₹24,133 from the pharmacy bill and ₹14,067 from the stent bill, ₹38,200 in total. It reduced this in proportion because the room cost more than the policy limit. Medicines and a stent cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.",
       explanationHi:
         "बीमा कंपनी ने दवाइयों के बिल से ₹24,133 और स्टेंट के बिल से ₹14,067, यानी कुल ₹38,200 काटे। यह कटौती उसी अनुपात में की गई, जो कमरे का किराया पॉलिसी की सीमा से ज़्यादा होने के कारण लगाया गया था। मरीज़ किसी भी कमरे में रहे, दवाइयों और स्टेंट की कीमत वही रहती है, इसलिए नियम R3 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।",
       evidence: {

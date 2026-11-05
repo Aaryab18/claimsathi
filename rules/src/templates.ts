@@ -142,7 +142,7 @@ export function buildR3Explanation(
     });
     const subjectHi = joinNames(hiSubjects, " और ") || "इन मदों";
 
-    const en = `The insurer cut ${enBreakdown}, ₹${formatRupees(totalAmount)} in total. It used the same proportion it applied because the room cost more than the policy limit. ${subjectEn} cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`;
+    const en = `The insurer cut ${enBreakdown}, ₹${formatRupees(totalAmount)} in total. It reduced this in proportion because the room cost more than the policy limit. ${subjectEn} cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`;
     const hi = `बीमा कंपनी ने ${hiBreakdown}, यानी कुल ₹${formatRupees(totalAmount)} काटे। यह कटौती उसी अनुपात में की गई, जो कमरे का किराया पॉलिसी की सीमा से ज़्यादा होने के कारण लगाया गया था। मरीज़ किसी भी कमरे में रहे, ${subjectHi} की कीमत वही रहती है, इसलिए नियम R3 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।`;
     return { en, hi };
   }
@@ -151,7 +151,7 @@ export function buildR3Explanation(
   const amount = item.deducted ?? 0;
   const categoryHi = billNameHi(item);
 
-  const en = `The insurer cut ₹${formatRupees(amount)} from ${billPhraseEn(item)}. It used the same proportion it applied because the room cost more than the policy limit. Medicines, consumables, implants and diagnostic tests cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`;
+  const en = `The insurer cut ₹${formatRupees(amount)} from ${billPhraseEn(item)}. It reduced this in proportion because the room cost more than the policy limit. Medicines, consumables, implants and diagnostic tests cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`;
   const hi = `बीमा कंपनी ने ${categoryHi} के बिल से ₹${formatRupees(amount)} काटे। यह कटौती उसी अनुपात में की गई, जो कमरे का किराया पॉलिसी की सीमा से ज़्यादा होने के कारण लगाया गया था। कमरे की श्रेणी बदलने से इन वस्तुओं की कीमत नहीं बदलती, इसलिए नियम R3 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।`;
   return { en, hi };
 }
