@@ -29,19 +29,21 @@ Point at **₹71,400 likely recoverable out of ₹96,000**.
 
 ## 4. The rules decide (45 seconds)
 
+Show **Your cover against the hospital stay**: "The hospital stay comes after the waiting period ends, so this cut looks wrong."
+
 In **Confirm the facts**, set **Continuous cover date** to 1 Jan 2024, then click **Apply corrections**.
 
 The page jumps back to the top and the number counts down.
 
 "AI can misread a date, so the user has the final say. Now the waiting period isn't over, so ₹20,600 stops being marked wrong, and recoverable falls to ₹50,800. That was instant, with no AI call. The same facts always give the same answer."
 
-Switch to **हिंदी**. "It's all available in Hindi too."
+Scroll to the timeline: "Now the hospital stay comes first, and you can see why the answer changed." Then switch to **हिंदी**. "It's all available in Hindi too."
 
 ## 5. Taking action (30 seconds)
 
-Scroll to the letters and click **Draft complaint to insurer**.
+Scroll to **What to do next**: "Every family leaves with a clear plan." Then click **Draft complaint to insurer**.
 
-"It writes the complaint from those findings, and the user can edit it and save it as a PDF. Deadlines come from the official Ombudsman Rules, and they can be added to a calendar."
+"It writes the complaint from those findings, using the corrected facts, and the user can edit it and save it as a PDF. Deadlines come from the official Ombudsman Rules, and they can be added to a calendar."
 
 ## 6. Close (15 seconds)
 
