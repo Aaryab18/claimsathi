@@ -32,6 +32,12 @@ describe("ClaimSathi New Screens", () => {
         ),
       ).toBeTruthy();
       expect(
+        screen.getByText(/tested rules/i),
+      ).toBeTruthy();
+      expect(
+        screen.queryByText(/verified rules/i),
+      ).toBeNull();
+      expect(
         screen.getByText("This is a demo. Please do not upload real medical documents."),
       ).toBeTruthy();
     });
@@ -121,6 +127,9 @@ describe("ClaimSathi New Screens", () => {
 
       expect(
         screen.getByText("क्या आपका हेल्थ इंश्योरेंस क्लेम खारिज या कम कर दिया गया है?"),
+      ).toBeTruthy();
+      expect(
+        screen.getByText(/परीक्षित नियमों/),
       ).toBeTruthy();
       expect(
         screen.getByText("यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें।"),

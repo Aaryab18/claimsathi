@@ -153,7 +153,7 @@ export const translations: Record<Language, Translations> = {
     // Home screen
     homeHeadline: "Has your health insurance claim been rejected or cut short?",
     homeSubtitle:
-      "Upload your rejection letter, policy, and hospital bill. ClaimSathi reviews each deduction against verified rules and insurance regulations to find what you can recover.",
+      "Upload your rejection letter, policy, and hospital bill. ClaimSathi reviews each deduction against tested rules to find what you can recover.",
     demoNotice: "This is a demo. Please do not upload real medical documents.",
     uploadRejectionTitle: "1. Rejection letter",
     uploadRejectionDesc: "Insurer's letter or email showing deduction reasons",
@@ -271,7 +271,7 @@ export const translations: Record<Language, Translations> = {
     // Home screen
     homeHeadline: "क्या आपका हेल्थ इंश्योरेंस क्लेम खारिज या कम कर दिया गया है?",
     homeSubtitle:
-      "अपना रिजेक्शन लेटर, पॉलिसी दस्तावेज़ और अस्पताल का बिल अपलोड करें। क्लेमसाथी नियमों और IRDAI दिशा-निर्देशों के आधार पर जांच करता है कि आप क्या वापस पा सकते हैं।",
+      "अपना रिजेक्शन लेटर, पॉलिसी दस्तावेज़ और अस्पताल का बिल अपलोड करें। क्लेमसाथी परीक्षित नियमों के आधार पर जांच करता है कि आप क्या वापस पा सकते हैं।",
     demoNotice: "यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें।",
     uploadRejectionTitle: "1. रिजेक्शन पत्र (अस्वीकृति पत्र)",
     uploadRejectionDesc: "बीमा कंपनी का पत्र जिसमें कटौती का कारण लिखा हो",
