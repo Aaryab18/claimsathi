@@ -20,10 +20,10 @@ It retries and moves through other free models. If all are busy, our own sample 
 ## The law
 
 **Are your legal rules verified?**
-Not all of them. The Ombudsman deadlines are verified from the Council for Insurance Ombudsmen's copy of the Rules. Others are marked unverified on screen, and that's what we'd finish next.
+Some are. The Ombudsman deadlines come from the Council for Insurance Ombudsmen's copy of the Rules, and the moratorium and claim-document clauses from IRDAI's 2024 Master Circular on its own site. Anything else is marked unverified on screen.
 
 **What about proportionate deductions?**
-It's our biggest open item. Several published explainers say pharmacy, implants, consumables and diagnostics can't be cut this way, but we haven't found the IRDAI text. It's ₹38,200 of the sample's headline figure, so we won't call it settled law until we do.
+We found it on IRDAI's site: circular 151/06/2020, paragraphs 4 and 5, says pharmacy and consumables, implants and medical devices, and diagnostics can't be part of associate medical expenses. The open question is that the May 2024 Master Circular replaced about 55 older circulars, doesn't repeat this wording, and its list of replaced circulars wasn't in the copy we read. So the app marks it as still being confirmed. It's ₹38,200 of the sample's headline figure.
 
 **Isn't this legal advice?**
 No. It's information and draft letters, and the app says so. The person decides what to send.

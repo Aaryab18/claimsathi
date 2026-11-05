@@ -1568,10 +1568,10 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
   });
 
   describe("regulations stay unverified", () => {
-    it("all regulations in sample case findings are verified: false", () => {
+    it("marks only the rules with a confirmed source as verified on the sample case", () => {
       const res = runRules({ extracted: sampleExtractedClaim, asOfDate: "2026-11-05" });
       for (const finding of res.findings) {
-        expect(finding.evidence.regulation?.verified).toBe(false);
+        expect(finding.evidence.regulation?.verified).toBe(finding.ruleIds.includes("R1"));
       }
     });
 
@@ -1908,7 +1908,7 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
       expect(result.warnings[0]?.messageHi).toMatch(/[ऀ-ॿ]/);
     });
 
-    it("keeps regulations unverified on every kind of finding", () => {
+    it("marks a regulation verified only where its source was read on IRDAI's site", () => {
       const result = run([
         item({ id: "A", deductionType: "proportionate", category: "pharmacy" }),
         item({ id: "B", deductionType: "non_payable" }),
@@ -1918,9 +1918,8 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
       ]);
 
       expect(result.findings.length).toBe(5);
-      for (const finding of result.findings) {
-        expect(finding.evidence.regulation?.verified).toBe(false);
-      }
+      const verified = result.findings.filter((finding) => finding.evidence.regulation?.verified);
+      expect(verified.flatMap((finding) => finding.ruleIds).sort()).toEqual(["R1", "R2", "R5"]);
     });
   });
 });

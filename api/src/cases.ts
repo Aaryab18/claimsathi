@@ -13,7 +13,6 @@ import {
   ExtractedClaimSchema,
   FactOverridesSchema,
   GetCaseResponseSchema,
-  sampleCaseResult,
   sampleExtractedClaim,
   type CaseStatus,
   type FactOverrides,
@@ -23,7 +22,7 @@ import express, { Router, type RequestHandler } from "express";
 import type { CaseRecord, CaseStore } from "./case-store.js";
 import type { CaseProcessor } from "./process-case.js";
 import { HttpError, type ValidationIssue } from "./errors.js";
-import { recalculateResult } from "./rules.js";
+import { assessClaim, recalculateResult } from "./rules.js";
 import { readUploadedDocuments, receiveUpload } from "./upload.js";
 
 const CASE_LIFETIME_MS = 24 * 60 * 60 * 1000;
@@ -118,7 +117,14 @@ export function createCasesRouter(
       stage: SAMPLE_STATUS.stage,
       progressMessage: SAMPLE_STATUS.progressMessage,
       extracted: ExtractedClaimSchema.parse(sampleExtractedClaim),
-      result: CaseResultSchema.parse({ ...sampleCaseResult, caseToken: token }),
+      result: CaseResultSchema.parse(
+        assessClaim({
+          caseToken: token,
+          extracted: sampleExtractedClaim,
+          asOfDate: new Date().toISOString().slice(0, 10),
+          resultSource: "saved_sample",
+        }),
+      ),
       deleteAfter: new Date(Date.now() + CASE_LIFETIME_MS),
       documents: [],
     });

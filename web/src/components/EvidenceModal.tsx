@@ -263,6 +263,11 @@ export function EvidenceModal({
                   <p className="text-[#6D5310] leading-relaxed">
                     {t.sourceCheckPendingNotice}
                   </p>
+                  {!/pending verification/i.test(evidence.regulation.sourceName) && (
+                    <p data-testid="draft-regulation" className="text-[#6D5310] leading-relaxed">
+                      {evidence.regulation.text} ({evidence.regulation.sourceName})
+                    </p>
+                  )}
                 </div>
               )
             ) : (

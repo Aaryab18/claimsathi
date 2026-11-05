@@ -52,11 +52,11 @@ describe("R5: rejected only for missing documents", () => {
     expect(result.totals.recoverableStrong).toBe(0);
   });
 
-  it("keeps its legal source marked as unverified", () => {
+  it("names its legal source", () => {
     const regulation = run(claimWith([document])).findings[0]?.evidence.regulation;
 
     expect(regulation?.sourceName).toContain("clause 17(c)");
-    expect(regulation?.verified).toBe(false);
+    expect(regulation?.verified).toBe(true);
   });
 });
 
@@ -269,5 +269,33 @@ describe("what real documents showed", () => {
     expect(run(claimWithSource(true)).findings[0]?.evidence.quoteVerified).toBe(true);
     expect(run(claimWithSource(false)).findings[0]?.evidence.quoteVerified).toBe(false);
     expect(run(claimWithSource(undefined)).findings[0]?.evidence.quoteVerified).toBe(false);
+  });
+});
+
+describe("what the app says about its legal sources", () => {
+  const proportionate = item({ category: "pharmacy", deductionType: "proportionate" });
+
+  it("names R3's circular but doesn't call it confirmed", () => {
+    const finding = run(claimWith([proportionate])).findings[0];
+
+    expect(finding?.evidence.regulation?.sourceName).toContain("151/06/2020");
+    expect(finding?.evidence.regulation?.verified).toBe(false);
+    expect(finding?.explanationEn).toContain("confirming it still applies");
+    expect(finding?.explanationHi).toContain("2020");
+    expect(finding?.explanationEn).not.toContain("has not been checked");
+  });
+
+  it("drops the unchecked note where the source has been read", () => {
+    const finding = run(claimWith([item({ deductionType: "documentation" })])).findings[0];
+
+    expect(finding?.explanationEn).not.toContain("has not been checked");
+    expect(finding?.explanationHi).not.toContain("जांचा नहीं");
+  });
+
+  it("keeps the unchecked note where it hasn't", () => {
+    const finding = run(claimWith([item({ deductionType: "non_payable", partOfPackage: true, category: "consumable" })])).findings[0];
+
+    expect(finding?.evidence.regulation?.verified).toBe(false);
+    expect(finding?.explanationEn).toContain("has not been checked");
   });
 });
