@@ -15,7 +15,7 @@ Each correction stays saved on its case, so go back to the home page and click *
 
 These results come from made-up documents only, and from a browser pane that was hidden while testing. A hidden pane pauses animation and smooth scrolling, so those can't be judged there.
 
-Re-run the **Tested locally** items on the live site after each deploy.
+Last re-tested on the live site after commit `5914dc6`. Re-run these tests after any later deploy.
 
 ## The 23 tests
 
@@ -40,7 +40,7 @@ Re-run the **Tested locally** items on the live site after each deploy.
 ### 5. Evidence popup
 - **Do:** click a row, then **Close**.
 - **Expect:** the insurer's words, the policy clause, and the legal reference or a note that it's still being checked.
-- **Status:** Tested live. The fix for clause names written differently and ICU evidence is Automated, and needs a live re-check after deploying.
+- **Status:** Tested live, including the fix for clause names written differently and ICU evidence.
 
 ### 6. Apply corrections
 - **Do:** make each change below on a fresh case, then click **Apply corrections**.
@@ -96,7 +96,7 @@ Re-run the **Tested locally** items on the live site after each deploy.
 
 ### 15. Case strength
 - **Expect:** **76 / 100, Strong case**, and a note that it summarises rule-based grounds and is NOT a prediction of winning. After the cover date correction, 60 / 100.
-- **Status:** score Tested live. New note wording Tested locally.
+- **Status:** Tested live, including the note wording.
 
 ### 16. What to do next
 - **Expect:** four steps. After entering a sent date, they show 5 Dec 2026 and about 5 Dec 2027.
@@ -110,7 +110,7 @@ Re-run the **Tested locally** items on the live site after each deploy.
 ### 18. Ombudsman finder
 - **Do:** choose **Haryana**, then each area.
 - **Expect:** Gurugram, Faridabad, Sonepat and Bahadurgarh go to Delhi. Another district goes to Chandigarh. A link opens the official page.
-- **Status:** the area list was read on the official page, and the link returned 200. The district choice is Tested locally and Automated.
+- **Status:** Tested live for all five choices. The area list was read on the official page, and the link returned 200.
 
 ### 19. Listen and share
 - **Do:** click **Listen to this** and **Share on WhatsApp** in each language.
@@ -120,7 +120,7 @@ Re-run the **Tested locally** items on the live site after each deploy.
 ### 20. Printable report
 - **Do:** click **Print or save report**.
 - **Expect:** summary, charts, case strength, deductions and evidence, with no forms or letters.
-- **Status:** contents Tested locally in a PDF made with Edge. **Manual:** how it looks, and whether the ₹ symbol prints correctly.
+- **Status:** contents Tested live in a 6-page PDF made with Edge, with the button itself Automated. **Manual:** how it looks, and whether the ₹ symbol prints correctly, as text extraction from the PDF did not show it.
 
 ### 21. Upload boxes
 - **Do:** drag a real PDF onto a box.
@@ -141,7 +141,7 @@ Re-run the **Tested locally** items on the live site after each deploy.
 
 A made-up upload with an ICU cut and a medicines cut gave ₹35,000 likely wrong. The ICU cut showed rule R3 and paragraph 7 of the 2020 circular, marked as still being confirmed.
 
-**Status:** Tested live. The test found that the ICU cut's insurer quote and policy clause were missing. That fix is Automated, and needs a live re-check after deploying.
+**Status:** Tested live, including the insurer quote and policy clause. An earlier run of this test found both missing, and that is now fixed.
 
 ## Accuracy
 
@@ -151,6 +151,6 @@ We have no accuracy figure, and the app shows none. Made-up cases have been run 
 
 | Check | Status |
 |---|---|
-| **Console errors** | None on the home and case pages locally, or on the live case page |
+| **Console errors** | None on the home and case pages locally, or on the live case page after this deploy |
 | **Sideways scrolling at phone width** | None on the case page locally, in all three languages. **Manual:** a real phone |
 | **Sideways scrolling at desktop width** | None on the home and case pages locally, in all three languages |
