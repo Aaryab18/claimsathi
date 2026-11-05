@@ -31,6 +31,20 @@ export type Totals = z.infer<typeof TotalsSchema>;
 export const ResultSourceSchema = z.enum(["live", "saved_sample"]);
 export type ResultSource = z.infer<typeof ResultSourceSchema>;
 
+export const AssessmentWarningCodeSchema = z.enum([
+  "no_line_items",
+  "missing_deduction_amount",
+  "totals_do_not_match",
+]);
+export type AssessmentWarningCode = z.infer<typeof AssessmentWarningCodeSchema>;
+
+export const AssessmentWarningSchema = z.object({
+  code: AssessmentWarningCodeSchema,
+  messageEn: z.string().min(1),
+  messageHi: z.string().min(1),
+});
+export type AssessmentWarning = z.infer<typeof AssessmentWarningSchema>;
+
 export const CaseResultSchema = z
   .object({
     caseToken: z.string().min(1),
@@ -38,6 +52,7 @@ export const CaseResultSchema = z
     findings: z.array(FindingSchema),
     deadlines: z.array(DeadlineSchema),
     totals: TotalsSchema,
+    warnings: z.array(AssessmentWarningSchema),
     resultSource: ResultSourceSchema,
   })
   .superRefine(({ extracted, findings, totals }, ctx) => {
