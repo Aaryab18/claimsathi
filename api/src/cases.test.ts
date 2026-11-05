@@ -816,6 +816,13 @@ describe("the sample case from start to finish", () => {
 });
 
 describe("routes that do not exist", () => {
+  it("answers with a plain 404", async () => {
+    const { store } = createFakeStore();
+
+    const { body } = await request(appFor(store)).get("/nothing-here").expect(404);
+
+    expect(body).toEqual({ error: "Not found." });
+  });
 });
 
 describe("browser requests", () => {
