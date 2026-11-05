@@ -69,7 +69,7 @@ export function FindingsTable({
                 </div>
 
                 <div className="flex items-baseline gap-1.5 sm:text-right">
-                  <span className="text-xs text-[#68786F] sm:hidden">Deducted:</span>
+                  <span className="text-xs text-[#68786F] sm:hidden">{t.deductedLabel}:</span>
                   <span className="text-xl font-bold text-[#113A2B]">
                     {formatRupees(finding.amount)}
                   </span>

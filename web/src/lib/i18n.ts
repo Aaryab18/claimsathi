@@ -102,6 +102,19 @@ export interface Translations {
   howStepJudgeDesc: string;
   howStepActTitle: string;
   howStepActDesc: string;
+  verifiedLabel: string;
+  ombudsmanFinderLabel: string;
+  ombudsmanChooseState: string;
+  ombudsmanOffice: (city: string) => string;
+  ombudsmanContactLink: string;
+  instantPreview: string;
+  orUploadYourOwn: string;
+  uploadDocumentsTitle: string;
+  amountClaimedLabel: string;
+  deductedLabel: string;
+  billedLabel: string;
+  sourceLabel: string;
+  noRegulationCited: string;
   lettersTitle: string;
   lettersDesc: string;
   letterGrievanceButton: string;
@@ -273,6 +286,19 @@ export const translations: Record<Language, Translations> = {
     howStepJudgeDesc: "Every deduction is marked likely wrong, questionable or valid, with the reason.",
     howStepActTitle: "You get a plan and letters",
     howStepActDesc: "Draft complaints, deadlines and calendar reminders, in a few clicks.",
+    verifiedLabel: "Verified",
+    ombudsmanFinderLabel: "Find your Ombudsman office",
+    ombudsmanChooseState: "Choose your state or territory",
+    ombudsmanOffice: (city) => `Insurance Ombudsman, ${city}`,
+    ombudsmanContactLink: "Get the address and contact details",
+    instantPreview: "Instant preview",
+    orUploadYourOwn: "Or upload your own",
+    uploadDocumentsTitle: "Upload your documents",
+    amountClaimedLabel: "Amount claimed",
+    deductedLabel: "Deducted",
+    billedLabel: "Billed",
+    sourceLabel: "Source",
+    noRegulationCited: "No external regulation cited.",
     lettersTitle: "Your appeal letters",
     lettersDesc: "Drafts written from the findings above. Send the complaint to the insurer first, then go to the Ombudsman if needed. This is information, not legal advice.",
     letterGrievanceButton: "Draft complaint to insurer",
@@ -452,6 +478,19 @@ export const translations: Record<Language, Translations> = {
     howStepJudgeDesc: "हर कटौती को कारण सहित संभावित गलत, संदेहास्पद या उचित बताया जाता है।",
     howStepActTitle: "आपको योजना और पत्र मिलते हैं",
     howStepActDesc: "शिकायत के मसौदे, समय-सीमाएं और कैलेंडर रिमाइंडर, कुछ ही क्लिक में।",
+    verifiedLabel: "सत्यापित",
+    ombudsmanFinderLabel: "अपना लोकपाल कार्यालय खोजें",
+    ombudsmanChooseState: "अपना राज्य या केंद्र शासित प्रदेश चुनें",
+    ombudsmanOffice: (city) => `बीमा लोकपाल, ${city}`,
+    ombudsmanContactLink: "पता और संपर्क विवरण देखें",
+    instantPreview: "तुरंत देखें",
+    orUploadYourOwn: "या अपने दस्तावेज़ अपलोड करें",
+    uploadDocumentsTitle: "अपने दस्तावेज़ अपलोड करें",
+    amountClaimedLabel: "दावा राशि",
+    deductedLabel: "कटौती",
+    billedLabel: "बिल राशि",
+    sourceLabel: "स्रोत",
+    noRegulationCited: "कोई बाहरी नियम उद्धृत नहीं है।",
     lettersTitle: "आपके अपील पत्र",
     lettersDesc: "ऊपर के निष्कर्षों से बने मसौदे। पहले बीमा कंपनी को शिकायत भेजें, फिर ज़रूरत हो तो लोकपाल के पास जाएं। यह जानकारी है, कानूनी सलाह नहीं।",
     letterGrievanceButton: "बीमा कंपनी को शिकायत का मसौदा",

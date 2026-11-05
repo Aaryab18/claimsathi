@@ -190,7 +190,7 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
         <section className="p-5 sm:p-6 rounded-2xl bg-[#FDF6E3] border-2 border-[#F2C879] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase bg-[#114B36] text-white mb-1.5">
-              Instant Preview
+              {t.instantPreview}
             </span>
             <h2 className="text-base sm:text-lg font-bold text-[#113A2B]">
               {t.trySampleTitle}
@@ -223,7 +223,7 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
         <div className="relative flex py-1 items-center">
           <div className="flex-grow border-t border-[#E3E1D5]"></div>
           <span className="flex-shrink mx-4 text-xs font-semibold text-[#8C887B] uppercase tracking-wider">
-            OR UPLOAD YOUR OWN
+            {t.orUploadYourOwn}
           </span>
           <div className="flex-grow border-t border-[#E3E1D5]"></div>
         </div>
@@ -231,7 +231,7 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
         {/* Document Upload Slots */}
         <section className="bg-white rounded-2xl border border-[#E7E5D8] p-4 sm:p-6 shadow-xs flex flex-col gap-5">
           <div className="flex flex-col gap-1">
-            <h2 className="text-lg font-bold text-[#113A2B]">Upload your documents</h2>
+            <h2 className="text-lg font-bold text-[#113A2B]">{t.uploadDocumentsTitle}</h2>
             <p className="text-xs sm:text-sm text-[#526059]">
               {t.fileFormatsHint}
             </p>

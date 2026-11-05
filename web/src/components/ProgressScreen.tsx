@@ -90,9 +90,6 @@ export function ProgressScreen({
             className="p-6 sm:p-8 bg-white rounded-2xl border border-[#E7E5D8] shadow-xs flex flex-col gap-6"
           >
             <div className="flex flex-col gap-1 text-center sm:text-left">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#114B36]">
-                Case: {token}
-              </span>
               <h2 className="text-xl sm:text-2xl font-bold text-[#113A2B]">
                 {t.progressTitle}
               </h2>
