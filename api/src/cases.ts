@@ -18,6 +18,7 @@ import {
 } from "@claimsathi/contracts";
 import express, { Router, type RequestHandler } from "express";
 import type { CaseRecord, CaseStore } from "./case-store.js";
+import type { CaseProcessor } from "./process-case.js";
 import { HttpError, type ValidationIssue } from "./errors.js";
 import { recalculateResult } from "./rules.js";
 import { readUploadedDocuments, receiveUpload } from "./upload.js";
@@ -28,6 +29,10 @@ const TOKEN_PATTERN = /^[A-Za-z0-9_-]{43}$/;
 
 const SAMPLE_STATUS: CaseStatus = { stage: "done", progressMessage: "The sample case is ready." };
 const QUEUED_STATUS: CaseStatus = { stage: "queued", progressMessage: "Waiting to read your documents." };
+
+// The AI key has a small free allowance, and anyone can reach this public demo.
+const DEFAULT_UPLOADS_PER_HOUR = 20;
+const HOUR_MS = 60 * 60 * 1000;
 
 const readJson = express.json({ limit: "100kb" });
 
@@ -60,8 +65,31 @@ function mergeOverrides(saved: FactOverrides, changed: FactOverrides): FactOverr
   return merged;
 }
 
-export function createCasesRouter(store: CaseStore): Router {
+export interface CasesRouterOptions {
+  processor?: CaseProcessor | undefined;
+  uploadsPerHour?: number | undefined;
+}
+
+export function createCasesRouter(
+  store: CaseStore,
+  { processor, uploadsPerHour = DEFAULT_UPLOADS_PER_HOUR }: CasesRouterOptions = {},
+): Router {
   const router = Router();
+  let recentUploads: number[] = [];
+
+  // Runs before the upload is received, so a refused request costs no memory.
+  const checkLiveReading: RequestHandler = (_req, _res, next) => {
+    if (!processor) {
+      throw new HttpError(503, "Live document reading is switched off right now. Try the sample case.");
+    }
+    const now = Date.now();
+    recentUploads = recentUploads.filter((time) => now - time < HOUR_MS);
+    if (recentUploads.length >= uploadsPerHour) {
+      throw new HttpError(429, "Too many documents are being read right now. Try again later, or try the sample case.");
+    }
+    recentUploads.push(now);
+    next();
+  };
 
   async function loadCase(params: unknown): Promise<CaseRecord> {
     const { token } = CaseTokenParamsSchema.parse(params);
@@ -95,7 +123,7 @@ export function createCasesRouter(store: CaseStore): Router {
     res.status(201).json(CreateSampleCaseResponseSchema.parse({ caseToken: token, status: SAMPLE_STATUS }));
   });
 
-  router.post(API_ROUTES.createCase.path, receiveUpload, async (req, res) => {
+  router.post(API_ROUTES.createCase.path, checkLiveReading, receiveUpload, async (req, res) => {
     const documents = readUploadedDocuments(req);
 
     const token = createToken();
@@ -109,6 +137,7 @@ export function createCasesRouter(store: CaseStore): Router {
       documents,
     });
 
+    processor?.enqueue(token);
     res.status(201).json(CreateCaseResponseSchema.parse({ caseToken: token, status: QUEUED_STATUS }));
   });
 

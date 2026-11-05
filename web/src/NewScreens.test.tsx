@@ -112,24 +112,114 @@ describe("ClaimSathi New Screens", () => {
       expect(error.textContent).toBe("File is larger than the 10 MB limit.");
     });
 
-    it("keeps the Analyse button disabled with live reading coming next hint", () => {
+    function chooseAllFiles() {
+      fireEvent.change(screen.getByTestId("file-rejection"), {
+        target: { files: [new File(["rejection"], "rejection.pdf", { type: "application/pdf" })] },
+      });
+      fireEvent.change(screen.getByTestId("file-policy"), {
+        target: { files: [new File(["policy"], "policy.jpg", { type: "image/jpeg" })] },
+      });
+      fireEvent.change(screen.getByTestId("file-bill"), {
+        target: { files: [new File(["bill"], "bill.png", { type: "image/png" })] },
+      });
+    }
+
+    it("keeps Analyse disabled until all three files are chosen, and says where files go", () => {
       render(<App initialEntries={["/"]} />);
 
       const analyseBtn = screen.getByTestId("analyse-btn") as HTMLButtonElement;
       expect(analyseBtn.disabled).toBe(true);
-      expect(screen.getByTestId("analyse-hint").textContent).toContain(
-        "Live document reading is coming next. Try the sample case.",
+      expect(screen.getByTestId("analyse-hint").textContent).toContain("Google's Gemini AI");
+
+      chooseAllFiles();
+
+      expect(analyseBtn.disabled).toBe(false);
+    });
+
+    it("uploads the three files under the names the API expects, then opens the case", async () => {
+      const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        const url = String(input);
+        if (url.endsWith("/cases") && init?.method === "POST") {
+          return new Response(
+            JSON.stringify({ caseToken: "uploaded-1", status: { stage: "queued", progressMessage: "Waiting" } }),
+            { status: 201 },
+          );
+        }
+        return new Response(
+          JSON.stringify({
+            caseToken: "uploaded-1",
+            status: { stage: "reading", progressMessage: "Reading your documents." },
+            result: null,
+          }),
+        );
+      });
+      vi.stubGlobal("fetch", fetchMock);
+      render(<App initialEntries={["/"]} />);
+
+      chooseAllFiles();
+      fireEvent.click(screen.getByTestId("analyse-btn"));
+
+      await screen.findByTestId("progress-card");
+      const upload = fetchMock.mock.calls.find(([, init]) => init?.method === "POST");
+      const form = upload?.[1]?.body as FormData;
+      expect((form.get("rejection_letter") as File).name).toBe("rejection.pdf");
+      expect((form.get("policy") as File).name).toBe("policy.jpg");
+      expect((form.get("bill") as File).name).toBe("bill.png");
+    });
+
+    it("shows the API's message when an upload is refused", async () => {
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () => new Response(JSON.stringify({ error: "Live document reading is switched off." }), { status: 503 })),
       );
+      render(<App initialEntries={["/"]} />);
 
-      const validRejection = new File(["rejection"], "rejection.pdf", { type: "application/pdf" });
-      const validPolicy = new File(["policy"], "policy.jpg", { type: "image/jpeg" });
-      const validBill = new File(["bill"], "bill.png", { type: "image/png" });
+      chooseAllFiles();
+      fireEvent.click(screen.getByTestId("analyse-btn"));
 
-      // Add rejection, policy, bill - button remains disabled
-      fireEvent.change(screen.getByTestId("file-rejection"), { target: { files: [validRejection] } });
-      fireEvent.change(screen.getByTestId("file-policy"), { target: { files: [validPolicy] } });
-      fireEvent.change(screen.getByTestId("file-bill"), { target: { files: [validBill] } });
-      expect(analyseBtn.disabled).toBe(true);
+      expect((await screen.findByRole("alert")).textContent).toContain("switched off");
+    });
+
+    it("refuses files that are too big together before uploading", () => {
+      const fetchMock = vi.fn(async () => new Response(null, { status: 200 }));
+      vi.stubGlobal("fetch", fetchMock);
+      render(<App initialEntries={["/"]} />);
+      const fiveMb = () => new Uint8Array(5 * 1024 * 1024);
+
+      for (const id of ["file-rejection", "file-policy", "file-bill"]) {
+        fireEvent.change(screen.getByTestId(id), {
+          target: { files: [new File([fiveMb()], "big.pdf", { type: "application/pdf" })] },
+        });
+      }
+      fireEvent.click(screen.getByTestId("analyse-btn"));
+
+      expect(screen.getByRole("alert").textContent).toContain("14 MB");
+      expect(fetchMock.mock.calls.filter(([url]: unknown[]) => String(url).endsWith("/cases"))).toEqual([]);
+    });
+
+    it("offers made-up documents to try", () => {
+      render(<App initialEntries={["/"]} />);
+
+      const links = screen.getByTestId("sample-documents").querySelectorAll("a");
+
+      expect([...links].map((link) => link.getAttribute("href"))).toEqual([
+        "/samples/sample-rejection-letter.pdf",
+        "/samples/sample-policy.pdf",
+        "/samples/sample-hospital-bill.pdf",
+      ]);
+    });
+
+    it("never swaps someone's own case for the sample when the API can't be reached", async () => {
+      vi.useFakeTimers({ shouldAdvanceTime: true });
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+      render(<App initialEntries={["/case/uploaded-1"]} />);
+
+      await vi.advanceTimersByTimeAsync(20000);
+      vi.useRealTimers();
+
+      expect(await screen.findByRole("alert")).toBeTruthy();
+      expect(screen.queryByTestId("recoverable-amount")).toBeNull();
+      expect(screen.queryByText(/Offline copy/i)).toBeNull();
     });
 
     it("navigates directly when clicking 'Try sample case' button without files", async () => {
@@ -166,7 +256,7 @@ describe("ClaimSathi New Screens", () => {
         screen.getByText("यह एक डेमो है। कृपया असली मेडिकल दस्तावेज़ अपलोड न करें।"),
       ).toBeTruthy();
       expect(
-        screen.getByText("लाइव दस्तावेज़ पढ़ना जल्द आ रहा है। सैंपल केस आज़माएं।"),
+        screen.getByText(/Google के Gemini AI/),
       ).toBeTruthy();
       expect(screen.getByText("सैंपल केस देखें →")).toBeTruthy();
 

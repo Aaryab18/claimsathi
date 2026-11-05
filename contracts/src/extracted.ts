@@ -131,3 +131,8 @@ export const ExtractedClaimSchema = z.object({
   policyClauses: z.array(PolicyClauseSchema),
 });
 export type ExtractedClaim = z.infer<typeof ExtractedClaimSchema>;
+
+// Tells the AI reader the exact shape to return, so it can never drift from the contract.
+export function extractedClaimJsonSchema(): unknown {
+  return z.toJSONSchema(ExtractedClaimSchema);
+}

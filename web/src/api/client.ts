@@ -29,16 +29,23 @@ export interface CreateCaseFiles {
 
 /**
  * POST /cases (API_ROUTES.createCase)
- * Live document reading isn't ready. The UI disables Analyse claim.
+ * The field names must match the document types the API expects.
  */
-export async function createCase(_files: CreateCaseFiles): Promise<CreateCaseResponse> {
+export async function createCase(files: CreateCaseFiles): Promise<CreateCaseResponse> {
   const baseUrl = getBaseUrl();
   const url = `${baseUrl}${API_ROUTES.createCase.path}`;
+  const form = new FormData();
+  form.append("rejection_letter", files.rejectionLetter);
+  form.append("policy", files.policyDocument);
+  form.append("bill", files.hospitalBill);
+
   const response = await fetch(url, {
     method: API_ROUTES.createCase.method,
+    body: form,
   });
   if (!response.ok) {
-    throw new Error(`Failed to create case: ${response.status}`);
+    const body = (await response.json().catch(() => null)) as { error?: unknown } | null;
+    throw new Error(typeof body?.error === "string" ? body.error : `Failed to create case: ${response.status}`);
   }
   return response.json();
 }

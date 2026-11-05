@@ -7,6 +7,12 @@ import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10 MB
+const MAX_TOTAL_SIZE = 14 * 1024 * 1024; // The API's limit for all three files together
+const SAMPLE_DOCUMENTS = [
+  { href: "/samples/sample-rejection-letter.pdf", labelKey: "uploadRejectionTitle" },
+  { href: "/samples/sample-policy.pdf", labelKey: "uploadPolicyTitle" },
+  { href: "/samples/sample-hospital-bill.pdf", labelKey: "uploadBillTitle" },
+] as const;
 const ALLOWED_MIME_TYPES = ["application/pdf", "image/jpeg", "image/png"];
 const ALLOWED_EXTENSIONS = [".pdf", ".jpg", ".jpeg", ".png"];
 
@@ -81,6 +87,11 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
 
   const handleAnalyse = async () => {
     if (!isAnalyseEnabled || !rejectionSlot.file || !policySlot.file || !billSlot.file) return;
+
+    if (rejectionSlot.file.size + policySlot.file.size + billSlot.file.size > MAX_TOTAL_SIZE) {
+      setGeneralError(t.totalSizeError);
+      return;
+    }
 
     setIsSubmitting(true);
     setGeneralError(null);
@@ -417,8 +428,13 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
             <button
               type="button"
               data-testid="analyse-btn"
-              disabled={true}
-              className="w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all shadow-xs bg-[#E7E5D8] text-[#8C887B] cursor-not-allowed opacity-80"
+              disabled={!isAnalyseEnabled}
+              onClick={handleAnalyse}
+              className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all shadow-xs ${
+                isAnalyseEnabled
+                  ? "bg-[#114B36] hover:bg-[#0E3A2A] text-white cursor-pointer"
+                  : "bg-[#E7E5D8] text-[#8C887B] cursor-not-allowed opacity-80"
+              }`}
             >
               {t.analyseButton}
             </button>
@@ -427,7 +443,19 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
               data-testid="analyse-hint"
               className="text-xs text-center text-[#8C887B]"
             >
-              {t.liveReadingComingNext}
+              {t.liveReadingNotice}
+            </p>
+
+            <p data-testid="sample-documents" className="text-xs text-center text-[#526059]">
+              {t.sampleDocumentsIntro}{" "}
+              {SAMPLE_DOCUMENTS.map(({ href, labelKey }, index) => (
+                <span key={href}>
+                  {index > 0 && " · "}
+                  <a href={href} download className="underline font-medium text-[#114B36]">
+                    {t[labelKey].replace(/^\d+\.\s*/, "")}
+                  </a>
+                </span>
+              ))}
             </p>
           </div>
         </section>

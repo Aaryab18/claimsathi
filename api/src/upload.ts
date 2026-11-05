@@ -5,6 +5,8 @@ import type { StoredDocument } from "./case-store.js";
 import { HttpError } from "./errors.js";
 
 export const MAX_FILE_BYTES = 10 * 1024 * 1024;
+// Gemini takes at most 20 MB per request, and sending files as text makes them a third bigger.
+export const MAX_TOTAL_BYTES = 14 * 1024 * 1024;
 
 const DOCUMENT_TYPES = DocumentTypeSchema.options;
 const WRONG_FILES_MESSAGE = "Upload exactly three files, one each of rejection_letter, policy and bill.";
@@ -66,6 +68,10 @@ export function readUploadedDocuments(req: Request): StoredDocument[] {
     }
     return { documentType, fileName: cleanFileName(file.originalname), fileType, contents: file.buffer };
   });
+
+  if (documents.reduce((total, { contents }) => total + contents.length, 0) > MAX_TOTAL_BYTES) {
+    throw new HttpError(413, "The three files together must be 14 MB or smaller.");
+  }
 
   const described = CreateCaseRequestSchema.safeParse({
     documents: documents.map(({ documentType, fileName, fileType, contents }) => ({

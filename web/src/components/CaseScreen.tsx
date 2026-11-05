@@ -14,6 +14,9 @@ import { ConfirmFactsPanel } from "./ConfirmFactsPanel";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
 
+const POLL_INTERVAL_MS = 2000;
+const MAX_FAILED_POLLS = 5;
+
 interface CaseScreenProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
@@ -30,27 +33,41 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
   const [error, setError] = useState<string | null>(null);
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
 
+  const [pollAttempt, setPollAttempt] = useState(0);
+
   const pollTimerRef = useRef<number | null>(null);
+  const failedPollsRef = useRef(0);
 
   const fetchStatus = useCallback(async () => {
     try {
       const response = await getCase(token);
       setStatus(response.status);
       setIsOffline(false);
+      failedPollsRef.current = 0;
       if (response.status.stage === "done") {
         setCaseResult(response.result || sampleCaseResult);
       }
       setLoading(false);
       return response.status.stage;
     } catch {
-      // If the API can't be reached, show the saved sample labelled "Offline copy: corrections are unavailable"
-      setStatus({ stage: "done", progressMessage: "Offline copy" });
-      setCaseResult(sampleCaseResult);
-      setIsOffline(true);
-      setLoading(false);
-      return "done";
+      if (token === "sample") {
+        // If the API can't be reached, show the saved sample labelled "Offline copy: corrections are unavailable"
+        setStatus({ stage: "done", progressMessage: "Offline copy" });
+        setCaseResult(sampleCaseResult);
+        setIsOffline(true);
+        setLoading(false);
+        return "done";
+      }
+      // Someone's own case must never be swapped for the sample, so keep trying and then say it failed.
+      failedPollsRef.current += 1;
+      if (failedPollsRef.current >= MAX_FAILED_POLLS) {
+        setError(t.errorMessage);
+        setLoading(false);
+        return "failed";
+      }
+      return "reading";
     }
-  }, [token]);
+  }, [token, t.errorMessage]);
 
   const handleRetry = useCallback(() => {
     resetCaseProgress(token);
@@ -58,8 +75,9 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
     setError(null);
     setStatus(null);
     setIsOffline(false);
-    fetchStatus();
-  }, [token, fetchStatus]);
+    failedPollsRef.current = 0;
+    setPollAttempt((attempt) => attempt + 1);
+  }, [token]);
 
   useEffect(() => {
     let active = true;
@@ -69,7 +87,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
       if (!active) return;
 
       if (stage !== "done" && stage !== "failed") {
-        pollTimerRef.current = window.setTimeout(runPoll, 600);
+        pollTimerRef.current = window.setTimeout(runPoll, POLL_INTERVAL_MS);
       }
     };
 
@@ -81,7 +99,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
         window.clearTimeout(pollTimerRef.current);
       }
     };
-  }, [fetchStatus]);
+  }, [fetchStatus, pollAttempt]);
 
   // Loading initial state
   if (loading && !status) {

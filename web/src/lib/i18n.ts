@@ -63,8 +63,9 @@ export interface Translations {
   fileTypeError: string;
   fileSizeError: string;
   analyseButton: string;
-  analyseDisabledHint: string;
-  liveReadingComingNext: string;
+  liveReadingNotice: string;
+  sampleDocumentsIntro: string;
+  totalSizeError: string;
   trySampleTitle: string;
   trySampleButton: string;
   trySampleDesc: string;
@@ -179,8 +180,10 @@ export const translations: Record<Language, Translations> = {
     fileTypeError: "Only PDF, JPG, and PNG files are allowed.",
     fileSizeError: "File is larger than the 10 MB limit.",
     analyseButton: "Analyse claim",
-    analyseDisabledHint: "Live document reading is coming next. Try the sample case.",
-    liveReadingComingNext: "Live document reading is coming next. Try the sample case.",
+    liveReadingNotice:
+      "Your files are sent to Google's Gemini AI to be read, and are deleted from our database within 24 hours. The AI can misread, so check the facts on the result page.",
+    sampleDocumentsIntro: "No documents to hand? Download our made-up ones:",
+    totalSizeError: "The three files together must be 14 MB or smaller.",
     trySampleTitle: "Try it first without uploading",
     trySampleButton: "Try sample case",
     trySampleDesc: "Explore a realistic claim with Suresh Kumar's hospital bill and see the full breakdown.",
@@ -304,8 +307,10 @@ export const translations: Record<Language, Translations> = {
     fileTypeError: "केवल PDF, JPG और PNG फ़ाइलें स्वीकृत हैं।",
     fileSizeError: "फ़ाइल 10 MB की सीमा से अधिक बड़ी है।",
     analyseButton: "क्लेम का विश्लेषण करें",
-    analyseDisabledHint: "लाइव दस्तावेज़ पढ़ना जल्द आ रहा है। सैंपल केस आज़माएं।",
-    liveReadingComingNext: "लाइव दस्तावेज़ पढ़ना जल्द आ रहा है। सैंपल केस आज़माएं।",
+    liveReadingNotice:
+      "आपकी फ़ाइलें पढ़ने के लिए Google के Gemini AI को भेजी जाती हैं, और 24 घंटे के भीतर हमारे डेटाबेस से हटा दी जाती हैं। AI से पढ़ने में गलती हो सकती है, इसलिए परिणाम पेज पर तथ्यों की जांच करें।",
+    sampleDocumentsIntro: "दस्तावेज़ पास नहीं हैं? हमारे काल्पनिक दस्तावेज़ डाउनलोड करें:",
+    totalSizeError: "तीनों फ़ाइलें मिलाकर 14 MB या उससे कम होनी चाहिए।",
     trySampleTitle: "दस्तावेज़ अपलोड किए बिना आज़माएं",
     trySampleButton: "सैंपल केस देखें",
     trySampleDesc: "सुरेश कुमार के वास्तविक जैसे केस के साथ देखें कि क्लेमसाथी कैसे काम करता है।",
