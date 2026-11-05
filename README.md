@@ -38,13 +38,13 @@ See [the architecture](docs/ARCHITECTURE.md).
 
 | Rule | Checks | Legal source status |
 |---|---|---|
-| R1 | Cover of 60 months or more | Found in a copy of the 2024 IRDAI circular, clause 13; not yet confirmed on IRDAI's site |
+| R1 | Cover of 60 months or more | **Verified:** IRDAI Master Circular on Health Insurance, 29.05.2024, clause 13 |
 | R2 | Pre-existing disease waiting period, from the policy's own figure | Uses the policy's wording |
-| R3 | Proportionate cuts on pharmacy, consumables, implants and diagnostics | **Unverified:** widely reported, but the IRDAI text hasn't been found |
+| R3 | Proportionate cuts on pharmacy, consumables, implants and diagnostics | **Source found, status open:** IRDAI circular 151/06/2020, paragraphs 4 and 5. We haven't confirmed whether the May 2024 Master Circular kept it |
 | R4 | Non-payable items that belong to a package | Unverified |
-| R5 | Rejection for documents the insurer never asked for | Found in a copy of the circular, clause 17(c); not yet confirmed on IRDAI's site |
+| R5 | Rejection for documents the insurer never asked for | **Verified text:** 2024 Master Circular, clause 17(c), on insurers collecting documents from hospitals. Whether it covers every missing document is a judgment, so R5 needs the person's confirmation |
 | R6 | Co-pay and sub-limit arithmetic | Arithmetic on the policy's own figures |
-| R7 | Whether a cited clause was found in the policy | Found in a copy of the circular, clause 17(b); not yet confirmed on IRDAI's site |
+| R7 | Whether a cited clause was found in the policy | **Verified:** 2024 Master Circular, clause 17(b) |
 | R8 | Ombudsman deadlines | **Verified:** Insurance Ombudsman Rules 2017, Rule 14, as updated on 9.11.2023 |
 
 The app marks unverified references as unverified on screen.

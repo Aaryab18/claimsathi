@@ -35,33 +35,57 @@ const pendingRegulation: Regulation = {
   verified: false,
 };
 
-// Read in a copy of the circular, not yet on IRDAI's own site, so these stay unverified. R3 has no entry
-// because that circular does not mention proportionate deductions.
+// Read on IRDAI's own site. R3's circular is real, but the 2024 Master Circular replaced many older ones and
+// its list isn't published with it, so we can't yet say this one is still in force. It stays unverified.
 const CIRCULAR = "IRDAI Master Circular on Health Insurance, 29.05.2024";
-const DRAFT_REGULATIONS: Partial<Record<string, Regulation>> = {
+const REGULATIONS: Partial<Record<string, Regulation>> = {
+  R3: {
+    text: "Pharmacy and consumables, implants and medical devices, and diagnostics are not allowed in 'associate medical expenses', and insurers can't recover proportionate deductions on anything else. We are confirming whether this still applies after IRDAI's May 2024 Master Circular.",
+    sourceName: "IRDAI circular IRDAI/HLT/REG/CIR/151/06/2020, 11.06.2020, paragraphs 4 and 5",
+    verified: false,
+  },
   R1: {
     text: "After 60 months of continuous coverage, a policy or claim can't be contested for non-disclosure or misrepresentation, except for established fraud.",
     sourceName: `${CIRCULAR}, clause 13`,
-    verified: false,
+    verified: true,
   },
   R5: {
     text: "After a claim is intimated, insurers and TPAs collect the required documents from hospitals, and the policyholder is not required to submit them.",
     sourceName: `${CIRCULAR}, clause 17(c)`,
-    verified: false,
+    verified: true,
   },
   R7: {
     text: "A claim disallowed in part must be conveyed with reference to the specific terms and conditions of the policy.",
     sourceName: `${CIRCULAR}, clause 17(b)`,
-    verified: false,
+    verified: true,
   },
 };
 
 function regulationFor(ruleIds: string[]): Regulation {
   for (const ruleId of ruleIds) {
-    const regulation = DRAFT_REGULATIONS[ruleId];
+    const regulation = REGULATIONS[ruleId];
     if (regulation) return regulation;
   }
   return pendingRegulation;
+}
+
+// The templates say a reference is unchecked, which stops being true once its source has been read.
+const UNCHECKED_EN = /\s*The legal reference for (?:this rule|these rules|this deduction) has not been checked yet\./;
+const UNCHECKED_HI = /\s*(?:इस नियम|इन नियमों|इस कटौती) के कानूनी संदर्भ की जाँच अभी बाकी है।|\s*इस नियम का कानूनी संदर्भ अभी जांचा नहीं गया है।/;
+
+function withSourceStatus(
+  explanations: { en: string; hi: string },
+  ruleIds: string[]
+): { en: string; hi: string } {
+  if (ruleIds.includes("R3")) {
+    return {
+      en: explanations.en.replace(UNCHECKED_EN, " IRDAI's 2020 circular bars this cut on these items, and we are confirming it still applies."),
+      hi: explanations.hi.replace(UNCHECKED_HI, " IRDAI का 2020 का परिपत्र इन मदों पर यह कटौती रोकता है, और हम पुष्टि कर रहे हैं कि यह अब भी लागू है।"),
+    };
+  }
+  return regulationFor(ruleIds).verified
+    ? { en: explanations.en.replace(UNCHECKED_EN, ""), hi: explanations.hi.replace(UNCHECKED_HI, "") }
+    : explanations;
 }
 
 // "Clause 6.3", "Cl. 6.3" and "6.3" are the same clause.
@@ -607,6 +631,8 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
         overrides?.insurerAskedForMissingDocument
       );
     }
+
+    explanations = withSourceStatus(explanations, g.ruleIds);
 
     const missingClause = matchedReason?.clauseCited;
     if (clauseIsMissing(missingClause, extracted)) {

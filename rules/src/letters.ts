@@ -25,6 +25,7 @@ function itemNames(finding: Finding, result: CaseResult): string {
 function inLetterVoice(explanation: string): string {
   return explanation
     .replace(/\s*The legal reference for (this rule|these rules|this deduction) has not been checked yet\./, "")
+    .replace(/\s*IRDAI's 2020 circular bars this cut on these items, and we are confirming it still applies\./, "")
     .replace(/\s*Did the insurer ever ask you for it\? Answer in Confirm the facts, as that can change this result\./, " Please show me when you asked for it.")
     .replace(/You confirmed the insurer never asked you for that document/, "You never asked me for that document")
     .replace(/You confirmed the insurer asked for it, so this depends on whether that document can still be provided\./, "I ask you to tell me how that document can still be accepted.")

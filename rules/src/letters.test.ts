@@ -94,6 +94,11 @@ describe("the letters' voice", () => {
     expect(letter).not.toMatch(/It reduced/);
   });
 
+  it("marks R3's reference for checking, and leaves our status note out", () => {
+    expect(letter).toContain("151/06/2020, 11.06.2020, paragraphs 4 and 5 [check this reference before sending]");
+    expect(letter).not.toContain("confirming it still applies");
+  });
+
   it("writes money the same way throughout", () => {
     expect(letter).not.toContain("₹");
   });

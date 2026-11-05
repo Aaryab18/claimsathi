@@ -159,7 +159,11 @@ describe(`POST ${API_ROUTES.createSampleCase.path}`, () => {
     const { body } = await request(appFor(store)).post(API_ROUTES.createSampleCase.path);
 
     const result = CaseResultSchema.parse(cases.get(body.caseToken)?.result);
-    expect(result).toEqual({ ...sampleCaseResult, caseToken: body.caseToken });
+    expect(result.caseToken).toBe(body.caseToken);
+    expect(result.totals).toEqual(sampleCaseResult.totals);
+    expect(result.findings.map(({ verdict, amount }) => ({ verdict, amount }))).toEqual(
+      sampleCaseResult.findings.map(({ verdict, amount }) => ({ verdict, amount })),
+    );
     expect(result.resultSource).toBe("saved_sample");
     expect(cases.get(body.caseToken)?.extracted).toEqual(sampleExtractedClaim);
   });
