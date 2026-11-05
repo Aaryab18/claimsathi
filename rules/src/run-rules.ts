@@ -1,4 +1,5 @@
 import type {
+  AssessmentWarning,
   Deadline,
   Evidence,
   ExtractedClaim,
@@ -51,6 +52,27 @@ function differenceInMonths(
   return months;
 }
 
+function differenceInDays(
+  startDateStr: string | null | undefined,
+  endDateStr: string | null | undefined
+): number | null {
+  if (!startDateStr || !endDateStr) return null;
+  const [sy, sm, sd] = startDateStr.split("-").map(Number);
+  const [ey, em, ed] = endDateStr.split("-").map(Number);
+  if (
+    sy === undefined || sm === undefined || sd === undefined ||
+    ey === undefined || em === undefined || ed === undefined ||
+    isNaN(sy) || isNaN(sm) || isNaN(sd) || isNaN(ey) || isNaN(em) || isNaN(ed)
+  ) {
+    return null;
+  }
+  const startUtc = Date.UTC(sy, sm - 1, sd);
+  const endUtc = Date.UTC(ey, em - 1, ed);
+  const diffMs = endUtc - startUtc;
+  const days = Math.round(diffMs / (1000 * 60 * 60 * 24));
+  return days > 0 ? days : null;
+}
+
 interface ItemDecision {
   item: LineItem;
   ruleIds: string[];
@@ -65,7 +87,16 @@ function evaluateLineItem(
   effectiveCoverStart: string | null,
   effectiveAdmissionDate: string | null
 ): ItemDecision {
-  const deducted = item.deducted ?? 0;
+  if (item.deducted === null) {
+    return {
+      item,
+      ruleIds: ["UNDECIDED"],
+      verdict: "questionable",
+      confidence: "moderate",
+    };
+  }
+
+  const deducted = item.deducted;
   if (deducted <= 0) {
     return {
       item,
@@ -75,13 +106,41 @@ function evaluateLineItem(
     };
   }
 
-  // Room rent excess: valid, with empty ruleIds
+  // Room rent excess: valid only if limit and both dates exist, average > limit, and deduction <= billed - limit * days
   if (item.deductionType === "room_rent_excess") {
+    const limit = extracted.policy.roomRentLimit;
+    const dischargeDate = extracted.claim.dischargeDate;
+    const days = differenceInDays(effectiveAdmissionDate, dischargeDate);
+    const billed = item.billed;
+
+    const hasLimit = limit !== null && limit !== undefined;
+    const hasDates =
+      effectiveAdmissionDate !== null &&
+      effectiveAdmissionDate !== undefined &&
+      dischargeDate !== null &&
+      dischargeDate !== undefined &&
+      days !== null &&
+      days > 0;
+    const hasBilled = billed !== null && billed !== undefined;
+
+    if (hasLimit && hasDates && hasBilled) {
+      const averageDailyCost = billed / days;
+      const maxDeduction = billed - limit * days;
+      if (averageDailyCost > limit && deducted <= maxDeduction) {
+        return {
+          item,
+          ruleIds: [],
+          verdict: "valid",
+          confidence: "strong",
+        };
+      }
+    }
+
     return {
       item,
-      ruleIds: [],
-      verdict: "valid",
-      confidence: "strong",
+      ruleIds: ["UNDECIDED"],
+      verdict: "questionable",
+      confidence: "moderate",
     };
   }
 
@@ -191,13 +250,19 @@ function findEvidence(
   items: LineItem[],
   extracted: ExtractedClaim
 ): Evidence {
+  // Map deductionType to rejection category
+  let targetCategory: string = deductionType;
+  if (deductionType === "room_rent_excess") {
+    targetCategory = "room_rent";
+  } else if (deductionType === "documentation") {
+    targetCategory = "documentation_missing";
+  }
+
   const categories = new Set(items.map((i) => i.category));
 
-  let matchedReason = extracted.rejection.reasons.find((r) => {
-    if (deductionType === "room_rent_excess" && r.category === "room_rent") return true;
-    if (deductionType === "proportionate" && r.category === "proportionate") return true;
-    if (deductionType === "pre_existing_disease" && r.category === "pre_existing_disease") return true;
-    if (deductionType === "non_payable" && r.category === "non_payable") {
+  const matchedReason = extracted.rejection.reasons.find((r) => {
+    if (r.category !== targetCategory) return false;
+    if (targetCategory === "non_payable") {
       if (categories.has("admin")) {
         return (
           r.text.toLowerCase().includes("admin") ||
@@ -212,20 +277,21 @@ function findEvidence(
       }
       return true;
     }
-    return false;
+    return true;
   });
 
-  if (!matchedReason) {
-    matchedReason = extracted.rejection.reasons.find((r) => r.category === deductionType);
+  // insurerText may only come from a rejection reason, or from a line item's source when its document is rejection_letter. Otherwise it is null.
+  let insurerText: string | null = null;
+  if (matchedReason) {
+    insurerText = matchedReason.source?.quote ?? matchedReason.text ?? null;
+  } else {
+    const itemWithRejection = items.find((i) => i.source?.document === "rejection_letter");
+    if (itemWithRejection?.source?.quote) {
+      insurerText = itemWithRejection.source.quote;
+    }
   }
 
-  const insurerText =
-    matchedReason?.source?.quote ??
-    matchedReason?.text ??
-    items[0]?.deductionReason ??
-    items[0]?.source?.quote ??
-    null;
-
+  // Only use a clause found in policyClauses, otherwise policyClause is null.
   let policyClause: string | null = null;
   const clauseCited = matchedReason?.clauseCited;
   if (clauseCited) {
@@ -233,7 +299,7 @@ function findEvidence(
     if (clauseObj) {
       policyClause = clauseObj.text ? `${clauseObj.clauseId}: ${clauseObj.text}` : clauseObj.clauseId;
     } else {
-      policyClause = clauseCited;
+      policyClause = null;
     }
   }
 
@@ -243,16 +309,6 @@ function findEvidence(
     regulation: pendingRegulation,
     quoteVerified: false,
   };
-}
-
-function parseRoomDetails(item: LineItem): { perDay: number | null; days: number | null } {
-  const quote = item.source?.quote ?? item.description ?? "";
-  const daysMatch = quote.match(/(\d+)\s*days?/i);
-  const rateMatch = quote.match(/(?:@|at)\s*Rs\.?\s*([\d,]+)/i);
-
-  const days = daysMatch?.[1] ? parseInt(daysMatch[1], 10) : null;
-  const perDay = rateMatch?.[1] ? parseInt(rateMatch[1].replace(/,/g, ""), 10) : null;
-  return { perDay, days };
 }
 
 export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResult => {
@@ -271,22 +327,32 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
     overrides?.lineItemCategories?.map((o) => [o.lineItemId, o.category])
   );
 
-  // Filter only deducted line items
-  const deductedItems = extracted.lineItems.filter((item) => (item.deducted ?? 0) > 0);
+  // Assess line items that have positive deductions or deducted: null
+  const assessableItems = extracted.lineItems.filter(
+    (item) => (item.deducted ?? 0) > 0 || item.deducted === null
+  );
+
+  // Apply category overrides creating effective items (not mutating original items)
+  const effectiveItems: LineItem[] = assessableItems.map((item) => {
+    const overrideCategory = categoryOverrideMap.get(item.id);
+    if (overrideCategory !== undefined) {
+      return { ...item, category: overrideCategory };
+    }
+    return item;
+  });
 
   // Evaluate each line item
-  const decisions: ItemDecision[] = deductedItems.map((item) => {
-    const effectiveCategory = categoryOverrideMap.get(item.id) ?? item.category;
+  const decisions: ItemDecision[] = effectiveItems.map((item) => {
     return evaluateLineItem(
       item,
-      effectiveCategory,
+      item.category,
       extracted,
       effectiveCoverStart,
       effectiveAdmissionDate
     );
   });
 
-  // Group line items into findings: group by deductionType + verdict + ruleIds
+  // Group line items into findings
   type Group = {
     deductionType: string;
     verdict: Verdict;
@@ -299,6 +365,17 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
   const groupIndexMap = new Map<string, number>();
 
   for (const d of decisions) {
+    if (d.item.deducted === null) {
+      groups.push({
+        deductionType: d.item.deductionType ?? "other",
+        verdict: "questionable",
+        confidence: "moderate",
+        ruleIds: ["UNDECIDED"],
+        items: [d.item],
+      });
+      continue;
+    }
+
     const itemDeductionType = d.item.deductionType ?? "other";
     const key = `${itemDeductionType}::${d.verdict}::${d.ruleIds.join(",")}`;
     const existingIndex = groupIndexMap.get(key);
@@ -337,30 +414,67 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
     if (g.ruleIds.includes("R3")) {
       explanations = buildR3Explanation(g.items, amount);
     } else if (g.ruleIds.includes("R4") && g.verdict === "wrong") {
-      const pkgItem = extracted.lineItems.find((i) => i.category === "procedure");
+      const pkgItem = extracted.lineItems.find(
+        (i) =>
+          (i.category === "procedure" || /package/i.test(i.description ?? "")) &&
+          (i.approved ?? 0) > 0
+      );
       const pkgName = pkgItem?.description
-        ? pkgItem.description.toLowerCase().replace(/package/i, "").trim()
-        : "angioplasty";
-      explanations = buildR4WrongExplanation(amount, pkgName);
+        ? pkgItem.description.replace(/package/i, "").trim()
+        : null;
+      const insurerApprovedPackage = pkgItem !== undefined;
+      const firstItem = g.items[0];
+      explanations = buildR4WrongExplanation({
+        amount,
+        itemDescription: firstItem?.description,
+        packageName: pkgName,
+        insurerApprovedPackage,
+      });
     } else if (g.ruleIds.includes("R4") && g.verdict === "questionable") {
-      explanations = buildR4QuestionableExplanation(amount, g.items[0]?.category ?? null);
+      const matchedReason = extracted.rejection.reasons.find((r) => {
+        if (r.category !== "non_payable") return false;
+        const categories = new Set(g.items.map((i) => i.category));
+        if (categories.has("admin")) {
+          return (
+            r.text.toLowerCase().includes("admin") ||
+            (r.source?.quote?.toLowerCase().includes("admin") ?? false)
+          );
+        }
+        return true;
+      });
+      const clauseCited = matchedReason?.clauseCited ?? null;
+      explanations = buildR4QuestionableExplanation(amount, g.items, clauseCited);
     } else if (g.ruleIds.includes("R1") || g.ruleIds.includes("R2")) {
-      let condition = "hypertension";
-      const desc = g.items[0]?.description?.toLowerCase() ?? "";
-      if (desc.includes("hypertension")) condition = "hypertension";
-      else if (extracted.claim.diagnosis) condition = extracted.claim.diagnosis;
+      const rawDesc = g.items[0]?.description?.trim();
+      let conditionNameEn: string;
+      let conditionNameHi: string;
+
+      if (rawDesc) {
+        if (/hypertension/i.test(rawDesc)) {
+          conditionNameEn = "hypertension";
+          conditionNameHi = "हाइपरटेंशन (उच्च रक्तचाप)";
+        } else {
+          conditionNameEn = rawDesc;
+          conditionNameHi = rawDesc;
+        }
+      } else {
+        conditionNameEn = "this condition";
+        conditionNameHi = "इस स्थिति";
+      }
 
       explanations = buildPedExplanation({
         amount,
-        conditionName: condition,
+        conditionNameEn,
+        conditionNameHi,
         patientName: extracted.claim.patient.name ?? "the insured",
         waitingMonths: extracted.policy.pedWaitingMonths,
         coverStartDate: effectiveCoverStart,
         ruleIds: g.ruleIds,
       });
     } else if (g.deductionType === "room_rent_excess" && g.verdict === "valid") {
+      const days = differenceInDays(effectiveAdmissionDate, extracted.claim.dischargeDate);
       const firstItem = g.items[0];
-      const { perDay, days } = firstItem ? parseRoomDetails(firstItem) : { perDay: null, days: null };
+      const perDay = firstItem?.billed && days ? Math.round(firstItem.billed / days) : null;
       explanations = buildRoomRentValidExplanation(
         amount,
         extracted.policy.roomRentLimit,
@@ -368,7 +482,7 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
         days
       );
     } else {
-      explanations = buildUndecidedExplanation(amount, g.deductionType);
+      explanations = buildUndecidedExplanation(amount, g.deductionType, g.items[0]?.description);
     }
 
     return {
@@ -418,9 +532,46 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
     },
   ];
 
+  // Assessment warnings
+  const warnings: AssessmentWarning[] = [];
+
+  // 1. Full rejection with no line items
+  if (extracted.rejection.type === "full" && extracted.lineItems.length === 0) {
+    warnings.push({
+      code: "no_line_items",
+      messageEn: "The claim was fully rejected, but no line items were found in the bill.",
+      messageHi: "दावा पूरी तरह खारिज कर दिया गया था, लेकिन बिल में कोई मद नहीं मिली।",
+    });
+  }
+
+  // 2. Line item with missing deduction amount
+  if (extracted.lineItems.some((item) => item.deducted === null)) {
+    warnings.push({
+      code: "missing_deduction_amount",
+      messageEn: "One or more line items have a missing deduction amount.",
+      messageHi: "एक या अधिक मदों में कटौती की राशि दर्ज नहीं है।",
+    });
+  }
+
+  // 3. Claimed minus approved does not equal total deducted
+  if (
+    extracted.claim.amountClaimed !== null &&
+    extracted.claim.amountApproved !== null
+  ) {
+    const diff = extracted.claim.amountClaimed - extracted.claim.amountApproved;
+    if (diff !== totalDeducted) {
+      warnings.push({
+        code: "totals_do_not_match",
+        messageEn: "The claimed amount minus approved amount does not equal the total deducted amount.",
+        messageHi: "दावा की गई राशि और स्वीकृत राशि का अंतर कुल कटौती राशि के बराबर नहीं है।",
+      });
+    }
+  }
+
   return {
     findings,
     deadlines,
     totals,
+    warnings,
   };
 };
