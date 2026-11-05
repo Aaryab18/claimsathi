@@ -10,6 +10,7 @@ import { PlainSummary } from "./PlainSummary";
 import { FindingsTable } from "./FindingsTable";
 import { EvidenceModal } from "./EvidenceModal";
 import { DeadlinesSection } from "./DeadlinesSection";
+import { LettersSection } from "./LettersSection";
 import { ConfirmFactsPanel } from "./ConfirmFactsPanel";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
@@ -241,7 +242,11 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
             <DeadlinesSection
               deadlines={caseResult.deadlines}
               language={language}
+              caseToken={caseResult.caseToken}
             />
+
+            {/* 7. Letters */}
+            <LettersSection caseToken={caseResult.caseToken} language={language} isOffline={isOffline} />
           </>
         )}
       </main>

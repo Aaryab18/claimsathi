@@ -1,7 +1,9 @@
 import {
   API_ROUTES,
   type CreateCaseResponse,
+  type CreateLetterResponse,
   type CreateSampleCaseResponse,
+  type LetterType,
   type GetCaseResponse,
   type FactOverrides,
   type CaseResult,
@@ -118,6 +120,22 @@ export async function applyFacts(token: string, overrides: FactOverrides): Promi
     throw new Error(`Failed to apply corrections: ${response.status}`);
   }
 
+  return response.json();
+}
+
+/**
+ * POST /cases/:token/letters (API_ROUTES.createLetter)
+ */
+export async function createLetter(token: string, letterType: LetterType): Promise<CreateLetterResponse> {
+  const path = API_ROUTES.createLetter.path.replace(":token", encodeURIComponent(token));
+  const response = await fetch(`${getBaseUrl()}${path}`, {
+    method: API_ROUTES.createLetter.method,
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ letterType }),
+  });
+  if (!response.ok) {
+    throw new Error(`Failed to create letter: ${response.status}`);
+  }
   return response.json();
 }
 

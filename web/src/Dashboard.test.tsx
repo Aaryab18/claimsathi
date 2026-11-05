@@ -160,11 +160,8 @@ describe("ClaimSathi Dashboard", () => {
     const hindiWrongBadges = screen.getAllByTestId("verdict-wrong");
     expect(hindiWrongBadges[0].textContent).toContain("संभावित रूप से गलत कटौती");
 
-    // Hindi deadline verification notice and no legal team claims
-    const hindiDeadlineNotices = screen.getAllByText(
-      "हम अभी भी इस समय-सीमा के आधिकारिक स्रोत की जांच कर रहे हैं।",
-    );
-    expect(hindiDeadlineNotices.length).toBe(2);
+    // Hindi deadline explanations and no legal team claims
+    expect(screen.getByText(/पहले बीमा कंपनी को लिखित शिकायत भेजें/)).toBeTruthy();
     expect(screen.queryByText(/हमारी कानूनी टीम/)).toBeNull();
 
     // Hindi translated deadline labels
@@ -274,13 +271,10 @@ describe("ClaimSathi Dashboard", () => {
       await screen.findByTestId("recoverable-amount");
 
       const datePendingBadges = screen.getAllByTestId("deadline-date-pending");
-      expect(datePendingBadges.length).toBe(2);
+      expect(datePendingBadges.length).toBe(1);
       expect(datePendingBadges[0].textContent).toBe("Date pending");
-
-      const deadlinePendingNotices = screen.getAllByText(
-        "We are still checking the official source for this deadline.",
-      );
-      expect(deadlinePendingNotices.length).toBe(2);
+      expect(screen.getByText(/We found no fixed legal deadline/)).toBeTruthy();
+      expect(screen.getByText(/Safest last date/)).toBeTruthy();
       expect(screen.queryByText(/legal team/i)).toBeNull();
     });
 

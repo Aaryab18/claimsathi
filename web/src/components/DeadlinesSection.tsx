@@ -2,9 +2,11 @@ import type { Deadline } from "@claimsathi/contracts";
 import { formatDate } from "../lib/format";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
+import { buildCalendarFile } from "../lib/calendar";
 
 interface DeadlinesSectionProps {
   deadlines: Deadline[];
+  caseToken?: string;
   language: Language;
 }
 
@@ -20,8 +22,9 @@ function getDeadlineLabel(label: string, language: Language, grievanceLabel: str
   return label;
 }
 
-export function DeadlinesSection({ deadlines, language }: DeadlinesSectionProps) {
+export function DeadlinesSection({ deadlines, language, caseToken }: DeadlinesSectionProps) {
   const t = translations[language];
+  const calendarFile = caseToken ? buildCalendarFile(deadlines, caseToken) : null;
 
   return (
     <section aria-label={t.deadlinesTitle} className="flex flex-col gap-3">
@@ -46,6 +49,16 @@ export function DeadlinesSection({ deadlines, language }: DeadlinesSectionProps)
         <p className="text-xs sm:text-sm text-[#526059]">
           {t.deadlinesSubtitle}
         </p>
+        {calendarFile && (
+          <a
+            data-testid="calendar-download"
+            href={`data:text/calendar;charset=utf-8,${encodeURIComponent(calendarFile)}`}
+            download="claimsathi-deadlines.ics"
+            className="inline-block mt-2 text-xs font-semibold underline text-[#114B36]"
+          >
+            {t.addToCalendar}
+          </a>
+        )}
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -81,9 +94,9 @@ export function DeadlinesSection({ deadlines, language }: DeadlinesSectionProps)
                 </div>
 
                 <p className="mt-2 text-xs text-[#526059] leading-relaxed">
-                  {deadline.verified
-                    ? deadline.explanation
-                    : t.deadlineVerificationPending}
+                  {language === "hi" && deadline.explanationHi
+                    ? deadline.explanationHi
+                    : deadline.explanation}
                 </p>
               </div>
 

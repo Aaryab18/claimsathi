@@ -624,7 +624,7 @@ describe(`PATCH ${API_ROUTES.applyFacts.path}`, () => {
       }
       expect(body.deadlines.length).toBeGreaterThan(0);
       for (const deadline of body.deadlines) {
-        expect(deadline.verified).toBe(false);
+        expect(deadline.verified).toBe(deadline.date !== null);
       }
     });
 
@@ -816,16 +816,12 @@ describe("the sample case from start to finish", () => {
 });
 
 describe("routes that do not exist", () => {
-  it("has not built letters yet", async () => {
-    const { store, cases } = createFakeStore();
-    seedCase(cases);
+  it("answers with a plain 404", async () => {
+    const { store } = createFakeStore();
 
-    const response = await request(appFor(store))
-      .post(API_ROUTES.createLetter.path.replace(":token", TOKEN))
-      .send({ letterType: "grievance" });
+    const { body } = await request(appFor(store)).get("/nothing-here").expect(404);
 
-    expect(response.status).toBe(404);
-    expect(response.body).toEqual({ error: "Not found." });
+    expect(body).toEqual({ error: "Not found." });
   });
 });
 

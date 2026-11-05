@@ -1,6 +1,5 @@
 import type {
   AssessmentWarning,
-  Deadline,
   Evidence,
   ExtractedClaim,
   Finding,
@@ -15,11 +14,15 @@ import type {
   Confidence,
 } from "@claimsathi/contracts";
 
+import { buildDeadlines } from "./deadlines.js";
 import {
   buildPedExplanation,
   buildR3Explanation,
   buildR4QuestionableExplanation,
   buildR4WrongExplanation,
+  buildR5Explanation,
+  buildR6Explanation,
+  buildR7Sentence,
   buildRoomRentValidExplanation,
   buildUndecidedExplanation,
 } from "./templates.js";
@@ -31,6 +34,82 @@ const pendingRegulation: Regulation = {
   sourceName: PENDING_VERIFICATION,
   verified: false,
 };
+
+// Read in a copy of the circular, not yet on IRDAI's own site, so these stay unverified. R3 has no entry
+// because that circular does not mention proportionate deductions.
+const CIRCULAR = "IRDAI Master Circular on Health Insurance, 29.05.2024";
+const DRAFT_REGULATIONS: Partial<Record<string, Regulation>> = {
+  R1: {
+    text: "After 60 months of continuous coverage, a policy or claim can't be contested for non-disclosure or misrepresentation, except for established fraud.",
+    sourceName: `${CIRCULAR}, clause 13`,
+    verified: false,
+  },
+  R5: {
+    text: "After a claim is intimated, insurers and TPAs collect the required documents from hospitals, and the policyholder is not required to submit them.",
+    sourceName: `${CIRCULAR}, clause 17(c)`,
+    verified: false,
+  },
+  R7: {
+    text: "A claim disallowed in part must be conveyed with reference to the specific terms and conditions of the policy.",
+    sourceName: `${CIRCULAR}, clause 17(b)`,
+    verified: false,
+  },
+};
+
+function regulationFor(ruleIds: string[]): Regulation {
+  for (const ruleId of ruleIds) {
+    const regulation = DRAFT_REGULATIONS[ruleId];
+    if (regulation) return regulation;
+  }
+  return pendingRegulation;
+}
+
+const clauseKey = (clause: string) => clause.toLowerCase().replace(/clause|section|[\s.]/g, "");
+
+// R7. Code can only show that a clause wasn't found in what was read, so this never proves the insurer wrong.
+function clauseIsMissing(clauseCited: string | null | undefined, extracted: ExtractedClaim): clauseCited is string {
+  return Boolean(clauseCited) && !extracted.policyClauses.some((c) => clauseKey(c.clauseId) === clauseKey(clauseCited!));
+}
+
+interface R6Check {
+  verdict: Verdict;
+  allowed: number | null;
+  limitName: string | null;
+}
+
+// R6 recomputes co-pay and sub-limits. A finding's amount must equal the item's whole deduction, so an excess
+// can't be split off and is reported as questionable, which keeps the recoverable figure from being overstated.
+function checkArithmetic(item: LineItem, extracted: ExtractedClaim): R6Check {
+  const deducted = item.deducted ?? 0;
+  const unknown: R6Check = { verdict: "questionable", allowed: null, limitName: null };
+
+  if (item.deductionType === "copay") {
+    const percent = extracted.policy.copayPercent;
+    const items = extracted.lineItems;
+    if (percent === null || items.some((i) => i.billed === null)) return unknown;
+    if (items.filter((i) => i.deductionType === "copay" && (i.deducted ?? 0) > 0).length !== 1) return unknown;
+    // Co-pay belongs on what was admissible: the bill after the other deductions.
+    const admissible = items.reduce(
+      (sum, i) => sum + (i.billed ?? 0) - (i.deductionType === "copay" ? 0 : (i.deducted ?? 0)),
+      0
+    );
+    const allowed = Math.round((admissible * percent) / 100);
+    return { verdict: deducted <= allowed ? "valid" : "questionable", allowed, limitName: null };
+  }
+
+  const text = `${item.description ?? ""} ${item.deductionReason ?? ""}`.toLowerCase();
+  const matching = extracted.policy.subLimits.filter(
+    (limit) =>
+      limit.amount !== null &&
+      (limit.name.toLowerCase().match(/[\p{L}\p{N}]{4,}/gu) ?? []).some(
+        (word) => word !== "limit" && text.includes(word)
+      )
+  );
+  const limit = matching.length === 1 ? matching[0] : undefined;
+  if (!limit || limit.amount === null || item.billed === null) return unknown;
+  const allowed = Math.max(item.billed - limit.amount, 0);
+  return { verdict: deducted <= allowed ? "valid" : "questionable", allowed, limitName: limit.name };
+}
 
 function differenceInMonths(
   startDateStr: string | null | undefined,
@@ -86,7 +165,8 @@ function evaluateLineItem(
   effectiveCategory: string | null,
   extracted: ExtractedClaim,
   effectiveCoverStart: string | null,
-  effectiveAdmissionDate: string | null
+  effectiveAdmissionDate: string | null,
+  insurerAskedForMissingDocument: boolean | undefined
 ): ItemDecision {
   if (item.deducted === null) {
     return {
@@ -237,7 +317,19 @@ function evaluateLineItem(
     };
   }
 
-  // Any other deductionType (documentation, sub_limit, copay, other, or null)
+  // R5 needs a fact only the person knows, so it stays questionable unless they confirm it.
+  if (item.deductionType === "documentation") {
+    return insurerAskedForMissingDocument === false
+      ? { item, ruleIds: ["R5"], verdict: "wrong", confidence: "moderate" }
+      : { item, ruleIds: ["R5"], verdict: "questionable", confidence: "moderate" };
+  }
+
+  if (item.deductionType === "copay" || item.deductionType === "sub_limit") {
+    const { verdict } = checkArithmetic(item, extracted);
+    return { item, ruleIds: ["R6"], verdict, confidence: "moderate" };
+  }
+
+  // Any other deductionType (other, or null)
   return {
     item,
     ruleIds: ["UNDECIDED"],
@@ -362,7 +454,8 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
       item.category,
       extracted,
       effectiveCoverStart,
-      effectiveAdmissionDate
+      effectiveAdmissionDate,
+      overrides?.insurerAskedForMissingDocument
     );
   });
 
@@ -404,6 +497,18 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
         ruleIds: d.ruleIds,
         items: [d.item],
       });
+    }
+  }
+
+  // R7 runs after the other rules, and can only ever take a "valid" down to "questionable".
+  for (const group of groups) {
+    const reason = findMatchingReason(group.deductionType, group.items, extracted);
+    if (clauseIsMissing(reason?.clauseCited, extracted)) {
+      group.ruleIds = [...group.ruleIds.filter((id) => id !== "UNDECIDED"), "R7"];
+      if (group.verdict === "valid") {
+        group.verdict = "questionable";
+        group.confidence = "moderate";
+      }
     }
   }
 
@@ -468,6 +573,11 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
         coverStartDate: effectiveCoverStart,
         ruleIds: g.ruleIds,
       });
+    } else if (g.ruleIds.includes("R5")) {
+      explanations = buildR5Explanation(amount, g.verdict === "wrong", overrides?.insurerAskedForMissingDocument);
+    } else if (g.ruleIds.includes("R6")) {
+      const check = g.items.length === 1 ? checkArithmetic(g.items[0]!, extracted) : null;
+      explanations = buildR6Explanation(amount, g.deductionType, check?.allowed ?? null, check?.limitName ?? null);
     } else if (g.deductionType === "room_rent_excess" && g.verdict === "valid") {
       const days = differenceInDays(effectiveAdmissionDate, extracted.claim.dischargeDate);
       const limit = extracted.policy.roomRentLimit;
@@ -490,6 +600,12 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
       );
     }
 
+    const missingClause = matchedReason?.clauseCited;
+    if (clauseIsMissing(missingClause, extracted)) {
+      const sentence = buildR7Sentence(missingClause);
+      explanations = { en: `${explanations.en} ${sentence.en}`, hi: `${explanations.hi} ${sentence.hi}` };
+    }
+
     return {
       id,
       ruleIds: g.ruleIds,
@@ -499,7 +615,7 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
       amount,
       explanationEn: explanations.en,
       explanationHi: explanations.hi,
-      evidence,
+      evidence: { ...evidence, regulation: regulationFor(g.ruleIds) },
     };
   });
 
@@ -522,20 +638,7 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
     validDeductions,
   };
 
-  const deadlines: Deadline[] = [
-    {
-      label: "Grievance to the insurer",
-      date: null,
-      explanation: PENDING_VERIFICATION,
-      verified: false,
-    },
-    {
-      label: "Complaint to the ombudsman",
-      date: null,
-      explanation: PENDING_VERIFICATION,
-      verified: false,
-    },
-  ];
+  const deadlines = buildDeadlines(extracted, overrides);
 
   // Assessment warnings
   const warnings: AssessmentWarning[] = [];

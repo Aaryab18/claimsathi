@@ -114,14 +114,20 @@ export const sampleCaseResult: CaseResult = {
     {
       label: "Grievance to the insurer",
       date: null,
-      explanation: PENDING_VERIFICATION,
+      explanation:
+        "Send a written complaint to the insurer first, as the Ombudsman needs this (Rule 14(3)(a)). We found no fixed legal deadline for it, so send it soon, then enter the date you sent it.",
+      explanationHi:
+        "पहले बीमा कंपनी को लिखित शिकायत भेजें, क्योंकि लोकपाल के लिए यह ज़रूरी है (नियम 14(3)(a))। हमें इसकी कोई तय कानूनी समय-सीमा नहीं मिली, इसलिए इसे जल्द भेजें और फिर भेजने की तारीख दर्ज करें।",
       verified: false,
     },
     {
       label: "Complaint to the ombudsman",
-      date: null,
-      explanation: PENDING_VERIFICATION,
-      verified: false,
+      date: "2027-10-15",
+      explanation:
+        "Safest last date: one year from the insurer's letter. The exact year runs from the insurer's reply to your complaint (Rule 14(3)(b)), so going by this date keeps you on the safe side. The Ombudsman can accept a late complaint in some cases (Rule 14(4)), but don't rely on that.",
+      explanationHi:
+        "सबसे सुरक्षित अंतिम तारीख: बीमा कंपनी के पत्र से एक साल। सटीक एक साल आपकी शिकायत पर बीमा कंपनी के जवाब से गिना जाता है (नियम 14(3)(b)), इसलिए इस तारीख को मानना सुरक्षित है। कुछ मामलों में लोकपाल देरी से की गई शिकायत स्वीकार कर सकता है (नियम 14(4)), पर इस पर निर्भर न रहें।",
+      verified: true,
     },
   ],
   totals: {

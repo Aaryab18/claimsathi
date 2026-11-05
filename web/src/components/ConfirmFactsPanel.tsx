@@ -59,6 +59,11 @@ export function ConfirmFactsPanel({
   const [hasAppliedCorrections, setHasAppliedCorrections] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isOpen, setIsOpen] = useState(true);
+  const [grievanceSentDate, setGrievanceSentDate] = useState("");
+  const [askedForDocument, setAskedForDocument] = useState<"" | "yes" | "no">("");
+  const hasDocumentDeduction = caseResult.extracted.lineItems.some(
+    (item) => item.deductionType === "documentation" && (item.deducted ?? 0) > 0,
+  );
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
@@ -71,6 +76,8 @@ export function ConfirmFactsPanel({
       policyStartDate: policyStartDate || undefined,
       continuousCoverSince: continuousCoverSince || undefined,
       admissionDate: admissionDate || undefined,
+      grievanceSentDate: grievanceSentDate || undefined,
+      insurerAskedForMissingDocument: askedForDocument ? askedForDocument === "yes" : undefined,
       lineItemCategories: Object.entries(categories).map(([lineItemId, category]) => ({
         lineItemId,
         category,
@@ -216,6 +223,41 @@ export function ConfirmFactsPanel({
                 className="w-full px-3 py-2 rounded-lg border border-[#D5D2C2] bg-[#FAF9F5] text-xs font-medium text-[#132A1E] focus:bg-white focus:ring-2 focus:ring-[#114B36] focus:outline-hidden"
               />
             </div>
+          </div>
+
+          <div className="flex flex-col gap-3">
+            <div className="flex flex-col gap-1">
+              <label htmlFor="fact-grievance-sent" className="text-xs font-semibold text-[#113A2B]">
+                {t.grievanceSentLabel}
+              </label>
+              <input
+                type="date"
+                id="fact-grievance-sent"
+                data-testid="fact-grievance-sent"
+                value={grievanceSentDate}
+                onChange={(e) => setGrievanceSentDate(e.target.value)}
+                className="w-full sm:w-64 px-3 py-2 rounded-lg border border-[#D5D2C2] bg-[#FAF9F5] text-xs"
+              />
+            </div>
+
+            {hasDocumentDeduction && (
+              <div className="flex flex-col gap-1">
+                <label htmlFor="fact-asked-for-document" className="text-xs font-semibold text-[#113A2B]">
+                  {t.askedForDocumentLabel}
+                </label>
+                <select
+                  id="fact-asked-for-document"
+                  data-testid="fact-asked-for-document"
+                  value={askedForDocument}
+                  onChange={(e) => setAskedForDocument(e.target.value as "" | "yes" | "no")}
+                  className="w-full sm:w-64 px-3 py-2 rounded-lg border border-[#D5D2C2] bg-[#FAF9F5] text-xs"
+                >
+                  <option value="">{t.askedNotSure}</option>
+                  <option value="yes">{t.askedYes}</option>
+                  <option value="no">{t.askedNo}</option>
+                </select>
+              </div>
+            )}
           </div>
 
           {/* Bill Items Category Review */}
