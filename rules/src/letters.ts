@@ -1,4 +1,5 @@
-import type { CaseResult, Finding, LetterType } from "@claimsathi/contracts";
+import type { CaseResult, Finding, LetterLanguage, LetterType } from "@claimsathi/contracts";
+import { LETTER_TEXT, type LetterText } from "./letter-text.js";
 
 const rupees = (amount: number) => `Rs. ${amount.toLocaleString("en-IN")}`;
 const PENDING_SOURCE = /pending verification/i;
@@ -25,7 +26,7 @@ function itemNames(finding: Finding, result: CaseResult): string {
 function inLetterVoice(explanation: string): string {
   return explanation
     .replace(/\s*The legal reference for (this rule|these rules|this deduction) has not been checked yet\./, "")
-    .replace(/\s*IRDAI's 2020 circular bars this cut on these items, and we are confirming it still applies\./, "")
+    .replace(/\s*IRDAI's 2020 circular supports this, and we are confirming it still applies\./, "")
     .replace(/\s*Did the insurer ever ask you for it\? Answer in Confirm the facts, as that can change this result\./, " Please show me when you asked for it.")
     .replace(/You confirmed the insurer never asked you for that document/, "You never asked me for that document")
     .replace(/You confirmed the insurer asked for it, so this depends on whether that document can still be provided\./, "I ask you to tell me how that document can still be accepted.")
@@ -144,7 +145,122 @@ function ombudsmanComplaint(result: CaseResult, today: string): string {
   ].join("\n");
 }
 
+function formatLocalDate(date: string | null, text: LetterText): string {
+  if (!date) return text.datePlaceholder;
+  const [year, month, day] = date.split("-").map(Number) as [number, number, number];
+  return new Date(Date.UTC(year, month - 1, day)).toLocaleDateString(text.locale, {
+    day: "numeric",
+    month: "long",
+    year: "numeric",
+    timeZone: "UTC",
+  });
+}
+
+// Quotes, clause wording and legal names stay as written, because that's what the insurer will look up.
+function translatedItems(result: CaseResult, text: LetterText): string[] {
+  const disputed = result.findings.filter(({ verdict, amount }) => verdict !== "valid" && amount > 0);
+  return disputed.map((finding, index) => {
+    const wrong = finding.verdict === "wrong";
+    const lines = [`${index + 1}. ${text.item({ name: itemNames(finding, result), amount: rupees(finding.amount) }, wrong)}`];
+    // An unclear finding asks the question rather than stating the answer the rules couldn't reach.
+    const reasons = finding.ruleIds.flatMap((id) => (wrong ? undefined : text.reasons[`${id}?`]) ?? text.reasons[id] ?? []);
+    lines.push(`   ${(reasons.length > 0 ? reasons : [text.reasons.UNDECIDED]).join(" ")}`);
+    const { insurerText, policyClause, regulation } = finding.evidence;
+    if (insurerText) lines.push(`   ${text.yourLetterSays}: "${insurerText.replace(/\s+/g, " ")}"`);
+    if (policyClause) lines.push(`   ${text.policyWording}: ${policyClause}`);
+    if (regulation && !PENDING_SOURCE.test(regulation.sourceName)) {
+      lines.push(`   ${text.reference}: ${regulation.sourceName}${regulation.verified ? "" : ` ${text.checkReference}`}`);
+    }
+    return lines.join("\n");
+  });
+}
+
+function translatedGrievance(result: CaseResult, today: string, text: LetterText): string {
+  const { claim, policy, rejection } = result.extracted;
+  const { recoverableStrong, questionable } = result.totals;
+  return [
+    `${text.date}: ${formatLocalDate(today, text)}`,
+    "",
+    text.grievanceTo,
+    claim.insurer ?? text.insurerNamePlaceholder,
+    text.insurerAddressPlaceholder,
+    "",
+    text.subject(claim.claimId ?? text.claimNumberPlaceholder, claim.policyNumber ?? text.policyNumberPlaceholder),
+    "",
+    text.greeting,
+    "",
+    text.about(claim.patient.name ?? text.patientPlaceholder, formatLocalDate(claim.admissionDate, text), formatLocalDate(claim.dischargeDate, text), claim.diagnosis),
+    "",
+    text.amounts(
+      claim.amountClaimed === null ? text.amountPlaceholder : rupees(claim.amountClaimed),
+      claim.amountApproved === null ? text.amountPlaceholder : rupees(claim.amountApproved),
+      formatLocalDate(rejection.letterDate, text),
+    ),
+    ...(policy.continuousCoverSince ? [text.continuousCover(formatLocalDate(policy.continuousCoverSince, text))] : []),
+    "",
+    text.disputeIntro,
+    "",
+    ...translatedItems(result, text).flatMap((item) => [item, ""]),
+    text.askIntro,
+    ...(recoverableStrong > 0 ? [text.askPay(rupees(recoverableStrong))] : []),
+    ...(questionable > 0 ? [text.askExplain(rupees(questionable))] : []),
+    text.askReply,
+    "",
+    text.escalate,
+    "",
+    text.attached,
+    "",
+    text.closing,
+    "",
+    claim.patient.name ?? text.yourNamePlaceholder,
+    text.addressPlaceholder,
+    text.phonePlaceholder,
+  ].join("\n");
+}
+
+function translatedOmbudsman(result: CaseResult, today: string, text: LetterText): string {
+  const { claim, rejection } = result.extracted;
+  const { recoverableStrong, questionable } = result.totals;
+  return [
+    text.ombudsmanTitle,
+    text.ombudsmanUnder,
+    "",
+    text.ombudsmanTo,
+    `${text.date}: ${formatLocalDate(today, text)}`,
+    "",
+    text.complainant(claim.patient.name ?? text.yourNamePlaceholder),
+    text.insurerLine(claim.insurer ?? text.insurerNamePlaceholder),
+    text.policyNumber(claim.policyNumber ?? text.policyNumberPlaceholder),
+    text.claimNumber(claim.claimId ?? text.claimNumberPlaceholder),
+    text.patientAndTreatment(claim.patient.name ?? text.patientPlaceholder, formatLocalDate(claim.admissionDate, text), formatLocalDate(claim.dischargeDate, text), claim.diagnosis),
+    text.decisionDate(formatLocalDate(rejection.letterDate, text)),
+    text.complaintDate,
+    text.insurerReply,
+    "",
+    text.natureHeading,
+    text.natureIntro(
+      claim.amountApproved === null ? text.amountPlaceholder : rupees(claim.amountApproved),
+      claim.amountClaimed === null ? text.amountPlaceholder : rupees(claim.amountClaimed),
+    ),
+    "",
+    ...translatedItems(result, text).flatMap((item) => [item, ""]),
+    text.relief(rupees(recoverableStrong), questionable > 0 ? rupees(questionable) : null),
+    "",
+    text.declaration,
+    "",
+    text.annexuresHeading,
+    ...text.annexures,
+    "",
+    text.signature,
+    claim.patient.name ?? text.yourNamePlaceholder,
+  ].join("\n");
+}
+
 // Written from the rules' findings with no AI call, so a letter can't state anything the rules didn't decide.
-export function buildLetter(result: CaseResult, letterType: LetterType, today: string): string {
-  return letterType === "grievance" ? grievanceLetter(result, today) : ombudsmanComplaint(result, today);
+export function buildLetter(result: CaseResult, letterType: LetterType, today: string, language: LetterLanguage = "en"): string {
+  if (language === "en") {
+    return letterType === "grievance" ? grievanceLetter(result, today) : ombudsmanComplaint(result, today);
+  }
+  const text = LETTER_TEXT[language];
+  return letterType === "grievance" ? translatedGrievance(result, today, text) : translatedOmbudsman(result, today, text);
 }

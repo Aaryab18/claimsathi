@@ -625,7 +625,7 @@ describe(`PATCH ${API_ROUTES.applyFacts.path}`, () => {
 
       expect(body.findings.length).toBeGreaterThan(0);
       for (const finding of body.findings) {
-        expect(finding.evidence.regulation.verified).toBe(false);
+        expect(finding.evidence.regulation?.verified ?? false).toBe(false);
       }
       expect(body.deadlines.length).toBeGreaterThan(0);
       for (const deadline of body.deadlines) {

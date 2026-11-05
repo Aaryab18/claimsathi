@@ -135,6 +135,20 @@ export interface Translations {
   timelineAdmission: string;
   printReport: string;
   confidenceLabels: Record<"strong" | "moderate" | "weak", string>;
+  navOverview: string;
+  navEvidence: string;
+  navPlan: string;
+  navRules: string;
+  rulesTitle: string;
+  rulesSubtitle: string;
+  rulesStatusNote: string;
+  readOfficialSource: string;
+  sourceStatus: Record<"verified" | "confirming" | "policy", string>;
+  evidencePageSubtitle: string;
+  noInsurerWords: string;
+  noPolicyClause: string;
+  letterLanguageLabel: string;
+  letterLanguageNote: string;
   lettersTitle: string;
   lettersDesc: string;
   letterGrievanceButton: string;
@@ -352,7 +366,7 @@ export const translations: Record<Language, Translations> = {
     deductedLabel: "Deducted",
     billedLabel: "Billed",
     sourceLabel: "Source",
-    noRegulationCited: "No external regulation cited.",
+    noRegulationCited: "This check relies on your policy's own wording, so it cites no outside regulation.",
     dropFileHere: "or drop it here",
     fileChosenLabel: "File chosen",
     filesChosen: (count) => `${count} of 3 files chosen`,
@@ -369,11 +383,25 @@ export const translations: Record<Language, Translations> = {
     timelineAdmission: "Hospital admission",
     printReport: "Print or save report",
     confidenceLabels: { strong: "Strong grounds", moderate: "Moderate grounds", weak: "Weak grounds" },
+    navOverview: "Overview",
+    navEvidence: "Evidence",
+    navPlan: "Your plan",
+    navRules: "Rules and sources",
+    rulesTitle: "Rules and sources",
+    rulesSubtitle: "Every rule ClaimSathi uses, what it checks, and the official source behind it.",
+    rulesStatusNote: "IRDAI's May 2024 Master Circular replaced some older circulars, and its list isn't in the published PDF we read. So we show those 2020 sources, but can't yet say they still apply.",
+    readOfficialSource: "Read the official source",
+    sourceStatus: { verified: "Official source checked", confirming: "Official source found, still confirming it applies", policy: "Uses your policy's own wording" },
+    evidencePageSubtitle: "For each deduction: what the insurer said, what your policy says, and the official source.",
+    noInsurerWords: "The insurer's letter doesn't give a specific reason for this item.",
+    noPolicyClause: "No policy clause was matched to this item.",
+    letterLanguageLabel: "Language of the letter",
+    letterLanguageNote: "Quotes and legal references stay as written. Many insurers and Ombudsman offices work in English, so check which they accept.",
     lettersTitle: "Your appeal letters",
     lettersDesc: "Drafts written from the findings above. Send the complaint to the insurer first, then go to the Ombudsman if needed. This is information, not legal advice.",
     letterGrievanceButton: "Draft complaint to insurer",
     letterOmbudsmanButton: "Draft Ombudsman complaint",
-    letterEditNote: "Fill in the parts in [square brackets], check every fact, and edit it as you like. Letters are in English.",
+    letterEditNote: "Fill in the parts in [square brackets], check every fact, and edit it as you like.",
     letterPrintButton: "Print or save as PDF",
     letterError: "The letter could not be created. Please try again.",
     addToCalendar: "Add dates to my calendar",
@@ -436,7 +464,7 @@ export const translations: Record<Language, Translations> = {
       other: "Other",
     },
 
-    caseTextInEnglishNote: "This case's explanations, deadline notes and letters are in English for now.",
+    caseTextInEnglishNote: "This case's explanations and deadline notes are in English for now. Letters are available in Kannada.",
     collapseLabel: "Collapse",
     expandLabel: "Expand",
     strengthTitle: "How strong is your case?",
@@ -593,7 +621,7 @@ export const translations: Record<Language, Translations> = {
     deductedLabel: "कटौती",
     billedLabel: "बिल राशि",
     sourceLabel: "स्रोत",
-    noRegulationCited: "कोई बाहरी नियम उद्धृत नहीं है।",
+    noRegulationCited: "यह जांच आपकी पॉलिसी की शर्तों पर आधारित है, इसलिए इसमें कोई बाहरी नियम उद्धृत नहीं है।",
     dropFileHere: "या यहां खींचकर छोड़ें",
     fileChosenLabel: "फ़ाइल चुनी गई",
     filesChosen: (count) => `3 में से ${count} फ़ाइलें चुनी गईं`,
@@ -610,11 +638,25 @@ export const translations: Record<Language, Translations> = {
     timelineAdmission: "अस्पताल में भर्ती",
     printReport: "रिपोर्ट प्रिंट करें या सहेजें",
     confidenceLabels: { strong: "मज़बूत आधार", moderate: "मध्यम आधार", weak: "कमज़ोर आधार" },
+    navOverview: "सारांश",
+    navEvidence: "प्रमाण",
+    navPlan: "आपकी योजना",
+    navRules: "नियम और स्रोत",
+    rulesTitle: "नियम और स्रोत",
+    rulesSubtitle: "क्लेमसाथी के सभी नियम, वे क्या जांचते हैं, और उनके पीछे का आधिकारिक स्रोत।",
+    rulesStatusNote: "IRDAI के मई 2024 के मास्टर परिपत्र ने कुछ पुराने परिपत्र बदल दिए, और उनकी सूची हमारे पढ़े गए प्रकाशित PDF में नहीं है। इसलिए हम 2020 के वे स्रोत दिखाते हैं, पर अभी नहीं कह सकते कि वे लागू हैं।",
+    readOfficialSource: "आधिकारिक स्रोत पढ़ें",
+    sourceStatus: { verified: "आधिकारिक स्रोत जांचा गया", confirming: "आधिकारिक स्रोत मिला, लागू होने की पुष्टि जारी", policy: "आपकी पॉलिसी की शर्तों पर आधारित" },
+    evidencePageSubtitle: "हर कटौती के लिए: बीमा कंपनी ने क्या कहा, आपकी पॉलिसी क्या कहती है, और आधिकारिक स्रोत।",
+    noInsurerWords: "बीमा कंपनी के पत्र में इस मद का कोई विशेष कारण नहीं है।",
+    noPolicyClause: "इस मद से कोई पॉलिसी धारा नहीं मिली।",
+    letterLanguageLabel: "पत्र की भाषा",
+    letterLanguageNote: "उद्धरण और कानूनी संदर्भ जैसे लिखे हैं वैसे ही रहते हैं। कई बीमा कंपनियां और लोकपाल कार्यालय अंग्रेज़ी में काम करते हैं, इसलिए पता कर लें कि वे क्या स्वीकार करते हैं।",
     lettersTitle: "आपके अपील पत्र",
     lettersDesc: "ऊपर के निष्कर्षों से बने मसौदे। पहले बीमा कंपनी को शिकायत भेजें, फिर ज़रूरत हो तो लोकपाल के पास जाएं। यह जानकारी है, कानूनी सलाह नहीं।",
     letterGrievanceButton: "बीमा कंपनी को शिकायत का मसौदा",
     letterOmbudsmanButton: "लोकपाल शिकायत का मसौदा",
-    letterEditNote: "[वर्ग कोष्ठक] वाले हिस्से भरें, हर तथ्य जांचें और चाहें तो बदलें। पत्र अंग्रेज़ी में हैं।",
+    letterEditNote: "[वर्ग कोष्ठक] वाले हिस्से भरें, हर तथ्य जांचें और चाहें तो बदलें।",
     letterPrintButton: "प्रिंट करें या PDF में सहेजें",
     letterError: "पत्र नहीं बन सका। कृपया फिर से प्रयास करें।",
     addToCalendar: "तारीखें मेरे कैलेंडर में जोड़ें",

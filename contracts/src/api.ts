@@ -71,8 +71,12 @@ export type ApplyFactsResponse = z.infer<typeof ApplyFactsResponseSchema>;
 export const LetterTypeSchema = z.enum(["grievance", "ombudsman"]);
 export type LetterType = z.infer<typeof LetterTypeSchema>;
 
+export const LetterLanguageSchema = z.enum(["en", "hi", "kn"]);
+export type LetterLanguage = z.infer<typeof LetterLanguageSchema>;
+
 export const CreateLetterRequestSchema = z.object({
   letterType: LetterTypeSchema,
+  language: LetterLanguageSchema.default("en"),
 });
 export type CreateLetterRequest = z.infer<typeof CreateLetterRequestSchema>;
 

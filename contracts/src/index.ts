@@ -1,4 +1,5 @@
 export * from "./common.js";
+export * from "./legal-sources.js";
 export * from "./extracted.js";
 export * from "./finding.js";
 export * from "./overrides.js";

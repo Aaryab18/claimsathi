@@ -292,11 +292,14 @@ describe("what the app says about its legal sources", () => {
     expect(finding?.explanationHi).not.toContain("जांचा नहीं");
   });
 
-  it("keeps the unchecked note where it hasn't", () => {
+  it("says a found 2020 source is still being confirmed", () => {
     const finding = run(claimWith([item({ deductionType: "non_payable", partOfPackage: true, category: "consumable" })])).findings[0];
 
     expect(finding?.evidence.regulation?.verified).toBe(false);
-    expect(finding?.explanationEn).toContain("has not been checked");
+    expect(finding?.evidence.regulation?.sourceName).toContain("193/07/2020");
+    expect(finding?.evidence.regulation?.sourceUrl).toMatch(/^https:\/\/irdai\.gov\.in\//);
+    expect(finding?.explanationEn).toContain("we are confirming it still applies");
+    expect(finding?.explanationEn).not.toContain("has not been checked");
   });
 });
 

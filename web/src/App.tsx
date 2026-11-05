@@ -3,6 +3,7 @@ import { BrowserRouter, MemoryRouter, Routes, Route, Navigate } from "react-rout
 import { HomeScreen } from "./components/HomeScreen";
 import { CaseScreen } from "./components/CaseScreen";
 import { HelpdeskScreen } from "./components/HelpdeskScreen";
+import { RulesScreen } from "./components/RulesScreen";
 import type { Language } from "./lib/i18n";
 
 interface AppContentProps {
@@ -20,6 +21,14 @@ function AppContent({ language, setLanguage }: AppContentProps) {
       <Route
         path="/case/:token"
         element={<CaseScreen language={language} onLanguageChange={setLanguage} />}
+      />
+      <Route
+        path="/case/:token/:section"
+        element={<CaseScreen language={language} onLanguageChange={setLanguage} />}
+      />
+      <Route
+        path="/rules"
+        element={<RulesScreen language={language} onLanguageChange={setLanguage} />}
       />
       <Route
         path="/helpdesk"

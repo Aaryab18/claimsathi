@@ -118,7 +118,7 @@ export function FindingsTable({
                     <dt className="font-semibold">{t.regulationTitle}</dt>
                     <dd>
                       {finding.evidence.regulation.sourceName} (
-                      {finding.evidence.regulation.verified ? t.verifiedLabel : t.sourceCheckPending})
+                      {finding.evidence.regulation.verified ? t.sourceStatus.verified : t.sourceStatus.confirming})
                     </dd>
                   </>
                 )}

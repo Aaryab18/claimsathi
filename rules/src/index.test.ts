@@ -1571,7 +1571,7 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
     it("marks only the rules with a confirmed source as verified on the sample case", () => {
       const res = runRules({ extracted: sampleExtractedClaim, asOfDate: "2026-11-05" });
       for (const finding of res.findings) {
-        expect(finding.evidence.regulation?.verified).toBe(finding.ruleIds.includes("R1"));
+        expect(finding.evidence.regulation?.verified ?? false).toBe(finding.ruleIds.includes("R1"));
       }
     });
 

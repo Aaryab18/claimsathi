@@ -10,6 +10,7 @@ export type Confidence = z.infer<typeof ConfidenceSchema>;
 export const RegulationSchema = z.object({
   text: z.string().min(1),
   sourceName: z.string().min(1),
+  sourceUrl: z.url().optional(),
   verified: z.boolean(),
 });
 export type Regulation = z.infer<typeof RegulationSchema>;

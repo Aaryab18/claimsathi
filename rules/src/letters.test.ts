@@ -103,3 +103,37 @@ describe("the letters' voice", () => {
     expect(letter).not.toContain("₹");
   });
 });
+
+describe("letters in Hindi and Kannada", () => {
+  for (const language of ["hi", "kn"] as const) {
+    for (const letterType of ["grievance", "ombudsman"] as const) {
+      const letter = buildLetter(result, letterType, "2026-11-05", language);
+
+      it(`writes the ${letterType} letter in ${language} with the case's own facts`, () => {
+        expect(letter).toMatch(language === "hi" ? /[ऀ-ॿ]/ : /[ಀ-೿]/);
+        expect(letter).toContain(result.extracted.claim.claimId!);
+        expect(letter).toContain(`Rs. ${result.totals.recoverableStrong.toLocaleString("en-IN")}`);
+        expect(letter).not.toContain("₹");
+        expect(letter).not.toContain("undefined");
+      });
+
+      it(`keeps the insurer's words and flags unchecked references in the ${language} ${letterType} letter`, () => {
+        const quoted = result.findings.find(({ verdict, evidence }) => verdict !== "valid" && evidence.insurerText);
+        if (quoted) expect(letter).toContain(quoted.evidence.insurerText!.replace(/\s+/g, " "));
+        expect(letter).not.toMatch(/Pending verification/i);
+      });
+    }
+  }
+
+  it("asks rather than asserts when a package item is only questionable", () => {
+    const unclear = result.findings.find(({ verdict, ruleIds }) => verdict === "questionable" && ruleIds.includes("R4"));
+    expect(unclear).toBeDefined();
+    const hindi = buildLetter({ ...result, findings: [unclear!] }, "grievance", "2026-11-05", "hi");
+    expect(hindi).toContain("कृपया बताएं कि क्या यह मद पैकेज");
+    expect(hindi).not.toContain("यह मद अनुमोदित पैकेज या प्रक्रिया का हिस्सा है");
+  });
+
+  it("keeps English as the default", () => {
+    expect(buildLetter(result, "grievance", "2026-11-05")).toBe(buildLetter(result, "grievance", "2026-11-05", "en"));
+  });
+});

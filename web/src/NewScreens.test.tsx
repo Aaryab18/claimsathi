@@ -200,7 +200,7 @@ describe("ClaimSathi New Screens", () => {
     it("drafts a letter from the API and lets the person edit it", async () => {
       const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
         if (String(input).endsWith("/letters")) {
-          expect(JSON.parse(String(init?.body))).toEqual({ letterType: "grievance" });
+          expect(JSON.parse(String(init?.body))).toEqual({ letterType: "grievance", language: "en" });
           return new Response(JSON.stringify({ letterType: "grievance", text: "Dear Sir or Madam" }));
         }
         return new Response(

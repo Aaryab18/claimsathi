@@ -101,14 +101,17 @@ describe("fixtures", () => {
     expect(sampleCaseResult.resultSource).toBe("saved_sample");
   });
 
-  it("marks every regulation as unverified, and a deadline as verified only with a date", () => {
+  it("cites official sources, verifies only the confirmed one, and verifies a deadline only with a date", () => {
     expect(PENDING_VERIFICATION).toBe("Pending verification by Member C");
     for (const finding of findings) {
-      expect(finding.evidence.regulation).toEqual({
-        text: PENDING_VERIFICATION,
-        sourceName: PENDING_VERIFICATION,
-        verified: false,
-      });
+      const regulation = finding.evidence.regulation;
+      if (finding.verdict === "valid") {
+        expect(regulation).toBeNull();
+        continue;
+      }
+      expect(regulation?.sourceName).not.toContain(PENDING_VERIFICATION);
+      expect(regulation?.sourceUrl).toMatch(/^https:\/\/irdai\.gov\.in\//);
+      expect(regulation?.verified).toBe(finding.ruleIds.includes("R1"));
     }
     expect(sampleCaseResult.deadlines.map(({ date, verified }) => ({ date, verified }))).toEqual([
       { date: null, verified: false },
