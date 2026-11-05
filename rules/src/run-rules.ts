@@ -64,7 +64,11 @@ function regulationFor(ruleIds: string[]): Regulation {
   return pendingRegulation;
 }
 
-const clauseKey = (clause: string) => clause.toLowerCase().replace(/clause|section|[\s.]/g, "");
+// "Clause 6.3", "Cl. 6.3" and "6.3" are the same clause.
+function clauseKey(clause: string): string {
+  const number = /\d+(?:\.\d+)*(?:\s*\([a-z0-9]+\))*/i.exec(clause)?.[0];
+  return (number ?? clause).toLowerCase().replace(/\s/g, "");
+}
 
 // R7. Code can only show that a clause wasn't found in what was read, so this never proves the insurer wrong.
 function clauseIsMissing(clauseCited: string | null | undefined, extracted: ExtractedClaim): clauseCited is string {
@@ -86,13 +90,12 @@ function checkArithmetic(item: LineItem, extracted: ExtractedClaim): R6Check {
   if (item.deductionType === "copay") {
     const percent = extracted.policy.copayPercent;
     const items = extracted.lineItems;
-    if (percent === null || items.some((i) => i.billed === null)) return unknown;
+    // A co-pay is often its own line with no bill amount, so only the other lines must be known.
+    const billLines = items.filter((i) => i.deductionType !== "copay");
+    if (percent === null || billLines.length === 0 || billLines.some((i) => i.billed === null)) return unknown;
     if (items.filter((i) => i.deductionType === "copay" && (i.deducted ?? 0) > 0).length !== 1) return unknown;
     // Co-pay belongs on what was admissible: the bill after the other deductions.
-    const admissible = items.reduce(
-      (sum, i) => sum + (i.billed ?? 0) - (i.deductionType === "copay" ? 0 : (i.deducted ?? 0)),
-      0
-    );
+    const admissible = billLines.reduce((sum, i) => sum + (i.billed ?? 0) - (i.deducted ?? 0), 0);
     const allowed = Math.round((admissible * percent) / 100);
     return { verdict: deducted <= allowed ? "valid" : "questionable", allowed, limitName: null };
   }
@@ -413,7 +416,12 @@ function findEvidence(
     insurerText,
     policyClause,
     regulation: pendingRegulation,
-    quoteVerified: false,
+    // Only a quote we found in the file's own text counts, and only when it's the quote being shown.
+    quoteVerified:
+      insurerText !== null &&
+      [matchedReason?.source, ...items.map((i) => i.source)].some(
+        (source) => source?.quote === insurerText && source.verified === true
+      ),
   };
 }
 

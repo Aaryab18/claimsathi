@@ -63,6 +63,8 @@ export interface Translations {
   fileTypeError: string;
   fileSizeError: string;
   analyseButton: string;
+  quoteVerified: string;
+  warningsTitle: string;
   lettersTitle: string;
   lettersDesc: string;
   letterGrievanceButton: string;
@@ -155,7 +157,7 @@ export const translations: Record<Language, Translations> = {
     sourceCheckPendingNotice:
       "We are still checking the official source for this rule. We do not present unverified clauses as established law.",
     quoteVerificationPending:
-      "Original document quote verification in progress",
+      "We could not check this quote against the file, for example because it is a photo. Compare it with your document.",
     deadlinesTitle: "Important dispute deadlines",
     deadlinesSubtitle:
       "Key milestones to submit your grievance or approach the ombudsman.",
@@ -195,6 +197,8 @@ export const translations: Record<Language, Translations> = {
     analyseButton: "Analyse claim",
     liveReadingNotice:
       "Your files are sent to Google's Gemini AI to be read, and are deleted from our database within 24 hours. The AI can misread, so check the facts on the result page.",
+    quoteVerified: "We found this exact quote in your document.",
+    warningsTitle: "Please check these before relying on this result:",
     lettersTitle: "Your appeal letters",
     lettersDesc: "Drafts written from the findings above. Send the complaint to the insurer first, then go to the Ombudsman if needed. This is information, not legal advice.",
     letterGrievanceButton: "Draft complaint to insurer",
@@ -295,7 +299,7 @@ export const translations: Record<Language, Translations> = {
     sourceCheckPendingNotice:
       "हम अभी भी इस नियम के आधिकारिक स्रोत की जांच कर रहे हैं। असत्यापित नियमों को हम वास्तविक कानून के रूप में प्रस्तुत नहीं करते हैं।",
     quoteVerificationPending:
-      "मूल दस्तावेज़ से उद्धरण का सत्यापन जारी है",
+      "हम इस उद्धरण को फ़ाइल से नहीं जांच सके, उदाहरण के लिए क्योंकि यह एक फ़ोटो है। इसे अपने दस्तावेज़ से मिलाएं।",
     deadlinesTitle: "महत्वपूर्ण समय-सीमाएं",
     deadlinesSubtitle:
       "शिकायत दर्ज करने अथवा लोकपाल (ओम्बड्समैन) के पास जाने की प्रमुख समय-सीमाएं।",
@@ -335,6 +339,8 @@ export const translations: Record<Language, Translations> = {
     analyseButton: "क्लेम का विश्लेषण करें",
     liveReadingNotice:
       "आपकी फ़ाइलें पढ़ने के लिए Google के Gemini AI को भेजी जाती हैं, और 24 घंटे के भीतर हमारे डेटाबेस से हटा दी जाती हैं। AI से पढ़ने में गलती हो सकती है, इसलिए परिणाम पेज पर तथ्यों की जांच करें।",
+    quoteVerified: "हमें यह सटीक उद्धरण आपके दस्तावेज़ में मिला।",
+    warningsTitle: "इस परिणाम पर भरोसा करने से पहले इन्हें जांच लें:",
     lettersTitle: "आपके अपील पत्र",
     lettersDesc: "ऊपर के निष्कर्षों से बने मसौदे। पहले बीमा कंपनी को शिकायत भेजें, फिर ज़रूरत हो तो लोकपाल के पास जाएं। यह जानकारी है, कानूनी सलाह नहीं।",
     letterGrievanceButton: "बीमा कंपनी को शिकायत का मसौदा",

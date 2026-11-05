@@ -16,5 +16,7 @@ export const SourceSchema = z.object({
   document: DocumentTypeSchema,
   page: z.int().positive(),
   quote: z.string().min(1),
+  // Set only by our own check of the file's text, never by the AI.
+  verified: z.boolean().optional(),
 });
 export type Source = z.infer<typeof SourceSchema>;

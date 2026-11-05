@@ -21,6 +21,27 @@ function itemNames(finding: Finding, result: CaseResult): string {
     .join(", ");
 }
 
+// The explanations talk to the patient about the insurer, but a letter talks to the insurer.
+function inLetterVoice(explanation: string): string {
+  return explanation
+    .replace(/\s*The legal reference for (this rule|these rules|this deduction) has not been checked yet\./, "")
+    .replace(/\s*Did the insurer ever ask you for it\? Answer in Confirm the facts, as that can change this result\./, " Please show me when you asked for it.")
+    .replace(/You confirmed the insurer never asked you for that document/, "You never asked me for that document")
+    .replace(/You confirmed the insurer asked for it, so this depends on whether that document can still be provided\./, "I ask you to tell me how that document can still be accepted.")
+    .replace(/No specific rule could determine the validity of this deduction based on the available documents, so it is marked as questionable\. Further review is recommended\./, "Please explain this deduction, with the policy clause you rely on.")
+    .replace(/It is worth asking the insurer and the hospital for a breakdown\./, "Please give me a breakdown.")
+    .replace(/Ask the insurer to show its calculation\./, "Please show me your calculation.")
+    .replace(/Ask the insurer to explain the difference\./, "Please explain the difference.")
+    .replace(/The insurer cites ([^,]+), but we didn't find it in the policy pages we read, so check your policy \(rule R7\)\./, "You cite $1, but I could not find it in my policy. Please show me where it appears.")
+    .replace(/,? so rules? R\d+(?: and R\d+)? (?:marks?) (this (?:cut|deduction)|this) as wrong/g, (_, what) => `, so I believe ${what === "this" ? "this deduction" : what} is wrong`)
+    .replace(/,? so rules? R\d+(?: and R\d+)? (?:marks?) (?:this (?:cut|deduction)|this) as questionable/g, ", so I ask you to explain it")
+    .replace(/\bThe insurer\b/g, "You")
+    .replace(/\bthe insurer\b/g, "you")
+    .replace(/\bIt used\b/g, "You used")
+    .replace(/\bbecause it\b/g, "because you")
+    .replace(/₹/g, "Rs. ");
+}
+
 // Only what the rules decided goes in. A reference that hasn't been checked is marked, never stated as settled law.
 function disputedItems(result: CaseResult): string[] {
   const disputed = result.findings.filter(({ verdict, amount }) => verdict !== "valid" && amount > 0);
@@ -29,7 +50,7 @@ function disputedItems(result: CaseResult): string[] {
       `${index + 1}. ${itemNames(finding, result)}: ${rupees(finding.amount)} (${
         finding.verdict === "wrong" ? "I believe this was wrongly deducted" : "I ask for a clear explanation"
       })`,
-      `   ${finding.explanationEn.replace(/\s*The legal reference for (this rule|these rules|this deduction) has not been checked yet\./, "")}`,
+      `   ${inLetterVoice(finding.explanationEn)}`,
     ];
     const { insurerText, policyClause, regulation } = finding.evidence;
     if (insurerText) lines.push(`   Your letter says: "${insurerText}"`);

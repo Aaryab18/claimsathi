@@ -21,10 +21,11 @@ Rules:
 - Dates are YYYY-MM-DD. Money is whole rupees, written as a number with no commas or symbols.
 - roomRentLimit is rupees per day. continuousCoverSince is when cover first began without a break, including earlier policies.
 - List every line of the bill in lineItems, including lines with no deduction. Give billed, approved and deducted for each line. Do not add lines together.
+- If the letter makes a deduction that is not on any bill line, such as a co-payment taken on the whole claim, add it as its own line in lineItems with billed null, approved null, its deducted amount and its deductionType. The deducted amounts must add up to the total the insurer deducted.
 - deductionType is why that line was cut, or "none" when nothing was cut. partOfPackage is true only if the documents show the line belongs to a package, false only if they show it does not, and null if they don't say.
 - source.document is rejection_letter, policy or bill. source.page starts at 1. source.quote is the exact words from that page, copied letter for letter.
 - clauseCited is the clause the insurer's letter names, or null if it names none.
-- List in policyClauses each clause the letter cites or that sets a limit used here, with its exact wording.
+- List in policyClauses only clauses whose wording you can see in the policy file, with its exact wording. If the letter cites a clause you can't find in the policy, leave it out of policyClauses but keep it in clauseCited.
 
 Return only JSON that matches this JSON Schema:
 ${JSON.stringify(extractedClaimJsonSchema())}`;

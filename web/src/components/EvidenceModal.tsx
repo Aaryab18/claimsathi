@@ -271,7 +271,11 @@ export function EvidenceModal({
               </p>
             )}
 
-            {!evidence.quoteVerified && (
+            {evidence.quoteVerified ? (
+              <p data-testid="quote-verified" className="text-[11px] font-semibold text-[#15803D]">
+                ✓ {t.quoteVerified}
+              </p>
+            ) : (
               <p className="text-[11px] text-[#7A8780] italic">
                 * {t.quoteVerificationPending}
               </p>
