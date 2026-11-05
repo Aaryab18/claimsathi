@@ -4,11 +4,11 @@ import { cleanExtraction, ReadError, type DocumentReader } from "./document-read
 import { logSafely } from "./errors.js";
 
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models";
-const DEFAULT_MODEL = "gemini-flash-latest";
-// A lighter model that is often free when the main one is overloaded.
-const FALLBACK_MODEL = "gemini-flash-lite-latest";
+const DEFAULT_MODEL = "gemini-3.6-flash";
+// Other models on Google's free tier, tried in order when the one before stays overloaded.
+const FALLBACK_MODELS = ["gemini-3.5-flash-lite", "gemini-3.1-flash-lite"];
 const REQUEST_TIMEOUT_MS = 120_000;
-const ATTEMPTS_PER_MODEL = 3;
+const ATTEMPTS_PER_MODEL = 2;
 const RETRY_DELAY_MS = 8_000;
 
 function buildPrompt(): string {
@@ -21,7 +21,7 @@ Rules:
 - Dates are YYYY-MM-DD. Money is whole rupees, written as a number with no commas or symbols.
 - roomRentLimit is rupees per day. continuousCoverSince is when cover first began without a break, including earlier policies.
 - List every line of the bill in lineItems, including lines with no deduction. Give billed, approved and deducted for each line. Do not add lines together.
-- deductionType is why that line was cut, or "none" when nothing was cut. partOfPackage is true only if the documents show the line belongs to a package.
+- deductionType is why that line was cut, or "none" when nothing was cut. partOfPackage is true only if the documents show the line belongs to a package, false only if they show it does not, and null if they don't say.
 - source.document is rejection_letter, policy or bill. source.page starts at 1. source.quote is the exact words from that page, copied letter for letter.
 - clauseCited is the clause the insurer's letter names, or null if it names none.
 - List in policyClauses each clause the letter cites or that sets a limit used here, with its exact wording.
@@ -35,7 +35,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export interface GeminiReaderOptions {
   apiKey: string;
   model?: string | undefined;
-  fallbackModel?: string | undefined;
+  fallbackModels?: string[] | undefined;
   retryDelayMs?: number;
 }
 
@@ -43,10 +43,10 @@ export interface GeminiReaderOptions {
 export function createGeminiReader({
   apiKey,
   model,
-  fallbackModel,
+  fallbackModels = FALLBACK_MODELS,
   retryDelayMs = RETRY_DELAY_MS,
 }: GeminiReaderOptions): DocumentReader {
-  const models = [...new Set([model || DEFAULT_MODEL, fallbackModel || FALLBACK_MODEL])];
+  const models = [...new Set([model || DEFAULT_MODEL, ...fallbackModels])];
 
   async function askOnce(modelName: string, documents: StoredDocument[]): Promise<ExtractedClaim> {
     const url = `${GEMINI_API}/${encodeURIComponent(modelName)}:generateContent`;

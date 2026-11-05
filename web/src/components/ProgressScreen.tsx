@@ -99,9 +99,6 @@ export function ProgressScreen({
               <p className="text-xs sm:text-sm text-[#526059]">
                 {t.progressSubtitle}
               </p>
-              <p className="text-xs text-[#8C887B] mt-1">
-                {t.serverWakingMessage}
-              </p>
             </div>
 
             {/* Stage Steps List */}

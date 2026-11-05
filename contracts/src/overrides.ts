@@ -16,5 +16,6 @@ export const FactOverridesSchema = z.strictObject({
   admissionDate: IsoDateSchema.optional(),
   lineItemCategories: z.array(LineItemCategoryOverrideSchema).optional(),
   insurerAskedForMissingDocument: z.boolean().optional(),
+  grievanceSentDate: IsoDateSchema.optional(),
 });
 export type FactOverrides = z.infer<typeof FactOverridesSchema>;

@@ -101,7 +101,7 @@ describe("fixtures", () => {
     expect(sampleCaseResult.resultSource).toBe("saved_sample");
   });
 
-  it("marks every regulation and deadline as unverified and pending", () => {
+  it("marks every regulation as unverified, and a deadline as verified only with a date", () => {
     expect(PENDING_VERIFICATION).toBe("Pending verification by Member C");
     for (const finding of findings) {
       expect(finding.evidence.regulation).toEqual({
@@ -110,12 +110,10 @@ describe("fixtures", () => {
         verified: false,
       });
     }
-    expect(sampleCaseResult.deadlines.length).toBeGreaterThan(0);
-    for (const deadline of sampleCaseResult.deadlines) {
-      expect(deadline.verified).toBe(false);
-      expect(deadline.explanation).toBe(PENDING_VERIFICATION);
-      expect(deadline.date).toBeNull();
-    }
+    expect(sampleCaseResult.deadlines.map(({ date, verified }) => ({ date, verified }))).toEqual([
+      { date: null, verified: false },
+      { date: "2027-10-15", verified: true },
+    ]);
   });
 
   it("has English and Hindi explanations for every finding", () => {

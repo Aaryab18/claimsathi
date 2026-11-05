@@ -9,6 +9,7 @@ export const DeadlineSchema = z
     // Null until the legal deadline has been checked. A date is never guessed.
     date: IsoDateSchema.nullable(),
     explanation: z.string().min(1),
+    explanationHi: z.string().min(1).optional(),
     verified: z.boolean(),
   })
   .refine((deadline) => !deadline.verified || deadline.date !== null, {

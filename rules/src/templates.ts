@@ -325,3 +325,69 @@ export function buildUndecidedExplanation(
   const hi = `बीमा कंपनी ने ${typeHi} के तहत ₹${formatRupees(amount)} काटे।${confirmedHi} उपलब्ध दस्तावेज़ों के आधार पर कोई विशिष्ट नियम इस कटौती की वैधता तय नहीं कर सका, इसलिए इसे संदिग्ध माना गया है। आगे समीक्षा की सलाह दी जाती है। इस कटौती के कानूनी संदर्भ की जाँच अभी बाकी है।`;
   return { en, hi };
 }
+
+const LEGAL_CHECK_EN = "The legal reference for this rule has not been checked yet.";
+const LEGAL_CHECK_HI = "इस नियम का कानूनी संदर्भ अभी जांचा नहीं गया है।";
+
+export function buildR5Explanation(
+  amount: number,
+  isWrong: boolean,
+  insurerAsked: boolean | undefined
+): { en: string; hi: string } {
+  const rupees = `₹${formatRupees(amount)}`;
+  if (isWrong) {
+    return {
+      en: `The insurer cut ${rupees} citing missing documentation. You confirmed the insurer never asked you for that document, so rule R5 marks this deduction as wrong. ${LEGAL_CHECK_EN}`,
+      hi: `बीमा कंपनी ने दस्तावेज़ों की कमी बताकर ${rupees} काटे। आपने पुष्टि की है कि बीमा कंपनी ने आपसे वह दस्तावेज़ कभी नहीं मांगा, इसलिए नियम R5 इस कटौती को गलत मानता है। ${LEGAL_CHECK_HI}`,
+    };
+  }
+  const nextEn =
+    insurerAsked === true
+      ? "You confirmed the insurer asked for it, so this depends on whether that document can still be provided."
+      : "Did the insurer ever ask you for it? Answer in Confirm the facts, as that can change this result.";
+  const nextHi =
+    insurerAsked === true
+      ? "आपने पुष्टि की है कि बीमा कंपनी ने इसे मांगा था, इसलिए यह इस पर निर्भर है कि वह दस्तावेज़ अब दिया जा सकता है या नहीं।"
+      : "क्या बीमा कंपनी ने आपसे यह कभी मांगा था? तथ्यों की पुष्टि में इसका उत्तर दें, क्योंकि इससे यह परिणाम बदल सकता है।";
+  return {
+    en: `The insurer cut ${rupees} citing missing documentation, so rule R5 marks this as questionable. ${nextEn} ${LEGAL_CHECK_EN}`,
+    hi: `बीमा कंपनी ने दस्तावेज़ों की कमी बताकर ${rupees} काटे, इसलिए नियम R5 इसे संदेहास्पद मानता है। ${nextHi} ${LEGAL_CHECK_HI}`,
+  };
+}
+
+export function buildR6Explanation(
+  amount: number,
+  deductionType: string,
+  allowed: number | null,
+  limitName: string | null
+): { en: string; hi: string } {
+  const rupees = `₹${formatRupees(amount)}`;
+  const isCopay = deductionType === "copay";
+  const typeEn = isCopay ? "co-payment" : `sub-limit${limitName ? ` (${limitName})` : ""}`;
+  const typeHi = isCopay ? "को-पेमेंट" : `उप-सीमा${limitName ? ` (${limitName})` : ""}`;
+  if (allowed === null) {
+    return {
+      en: `The insurer cut ${rupees} as ${typeEn}. The documents don't give enough figures to recalculate it, so rule R6 marks this as questionable. Ask the insurer to show its calculation.`,
+      hi: `बीमा कंपनी ने ${typeHi} के रूप में ${rupees} काटे। दस्तावेज़ों में इसकी दोबारा गणना के लिए पूरे आंकड़े नहीं हैं, इसलिए नियम R6 इसे संदेहास्पद मानता है। बीमा कंपनी से उसकी गणना दिखाने को कहें।`,
+    };
+  }
+  const allowedRupees = `₹${formatRupees(allowed)}`;
+  if (amount <= allowed) {
+    return {
+      en: `The insurer cut ${rupees} as ${typeEn}. Recalculating from your documents allows up to ${allowedRupees}, so rule R6 found no problem with this amount, and it looks valid.`,
+      hi: `बीमा कंपनी ने ${typeHi} के रूप में ${rupees} काटे। आपके दस्तावेज़ों से दोबारा गणना करने पर ${allowedRupees} तक की अनुमति है, इसलिए नियम R6 को इस राशि में कोई समस्या नहीं मिली और यह उचित लगती है।`,
+    };
+  }
+  const excess = `₹${formatRupees(amount - allowed)}`;
+  return {
+    en: `The insurer cut ${rupees} as ${typeEn}, but recalculating from your documents allows only ${allowedRupees}. That is ${excess} too much, so rule R6 marks this as questionable. Ask the insurer to explain the difference.`,
+    hi: `बीमा कंपनी ने ${typeHi} के रूप में ${rupees} काटे, लेकिन आपके दस्तावेज़ों से दोबारा गणना करने पर केवल ${allowedRupees} की अनुमति है। यह ${excess} ज़्यादा है, इसलिए नियम R6 इसे संदेहास्पद मानता है। बीमा कंपनी से इस अंतर का कारण पूछें।`,
+  };
+}
+
+export function buildR7Sentence(clause: string): { en: string; hi: string } {
+  return {
+    en: `The insurer cites ${clause}, but we didn't find it in the policy pages we read, so check your policy (rule R7).`,
+    hi: `बीमा कंपनी ${clause} का हवाला देती है, लेकिन हमें यह पढ़े गए पॉलिसी पृष्ठों में नहीं मिला, इसलिए अपनी पॉलिसी जांचें (नियम R7)।`,
+  };
+}

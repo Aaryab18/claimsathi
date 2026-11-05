@@ -63,7 +63,20 @@ export interface Translations {
   fileTypeError: string;
   fileSizeError: string;
   analyseButton: string;
+  lettersTitle: string;
+  lettersDesc: string;
+  letterGrievanceButton: string;
+  letterOmbudsmanButton: string;
+  letterEditNote: string;
+  letterPrintButton: string;
+  letterError: string;
+  addToCalendar: string;
   liveReadingNotice: string;
+  grievanceSentLabel: string;
+  askedForDocumentLabel: string;
+  askedYes: string;
+  askedNo: string;
+  askedNotSure: string;
   sampleDocumentsIntro: string;
   totalSizeError: string;
   trySampleTitle: string;
@@ -123,7 +136,7 @@ export const translations: Record<Language, Translations> = {
     splitBarTitle: "How your deducted ₹{total} splits:",
     summaryTitle: "What the insurer deducted",
     summaryText: (total, recoverable, questionable, valid) =>
-      `Out of ${total} deducted by the insurer, ${recoverable} was likely wrongly denied and can be contested. ${questionable} is questionable and requires itemised billing, while ${valid} was deducted under standard policy room rent limits.`,
+      `Out of ${total} deducted by the insurer, ${recoverable} was likely wrongly denied and can be contested. ${questionable} is questionable and needs a closer look, while ${valid} looks like a valid deduction.`,
     patientLabel: "Patient",
     insurerLabel: "Insurer",
     hospitalLabel: "Hospital",
@@ -182,6 +195,19 @@ export const translations: Record<Language, Translations> = {
     analyseButton: "Analyse claim",
     liveReadingNotice:
       "Your files are sent to Google's Gemini AI to be read, and are deleted from our database within 24 hours. The AI can misread, so check the facts on the result page.",
+    lettersTitle: "Your appeal letters",
+    lettersDesc: "Drafts written from the findings above. Send the complaint to the insurer first, then go to the Ombudsman if needed. This is information, not legal advice.",
+    letterGrievanceButton: "Draft complaint to insurer",
+    letterOmbudsmanButton: "Draft Ombudsman complaint",
+    letterEditNote: "Fill in the parts in [square brackets], check every fact, and edit it as you like. Letters are in English.",
+    letterPrintButton: "Print or save as PDF",
+    letterError: "The letter could not be created. Please try again.",
+    addToCalendar: "Add dates to my calendar",
+    grievanceSentLabel: "Date you sent your complaint to the insurer",
+    askedForDocumentLabel: "Did the insurer ever ask you for the missing document?",
+    askedYes: "Yes",
+    askedNo: "No",
+    askedNotSure: "Not sure",
     sampleDocumentsIntro: "No documents to hand? Download our made-up ones:",
     totalSizeError: "The three files together must be 14 MB or smaller.",
     trySampleTitle: "Try it first without uploading",
@@ -250,7 +276,7 @@ export const translations: Record<Language, Translations> = {
     splitBarTitle: "काटे गए ₹{total} का विवरण:",
     summaryTitle: "बीमा कंपनी ने क्या काटा",
     summaryText: (total, recoverable, questionable, valid) =>
-      `बीमा कंपनी द्वारा काटे गए ${total} में से ${recoverable} की कटौती संभावित रूप से गलत है और इसे वापस मांगा जा सकता है। ${questionable} संदेहास्पद है जिसके लिए विस्तृत बिल की आवश्यकता है, जबकि ${valid} कमरे के किराए की सीमा के तहत उचित कटौती है।`,
+      `बीमा कंपनी द्वारा काटे गए ${total} में से ${recoverable} की कटौती संभावित रूप से गलत है और इसे वापस मांगा जा सकता है। ${questionable} संदेहास्पद है और इसकी बारीकी से जांच ज़रूरी है, जबकि ${valid} उचित कटौती लगती है।`,
     patientLabel: "मरीज़",
     insurerLabel: "बीमा कंपनी",
     hospitalLabel: "अस्पताल",
@@ -309,6 +335,19 @@ export const translations: Record<Language, Translations> = {
     analyseButton: "क्लेम का विश्लेषण करें",
     liveReadingNotice:
       "आपकी फ़ाइलें पढ़ने के लिए Google के Gemini AI को भेजी जाती हैं, और 24 घंटे के भीतर हमारे डेटाबेस से हटा दी जाती हैं। AI से पढ़ने में गलती हो सकती है, इसलिए परिणाम पेज पर तथ्यों की जांच करें।",
+    lettersTitle: "आपके अपील पत्र",
+    lettersDesc: "ऊपर के निष्कर्षों से बने मसौदे। पहले बीमा कंपनी को शिकायत भेजें, फिर ज़रूरत हो तो लोकपाल के पास जाएं। यह जानकारी है, कानूनी सलाह नहीं।",
+    letterGrievanceButton: "बीमा कंपनी को शिकायत का मसौदा",
+    letterOmbudsmanButton: "लोकपाल शिकायत का मसौदा",
+    letterEditNote: "[वर्ग कोष्ठक] वाले हिस्से भरें, हर तथ्य जांचें और चाहें तो बदलें। पत्र अंग्रेज़ी में हैं।",
+    letterPrintButton: "प्रिंट करें या PDF में सहेजें",
+    letterError: "पत्र नहीं बन सका। कृपया फिर से प्रयास करें।",
+    addToCalendar: "तारीखें मेरे कैलेंडर में जोड़ें",
+    grievanceSentLabel: "बीमा कंपनी को शिकायत भेजने की तारीख",
+    askedForDocumentLabel: "क्या बीमा कंपनी ने आपसे छूटा हुआ दस्तावेज़ कभी मांगा था?",
+    askedYes: "हां",
+    askedNo: "नहीं",
+    askedNotSure: "पता नहीं",
     sampleDocumentsIntro: "दस्तावेज़ पास नहीं हैं? हमारे काल्पनिक दस्तावेज़ डाउनलोड करें:",
     totalSizeError: "तीनों फ़ाइलें मिलाकर 14 MB या उससे कम होनी चाहिए।",
     trySampleTitle: "दस्तावेज़ अपलोड किए बिना आज़माएं",

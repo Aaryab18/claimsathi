@@ -318,7 +318,7 @@ describe("cleaning the AI's answer", () => {
 describe("the Gemini reader", () => {
   const geminiReply = (answer: unknown) =>
     new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: JSON.stringify(answer) }] } }] }));
-  const reader = () => createGeminiReader({ apiKey: API_KEY, model: "test-model", retryDelayMs: 0 });
+  const reader = () => createGeminiReader({ apiKey: API_KEY, model: "test-model", fallbackModels: [], retryDelayMs: 0 });
 
   it("sends the key in a header, the files as data and the chosen model", async () => {
     const fetchMock = vi.fn<typeof fetch>().mockResolvedValue(geminiReply(sampleExtractedClaim));
@@ -355,13 +355,13 @@ describe("the Gemini reader", () => {
     const withBackup = createGeminiReader({
       apiKey: API_KEY,
       model: "test-model",
-      fallbackModel: "backup-model",
+      fallbackModels: ["backup-model"],
       retryDelayMs: 0,
     });
 
     await expect(withBackup.read(DOCUMENTS)).resolves.toMatchObject({ claim: sampleExtractedClaim.claim });
     const calledModels = fetchMock.mock.calls.map(([url]) => /models\/(.+):/.exec(String(url))?.[1]);
-    expect(calledModels).toEqual(["test-model", "test-model", "test-model", "backup-model"]);
+    expect(calledModels).toEqual(["test-model", "test-model", "backup-model"]);
   });
 
   it("tries again after a bad answer", async () => {
@@ -398,5 +398,62 @@ describe("the Gemini reader", () => {
     vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockRejectedValue(new TypeError("fetch failed")));
 
     await expect(reader().read(DOCUMENTS)).rejects.toMatchObject({ failure: "busy" });
+  });
+});
+
+describe("appeal letters", () => {
+  const lettersPath = (token: string) => API_ROUTES.createLetter.path.replace(":token", token);
+
+  async function readyCase(reader: DocumentReader = readerReturning(sampleExtractedClaim)) {
+    const { store } = createFakeStore();
+    const { app, processor } = appWith(store, reader);
+    const created = await upload(app).expect(201);
+    await processor.idle();
+    return { app, token: created.body.caseToken as string };
+  }
+
+  it("writes a grievance letter from the case's own findings", async () => {
+    const { app, token } = await readyCase();
+
+    const { body } = await request(app).post(lettersPath(token)).send({ letterType: "grievance" }).expect(200);
+
+    expect(body.letterType).toBe("grievance");
+    expect(body.text).toContain("pay Rs. 71,400");
+  });
+
+  it("writes an Ombudsman complaint", async () => {
+    const { app, token } = await readyCase();
+
+    const { body } = await request(app).post(lettersPath(token)).send({ letterType: "ombudsman" }).expect(200);
+
+    expect(body.text).toContain("COMPLAINT TO THE INSURANCE OMBUDSMAN");
+  });
+
+  it("reflects corrections made to the facts", async () => {
+    const { app, token } = await readyCase();
+    await request(app).patch(factsPath(token)).send({ continuousCoverSince: "2024-01-01" }).expect(200);
+
+    const { body } = await request(app).post(lettersPath(token)).send({ letterType: "grievance" }).expect(200);
+
+    expect(body.text).toContain("pay Rs. 50,800");
+  });
+
+  it("refuses an unknown letter type", async () => {
+    const { app, token } = await readyCase();
+
+    await request(app).post(lettersPath(token)).send({ letterType: "threat" }).expect(400);
+  });
+
+  it("refuses an unknown case", async () => {
+    const { app } = await readyCase();
+
+    await request(app).post(lettersPath("z".repeat(43))).send({ letterType: "grievance" }).expect(404);
+  });
+
+  it("refuses a case that isn't ready", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { app, token } = await readyCase(readerFailing(new ReadError("busy", "gemini_503")));
+
+    await request(app).post(lettersPath(token)).send({ letterType: "grievance" }).expect(409);
   });
 });

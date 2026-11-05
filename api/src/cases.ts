@@ -6,6 +6,8 @@ import {
   CaseResultSchema,
   CaseTokenParamsSchema,
   CreateCaseResponseSchema,
+  CreateLetterRequestSchema,
+  CreateLetterResponseSchema,
   CreateSampleCaseRequestSchema,
   CreateSampleCaseResponseSchema,
   ExtractedClaimSchema,
@@ -16,6 +18,7 @@ import {
   type CaseStatus,
   type FactOverrides,
 } from "@claimsathi/contracts";
+import { buildLetter } from "@claimsathi/rules";
 import express, { Router, type RequestHandler } from "express";
 import type { CaseRecord, CaseStore } from "./case-store.js";
 import type { CaseProcessor } from "./process-case.js";
@@ -186,6 +189,22 @@ export function createCasesRouter(
       throw new HttpError(404, "Case not found.");
     }
     res.json(result);
+  });
+
+  router.post(API_ROUTES.createLetter.path, readJson, async (req, res) => {
+    const request = CreateLetterRequestSchema.safeParse(req.body);
+    if (!request.success) {
+      throw new HttpError(400, "The letter type is not valid.", toIssues(request.error.issues));
+    }
+
+    const found = await loadCase(req.params);
+    if (found.stage !== "done") {
+      throw new HttpError(409, "This case is not ready for letters yet.");
+    }
+
+    const { letterType } = request.data;
+    const text = buildLetter(CaseResultSchema.parse(found.result), letterType, new Date().toISOString().slice(0, 10));
+    res.json(CreateLetterResponseSchema.parse({ letterType, text }));
   });
 
   return router;

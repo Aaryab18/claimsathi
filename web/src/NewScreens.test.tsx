@@ -197,6 +197,61 @@ describe("ClaimSathi New Screens", () => {
       expect(fetchMock.mock.calls.filter(([url]: unknown[]) => String(url).endsWith("/cases"))).toEqual([]);
     });
 
+    it("drafts a letter from the API and lets the person edit it", async () => {
+      const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (String(input).endsWith("/letters")) {
+          expect(JSON.parse(String(init?.body))).toEqual({ letterType: "grievance" });
+          return new Response(JSON.stringify({ letterType: "grievance", text: "Dear Sir or Madam" }));
+        }
+        return new Response(
+          JSON.stringify({
+            caseToken: "case-1",
+            status: { stage: "done", progressMessage: "Done" },
+            result: sampleCaseResult,
+          }),
+        );
+      });
+      vi.stubGlobal("fetch", fetchMock);
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      fireEvent.click(await screen.findByTestId("letter-grievance-btn"));
+
+      const letter = (await screen.findByTestId("letter-text")) as HTMLTextAreaElement;
+      expect(letter.value).toBe("Dear Sir or Madam");
+      fireEvent.change(letter, { target: { value: "Edited" } });
+      expect(letter.value).toBe("Edited");
+    });
+
+    it("offers a calendar file with only the dates we could work out", async () => {
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      const link = (await screen.findByTestId("calendar-download")) as HTMLAnchorElement;
+      const file = decodeURIComponent(link.getAttribute("href") ?? "");
+
+      expect(file).toContain("DTSTART;VALUE=DATE:20271015");
+      expect(file.match(/BEGIN:VEVENT/g)).toHaveLength(1);
+    });
+
+    it("asks for the sent date and sends it with the corrections", async () => {
+      const fetchMock = vi.fn(async (input: RequestInfo | URL) =>
+        String(input).endsWith("/facts")
+          ? new Response(JSON.stringify(sampleCaseResult))
+          : new Response(
+              JSON.stringify({ caseToken: "case-1", status: { stage: "done", progressMessage: "Done" }, result: sampleCaseResult }),
+            ),
+      );
+      vi.stubGlobal("fetch", fetchMock);
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      fireEvent.change(await screen.findByTestId("fact-grievance-sent"), { target: { value: "2026-11-05" } });
+      fireEvent.click(screen.getByTestId("apply-corrections-btn"));
+
+      await waitFor(() => {
+        const call = fetchMock.mock.calls.find(([url]) => String(url).endsWith("/facts")) as unknown[] | undefined;
+        expect(JSON.parse(String((call?.[1] as RequestInit | undefined)?.body)).grievanceSentDate).toBe("2026-11-05");
+      });
+    });
+
     it("offers made-up documents to try", () => {
       render(<App initialEntries={["/"]} />);
 

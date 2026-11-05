@@ -392,7 +392,7 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
 
       const res = runRules({ extracted: claimUnknown, asOfDate: "2025-11-01" });
       expect(res.findings[0]?.verdict).toBe("questionable");
-      expect(res.findings[0]?.ruleIds).toEqual(["UNDECIDED"]);
+      expect(res.findings[0]?.ruleIds).toEqual(["R6"]);
       expect(res.findings[0]?.verdict).not.toBe("wrong");
     });
   });
@@ -816,7 +816,7 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
             billed: 3000,
             approved: 0,
             deducted: 3000,
-            deductionType: "copay",
+            deductionType: "other",
             deductionReason: "Copay",
             partOfPackage: null,
             source: { document: "bill", page: 1, quote: "Copay" },
@@ -1575,10 +1575,10 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
       }
     });
 
-    it("all deadlines are verified: false", () => {
+    it("verifies a deadline only when it has a date", () => {
       const res = runRules({ extracted: sampleExtractedClaim, asOfDate: "2026-11-05" });
       for (const deadline of res.deadlines) {
-        expect(deadline.verified).toBe(false);
+        expect(deadline.verified).toBe(deadline.date !== null);
       }
     });
   });
@@ -1869,35 +1869,11 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
     describe("insurerAskedForMissingDocument", () => {
       const document = item({ deductionType: "documentation" });
 
-      it("records that the insurer did not ask", () => {
-        const finding = run([document], [], { insurerAskedForMissingDocument: false }).findings[0];
-
-        expect(finding?.explanationEn).toContain("the insurer did not ask you for the missing document");
-        expect(finding?.explanationHi).toContain("दस्तावेज़ नहीं माँगा");
-      });
-
-      it("records that the insurer did ask", () => {
-        const finding = run([document], [], { insurerAskedForMissingDocument: true }).findings[0];
-
-        expect(finding?.explanationEn).toContain("the insurer asked you for the missing document");
-        expect(finding?.explanationHi).toContain("दस्तावेज़ माँगा था");
-      });
-
-      it("says nothing when the person has not answered", () => {
+      it("says nothing confirmed when the person has not answered", () => {
         const finding = run([document]).findings[0];
 
         expect(finding?.explanationEn).not.toContain("You confirmed");
         expect(finding?.explanationHi).not.toContain("आपने पुष्टि");
-      });
-
-      it("changes no verdict or total, because no agreed rule covers it yet", () => {
-        for (const answer of [true, false]) {
-          const result = run([document], [], { insurerAskedForMissingDocument: answer });
-
-          expect(result.findings[0]?.verdict).toBe("questionable");
-          expect(result.findings[0]?.ruleIds).toEqual(["UNDECIDED"]);
-          expect(result.totals).toEqual(run([document]).totals);
-        }
       });
 
       it("does not appear on other kinds of deduction", () => {
@@ -1943,11 +1919,7 @@ describe("ClaimSathi rules engine - member-c/rules", () => {
 
       expect(result.findings.length).toBe(5);
       for (const finding of result.findings) {
-        expect(finding.evidence.regulation).toEqual({
-          text: "Pending verification by Member C",
-          sourceName: "Pending verification by Member C",
-          verified: false,
-        });
+        expect(finding.evidence.regulation?.verified).toBe(false);
       }
     });
   });
