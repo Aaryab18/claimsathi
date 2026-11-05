@@ -161,7 +161,7 @@ Last re-tested on the live site after commit `488c2fb`. Re-run these tests after
 - **Do:** open **Contact insurer** on a case. Click **Show what to say** in each language, type a complaint reference number, then draft the Ombudsman complaint on **Letters**.
 - **Expect:**
   - For HDFC ERGO, Niva Bupa, New India Assurance, Bajaj General or Tata AIG: a **Call** button with the number from that insurer's own grievance page.
-  - For any other insurer, including the sample's made-up one: no number, and a note to use the number on the policy.
+  - For any other insurer, including the sample's made-up one: no number at first, and a list to choose the insurer. Choosing one, for example HDFC ERGO, shows its Call button. This is how to show the Call button in a demo.
   - The script has the case's own numbers and every disputed item.
   - The reference number appears in the Ombudsman complaint.
   - The IRDAI Bima Bharosa and Ombudsman links open their complaint forms.

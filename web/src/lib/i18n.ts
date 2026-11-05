@@ -82,6 +82,9 @@ export interface Translations {
   contactStepCall: string;
   contactMatched: (name: string) => string;
   contactNotListed: (insurer: string | null) => string;
+  contactChosen: (name: string) => string;
+  contactChooseLabel: string;
+  contactChooseNone: string;
   contactCallNow: string;
   contactTollFree: string;
   contactCallCharges: string;
@@ -364,7 +367,10 @@ export const translations: Record<Language, Translations> = {
     contactStepCall: "1. Call the insurer's grievance line",
     contactMatched: (name) => `Your letter is from ${name}. This is the number on its official grievance page.`,
     contactNotListed: (insurer) =>
-      `${insurer ? `We haven't confirmed the grievance number for ${insurer}` : "We couldn't tell which insurer this is"}, so we don't show one. Use the customer care number printed on your policy document or the insurer's letter, or complain to IRDAI using step 5.`,
+      `${insurer ? `We haven't confirmed the grievance number for ${insurer}` : "We couldn't tell which insurer this is"}, so we don't show one. If it's one of the insurers below, choose it. Otherwise use the customer care number printed on your policy document or the insurer's letter, or complain to IRDAI using step 5.`,
+    contactChosen: (name) => `You chose ${name}. This is the number on its official grievance page. Check it matches the insurer on your letter.`,
+    contactChooseLabel: "Is your insurer one of these?",
+    contactChooseNone: "My insurer isn't listed",
     contactCallNow: "Call",
     contactTollFree: "Toll-free.",
     contactCallCharges: "Normal call charges may apply.",
@@ -654,7 +660,10 @@ export const translations: Record<Language, Translations> = {
     contactStepCall: "1. बीमा कंपनी की शिकायत लाइन पर कॉल करें",
     contactMatched: (name) => `आपका पत्र ${name} का है। यह नंबर उसके आधिकारिक शिकायत पेज पर दिया गया है।`,
     contactNotListed: (insurer) =>
-      `${insurer ? `हमने ${insurer} का शिकायत नंबर पक्का नहीं किया है` : "हम पता नहीं लगा सके कि यह कौन सी बीमा कंपनी है"}, इसलिए हम कोई नंबर नहीं दिखाते। अपनी पॉलिसी या बीमा कंपनी के पत्र पर छपा कस्टमर केयर नंबर इस्तेमाल करें, या चरण 5 से IRDAI को शिकायत करें।`,
+      `${insurer ? `हमने ${insurer} का शिकायत नंबर पक्का नहीं किया है` : "हम पता नहीं लगा सके कि यह कौन सी बीमा कंपनी है"}, इसलिए हम कोई नंबर नहीं दिखाते। अगर यह नीचे दी गई कंपनियों में से है, तो उसे चुनें। नहीं तो अपनी पॉलिसी या बीमा कंपनी के पत्र पर छपा कस्टमर केयर नंबर इस्तेमाल करें, या चरण 5 से IRDAI को शिकायत करें।`,
+    contactChosen: (name) => `आपने ${name} चुना। यह नंबर उसके आधिकारिक शिकायत पेज पर दिया गया है। जांच लें कि यह आपके पत्र वाली बीमा कंपनी ही है।`,
+    contactChooseLabel: "क्या आपकी बीमा कंपनी इनमें से है?",
+    contactChooseNone: "मेरी बीमा कंपनी सूची में नहीं है",
     contactCallNow: "कॉल करें",
     contactTollFree: "टोल-फ़्री।",
     contactCallCharges: "सामान्य कॉल शुल्क लग सकता है।",
