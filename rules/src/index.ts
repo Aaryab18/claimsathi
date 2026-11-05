@@ -1,2 +1,1 @@
-// Placeholder: no legal rules exist yet.
-export const RULES_PLACEHOLDER = "rules-placeholder";
+export { runRules } from "./run-rules.js";
