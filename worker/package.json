@@ -8,5 +8,9 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "start": "node dist/index.js"
+  },
+  "dependencies": {
+    "@claimsathi/contracts": "*",
+    "@claimsathi/rules": "*"
   }
 }
