@@ -1,4 +1,5 @@
 import type { CaseResult, ExtractedClaim, FactOverrides, IsoDate } from "@claimsathi/contracts";
+import { runRules } from "@claimsathi/rules";
 
 export interface RecalculateInput {
   saved: CaseResult;
@@ -7,9 +8,7 @@ export interface RecalculateInput {
   asOfDate: IsoDate;
 }
 
-// TEMPORARY: @claimsathi/rules does not export runRules yet, so facts are saved but change nothing.
-// When it does, this becomes the only line to change:
-//   return { ...saved, ...runRules({ extracted, overrides, asOfDate }) };
-export function recalculateResult({ saved }: RecalculateInput): CaseResult {
-  return saved;
+// The saved result keeps caseToken, extracted and resultSource. Everything the rules decide is replaced.
+export function recalculateResult({ saved, extracted, overrides, asOfDate }: RecalculateInput): CaseResult {
+  return { ...saved, ...runRules({ extracted, overrides, asOfDate }) };
 }
