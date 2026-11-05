@@ -18,6 +18,7 @@ import { buildDeadlines } from "./deadlines.js";
 import {
   buildPedExplanation,
   buildR3Explanation,
+  buildR3IcuExplanation,
   buildR4QuestionableExplanation,
   buildR4WrongExplanation,
   buildR5Explanation,
@@ -42,6 +43,11 @@ const REGULATIONS: Partial<Record<string, Regulation>> = {
   R3: {
     text: "Pharmacy and consumables, implants and medical devices, and diagnostics are not allowed in 'associate medical expenses', and insurers can't recover proportionate deductions on anything else. We are confirming whether this still applies after IRDAI's May 2024 Master Circular.",
     sourceName: "IRDAI circular IRDAI/HLT/REG/CIR/151/06/2020, 11.06.2020, paragraphs 4 and 5",
+    verified: false,
+  },
+  "R3-ICU": {
+    text: "Insurers are not permitted to apply proportionate deduction for ICU charges, as different categories of ICU are not there. We are confirming whether this still applies after IRDAI's May 2024 Master Circular.",
+    sourceName: "IRDAI circular IRDAI/HLT/REG/CIR/151/06/2020, 11.06.2020, paragraph 7",
     verified: false,
   },
   R1: {
@@ -77,7 +83,7 @@ function withSourceStatus(
   explanations: { en: string; hi: string },
   ruleIds: string[]
 ): { en: string; hi: string } {
-  if (ruleIds.includes("R3")) {
+  if (ruleIds.includes("R3") || ruleIds.includes("R3-ICU")) {
     return {
       en: explanations.en.replace(UNCHECKED_EN, " IRDAI's 2020 circular bars this cut on these items, and we are confirming it still applies."),
       hi: explanations.hi.replace(UNCHECKED_HI, " IRDAI का 2020 का परिपत्र इन मदों पर यह कटौती रोकता है, और हम पुष्टि कर रहे हैं कि यह अब भी लागू है।"),
@@ -254,6 +260,15 @@ function evaluateLineItem(
 
   // R3 Proportionate deduction: pharmacy, consumable, implant or diagnostic items is wrong
   if (item.deductionType === "proportionate") {
+    // The same 2020 circular bars this cut on ICU charges, as ICUs have no room categories.
+    if (/\b(?:i?ccu|icu|intensive care)\b/i.test(item.description ?? "")) {
+      return {
+        item,
+        ruleIds: ["R3-ICU"],
+        verdict: "wrong",
+        confidence: "strong",
+      };
+    }
     if (
       effectiveCategory !== null &&
       ["pharmacy", "consumable", "implant", "diagnostic"].includes(effectiveCategory)
@@ -563,7 +578,9 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
 
     let explanations: { en: string; hi: string };
 
-    if (g.ruleIds.includes("R3")) {
+    if (g.ruleIds.includes("R3-ICU")) {
+      explanations = buildR3IcuExplanation(amount, g.items);
+    } else if (g.ruleIds.includes("R3")) {
       explanations = buildR3Explanation(g.items, amount);
     } else if (g.ruleIds.includes("R4") && g.verdict === "wrong") {
       // A package is only named when the bill calls it one, and never from the deducted items themselves.
@@ -588,8 +605,9 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
       explanations = buildR4QuestionableExplanation(amount, g.items, clauseCited);
     } else if (g.ruleIds.includes("R1") || g.ruleIds.includes("R2")) {
       const descriptions = g.items.flatMap((i) => i.description?.trim() || []);
+      // A line for rooms, medicines or tests names a charge, not an illness.
       const conditions =
-        descriptions.length === g.items.length
+        descriptions.length === g.items.length && g.items.every((i) => !i.category || i.category === "other")
           ? descriptions.map((description) =>
               /hypertension/i.test(description)
                 ? { en: "hypertension", hi: "हाइपरटेंशन (उच्च रक्तचाप)" }

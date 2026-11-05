@@ -299,3 +299,38 @@ describe("what the app says about its legal sources", () => {
     expect(finding?.explanationEn).toContain("has not been checked");
   });
 });
+
+describe("what harder documents showed", () => {
+  it("marks a proportionate cut on ICU charges as wrong, citing paragraph 7 and not as confirmed", () => {
+    const icu = item({ description: "ICU charges, 2 days", category: "room", deductionType: "proportionate" });
+
+    const finding = run(claimWith([icu])).findings[0];
+
+    expect(finding).toMatchObject({ verdict: "wrong", ruleIds: ["R3-ICU"] });
+    expect(finding?.evidence.regulation?.sourceName).toContain("paragraph 7");
+    expect(finding?.evidence.regulation?.verified).toBe(false);
+    expect(finding?.explanationEn).toContain("ICUs don't come in different room categories");
+    expect(finding?.explanationEn).toContain("confirming it still applies");
+    expect(finding?.explanationEn).not.toContain("has not been checked");
+    expect(finding?.explanationHi).toContain("ICU");
+  });
+
+  it("doesn't take a word that merely contains icu for an ICU", () => {
+    const other = item({ description: "Bicuspid valve repair", category: "procedure", deductionType: "proportionate" });
+
+    expect(run(claimWith([other])).findings[0]?.ruleIds).not.toContain("R3-ICU");
+  });
+
+  it("doesn't call a whole bill's charges a disease when a claim is fully rejected", () => {
+    const lines = [
+      item({ id: "A", description: "Room 4 days", category: "room", deductionType: "pre_existing_disease" }),
+      item({ id: "B", description: "Lab tests", category: "diagnostic", deductionType: "pre_existing_disease" }),
+    ];
+
+    const finding = run(claimWith(lines)).findings[0];
+
+    expect(finding?.explanationEn).toContain("treated this condition as a pre-existing disease");
+    expect(finding?.explanationEn).not.toContain("Room 4 days");
+    expect(finding?.explanationHi).not.toContain("Room 4 days");
+  });
+});

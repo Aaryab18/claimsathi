@@ -391,3 +391,13 @@ export function buildR7Sentence(clause: string): { en: string; hi: string } {
     hi: `बीमा कंपनी ${clause} का हवाला देती है, लेकिन हमें यह पढ़े गए पॉलिसी पृष्ठों में नहीं मिला, इसलिए अपनी पॉलिसी जांचें (नियम R7)।`,
   };
 }
+
+export function buildR3IcuExplanation(amount: number, items: LineItem[]): { en: string; hi: string } {
+  const names = items.flatMap((item) => item.description ?? []);
+  const nameEn = names.length > 0 ? joinNames(names, " and ") : "ICU charges";
+  const nameHi = names.length > 0 ? joinNames(names, " और ") : "ICU शुल्क";
+  return {
+    en: `The insurer cut ₹${formatRupees(amount)} from ${nameEn} in proportion because the room cost more than the policy limit. ICUs don't come in different room categories, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`,
+    hi: `बीमा कंपनी ने ${nameHi} से ₹${formatRupees(amount)} अनुपात में काटे, क्योंकि कमरा पॉलिसी की सीमा से महंगा था। ICU की अलग-अलग श्रेणियां नहीं होतीं, इसलिए नियम R3 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।`,
+  };
+}
