@@ -1,5 +1,12 @@
+import { Link } from "react-router-dom";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
+
+const LANGUAGES: { code: Language; label: string }[] = [
+  { code: "en", label: "English" },
+  { code: "hi", label: "हिंदी" },
+  { code: "kn", label: "ಕನ್ನಡ" },
+];
 
 interface HeaderProps {
   language: Language;
@@ -14,7 +21,7 @@ export function Header({ language, onLanguageChange, resultSource, isOffline }: 
   return (
     <header className="border-b border-[#E3E1D5] bg-[#F4F2EB]/80 backdrop-blur-xs sticky top-0 z-30">
       <div className="max-w-4xl mx-auto px-4 py-3 sm:py-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2.5">
+        <Link to="/" aria-label={t.appName} className="flex items-center gap-2.5">
           <div className="w-8 h-8 rounded-lg bg-[#114B36] flex items-center justify-center text-white font-bold text-lg shadow-xs">
             CS
           </div>
@@ -38,7 +45,7 @@ export function Header({ language, onLanguageChange, resultSource, isOffline }: 
             </div>
             <p className="text-xs text-[#526059] hidden sm:block">{t.tagline}</p>
           </div>
-        </div>
+        </Link>
 
         <div className="flex items-center gap-2 sm:gap-3 ml-auto">
           <div className="hidden xs:inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#EAE8DD] text-[#3D4D44] border border-[#DDD9C9]">
@@ -59,35 +66,33 @@ export function Header({ language, onLanguageChange, resultSource, isOffline }: 
             <span>{t.legalDisclaimer}</span>
           </div>
 
+          <Link
+            to="/helpdesk"
+            className="text-xs font-semibold text-[#0F5132] underline print:hidden"
+          >
+            {t.navHelpdesk}
+          </Link>
+
           <div
             role="group"
             aria-label="Language selection"
             className="inline-flex p-0.5 rounded-lg bg-[#E7E5D8] border border-[#D9D6C5]"
           >
-            <button
-              type="button"
-              onClick={() => onLanguageChange("en")}
-              aria-pressed={language === "en"}
-              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
-                language === "en"
-                  ? "bg-white text-[#114B36] shadow-xs font-semibold"
-                  : "text-[#555243] hover:text-[#113A2B]"
-              }`}
-            >
-              English
-            </button>
-            <button
-              type="button"
-              onClick={() => onLanguageChange("hi")}
-              aria-pressed={language === "hi"}
-              className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
-                language === "hi"
-                  ? "bg-white text-[#114B36] shadow-xs font-semibold"
-                  : "text-[#555243] hover:text-[#113A2B]"
-              }`}
-            >
-              हिंदी
-            </button>
+            {LANGUAGES.map(({ code, label }) => (
+              <button
+                key={code}
+                type="button"
+                onClick={() => onLanguageChange(code)}
+                aria-pressed={language === code}
+                className={`px-2.5 py-1 text-xs font-medium rounded-md transition-all ${
+                  language === code
+                    ? "bg-white text-[#114B36] shadow-xs font-semibold"
+                    : "text-[#555243] hover:text-[#113A2B]"
+                }`}
+              >
+                {label}
+              </button>
+            ))}
           </div>
         </div>
       </div>

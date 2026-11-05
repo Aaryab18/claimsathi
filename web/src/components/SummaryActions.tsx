@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
 
-const SPEECH_LANGUAGE: Record<Language, string> = { en: "en-IN", hi: "hi-IN" };
+const SPEECH_LANGUAGE: Record<Language, string> = { en: "en-IN", hi: "hi-IN", kn: "kn-IN" };
 const SITE_URL = "https://claimsathi-web.onrender.com";
 
 function hasVoiceFor(language: Language): boolean {
