@@ -1,8 +1,9 @@
-import { CaseResultSchema, type ExtractedClaim } from "@claimsathi/contracts";
-import type { CaseStore } from "./case-store.js";
+import { CaseResultSchema, type ExtractedClaim, type ResultSource } from "@claimsathi/contracts";
+import type { CaseStore, StoredDocument } from "./case-store.js";
 import { ReadError, type DocumentReader } from "./document-reader.js";
 import { logSafely } from "./errors.js";
 import { assessClaim } from "./rules.js";
+import { savedReadingFor } from "./saved-readings.js";
 
 const MESSAGES = {
   reading: "Reading your documents.",
@@ -39,16 +40,31 @@ export function createCaseProcessor({
 }: CaseProcessorOptions): CaseProcessor {
   let queue: Promise<void> = Promise.resolve();
 
+  async function readClaim(
+    documents: StoredDocument[],
+  ): Promise<{ extracted: ExtractedClaim; resultSource: ResultSource }> {
+    try {
+      return { extracted: await reader.read(documents), resultSource: "live" };
+    } catch (error) {
+      const saved = error instanceof ReadError && error.failure === "busy" ? savedReadingFor(documents) : null;
+      if (!saved) {
+        throw error;
+      }
+      logSafely("The AI was busy, so a saved sample reading was used", error);
+      return { extracted: saved, resultSource: "saved_sample" };
+    }
+  }
+
   async function process(token: string): Promise<void> {
     try {
       await store.setProgress(token, "reading", MESSAGES.reading);
-      const extracted = await reader.read(await store.findDocuments(token));
+      const { extracted, resultSource } = await readClaim(await store.findDocuments(token));
       if (!hasClaim(extracted)) {
         throw new ReadError("unreadable", "no_claim_found");
       }
 
       await store.setProgress(token, "checking", MESSAGES.checking);
-      const result = CaseResultSchema.parse(assessClaim({ caseToken: token, extracted, asOfDate: today() }));
+      const result = CaseResultSchema.parse(assessClaim({ caseToken: token, extracted, asOfDate: today(), resultSource }));
       await store.completeCase(token, MESSAGES.done, extracted, result);
     } catch (error) {
       logSafely("Reading a case failed", error);

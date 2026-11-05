@@ -1,4 +1,4 @@
-import type { CaseResult, ExtractedClaim, FactOverrides, IsoDate } from "@claimsathi/contracts";
+import type { CaseResult, ExtractedClaim, FactOverrides, IsoDate, ResultSource } from "@claimsathi/contracts";
 import { runRules } from "@claimsathi/rules";
 
 export interface RecalculateInput {
@@ -17,9 +17,10 @@ export interface AssessInput {
   caseToken: string;
   extracted: ExtractedClaim;
   asOfDate: IsoDate;
+  resultSource?: ResultSource;
 }
 
 // A freshly read claim has no saved result yet, so the rules make the whole assessment.
-export function assessClaim({ caseToken, extracted, asOfDate }: AssessInput): CaseResult {
-  return { caseToken, extracted, resultSource: "live", ...runRules({ extracted, asOfDate }) };
+export function assessClaim({ caseToken, extracted, asOfDate, resultSource = "live" }: AssessInput): CaseResult {
+  return { caseToken, extracted, resultSource, ...runRules({ extracted, asOfDate }) };
 }

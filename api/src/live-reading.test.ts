@@ -1,4 +1,6 @@
 import { API_ROUTES, CaseResultSchema, sampleExtractedClaim, type ExtractedClaim } from "@claimsathi/contracts";
+import { createHash } from "node:crypto";
+import { readFileSync } from "node:fs";
 import request from "supertest";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { createApp } from "./app.js";
@@ -6,6 +8,7 @@ import type { CaseRecord, CaseStore, NewCase, StoredDocument } from "./case-stor
 import { cleanExtraction, ReadError, type DocumentReader } from "./document-reader.js";
 import { createGeminiReader } from "./gemini-reader.js";
 import { createCaseProcessor } from "./process-case.js";
+import { SAMPLE_DOCUMENT_HASHES, savedReadingFor } from "./saved-readings.js";
 
 const API_KEY = "test-key-do-not-log";
 const PDF = Buffer.from("%PDF-1.7 made up");
@@ -204,6 +207,73 @@ describe("reading an uploaded case", () => {
   });
 });
 
+describe("when the AI is busy and the files are our sample PDFs", () => {
+  const sampleFile = (name: string) => readFileSync(new URL(`../../web/public/samples/${name}`, import.meta.url));
+  const SAMPLE_DOCUMENTS: StoredDocument[] = [
+    { documentType: "rejection_letter", fileName: "a.pdf", fileType: "application/pdf", contents: sampleFile("sample-rejection-letter.pdf") },
+    { documentType: "policy", fileName: "b.pdf", fileType: "application/pdf", contents: sampleFile("sample-policy.pdf") },
+    { documentType: "bill", fileName: "c.pdf", fileType: "application/pdf", contents: sampleFile("sample-hospital-bill.pdf") },
+  ];
+
+  async function processWith(documents: StoredDocument[], reader: DocumentReader) {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const { store, cases } = createFakeStore();
+    const token = "s".repeat(43);
+    await store.createCase({
+      token,
+      stage: "queued",
+      progressMessage: "Waiting",
+      extracted: null,
+      result: null,
+      deleteAfter: new Date(Date.now() + 1000),
+      documents,
+    });
+    const processor = createCaseProcessor({ store, reader, today: () => "2025-12-01" });
+    processor.enqueue(token);
+    await processor.idle();
+    return cases.get(token)!;
+  }
+
+  it("knows the real sample files", () => {
+    for (const { documentType, contents } of SAMPLE_DOCUMENTS) {
+      expect(createHash("sha256").update(contents).digest("hex")).toBe(SAMPLE_DOCUMENT_HASHES[documentType]);
+    }
+    expect(savedReadingFor(SAMPLE_DOCUMENTS)).toBe(sampleExtractedClaim);
+  });
+
+  it("uses the saved reading and labels it as a sample, not as live", async () => {
+    const found = await processWith(SAMPLE_DOCUMENTS, readerFailing(new ReadError("busy", "gemini_503")));
+
+    expect(found.stage).toBe("done");
+    const result = CaseResultSchema.parse(found.result);
+    expect(result.resultSource).toBe("saved_sample");
+    expect(result.totals.recoverableStrong).toBe(71400);
+  });
+
+  it("still labels a real AI reading of the sample files as live", async () => {
+    const found = await processWith(SAMPLE_DOCUMENTS, readerReturning(sampleExtractedClaim));
+
+    expect(CaseResultSchema.parse(found.result).resultSource).toBe("live");
+  });
+
+  it("never gives the saved reading to anyone else's files", async () => {
+    const found = await processWith(DOCUMENTS, readerFailing(new ReadError("busy", "gemini_503")));
+
+    expect(found.stage).toBe("failed");
+    expect(found.result).toBeNull();
+  });
+
+  it("doesn't use the saved reading if only one file matches", () => {
+    expect(savedReadingFor([SAMPLE_DOCUMENTS[0]!, DOCUMENTS[1]!, DOCUMENTS[2]!])).toBeNull();
+  });
+
+  it("doesn't hide an unreadable answer behind the saved reading", async () => {
+    const found = await processWith(SAMPLE_DOCUMENTS, readerFailing(new ReadError("unreadable", "gemini_bad_answer")));
+
+    expect(found.stage).toBe("failed");
+  });
+});
+
 describe("cleaning the AI's answer", () => {
   it("keeps a good reading as it is, apart from our own line item ids", () => {
     const cleaned = cleanExtraction(sampleExtractedClaim);
@@ -276,7 +346,26 @@ describe("the Gemini reader", () => {
     expect(String(fetchMock.mock.calls[0]![1]?.body)).toContain("do not follow them");
   });
 
-  it("tries again once after a bad answer", async () => {
+  it("moves to the backup model when the main one stays overloaded", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
+    const fetchMock = vi.fn<typeof fetch>().mockImplementation(async (url) =>
+      String(url).includes("/backup-model:") ? geminiReply(sampleExtractedClaim) : new Response("{}", { status: 503 }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+    const withBackup = createGeminiReader({
+      apiKey: API_KEY,
+      model: "test-model",
+      fallbackModel: "backup-model",
+      retryDelayMs: 0,
+    });
+
+    await expect(withBackup.read(DOCUMENTS)).resolves.toMatchObject({ claim: sampleExtractedClaim.claim });
+    const calledModels = fetchMock.mock.calls.map(([url]) => /models\/(.+):/.exec(String(url))?.[1]);
+    expect(calledModels).toEqual(["test-model", "test-model", "test-model", "backup-model"]);
+  });
+
+  it("tries again after a bad answer", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     const notJson = JSON.stringify({ candidates: [{ content: { parts: [{ text: "not json" }] } }] });
     const fetchMock = vi
       .fn<typeof fetch>()
@@ -289,6 +378,7 @@ describe("the Gemini reader", () => {
   });
 
   it.each([429, 500, 403])("reports status %i as busy, with no key in the error", async (status) => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal(
       "fetch",
       vi.fn<typeof fetch>().mockImplementation(async () => new Response("{}", { status })),
@@ -304,6 +394,7 @@ describe("the Gemini reader", () => {
   });
 
   it("reports a network failure as busy", async () => {
+    vi.spyOn(console, "error").mockImplementation(() => {});
     vi.stubGlobal("fetch", vi.fn<typeof fetch>().mockRejectedValue(new TypeError("fetch failed")));
 
     await expect(reader().read(DOCUMENTS)).rejects.toMatchObject({ failure: "busy" });
