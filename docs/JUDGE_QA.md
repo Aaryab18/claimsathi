@@ -17,6 +17,9 @@ The user can correct dates and categories under Confirm the facts, and the rules
 **What if the AI is down?**
 It retries and moves through other free models. If all are busy, our own sample PDFs get a saved reading labelled as a sample. Anything else gets a clear "try again" message.
 
+**Is the case strength score a chance of winning?**
+No. It summarises the rules' verdicts, using weights we chose and show on screen. A real chance of winning would need data from past cases, which we don't have.
+
 ## The law
 
 **Are your legal rules verified?**
@@ -44,6 +47,9 @@ The AI is told to treat documents as data. Even if it were fooled, it only retur
 **Who would use this, and how does it make money?**
 People with a cut or rejected claim. Possible routes are hospital help desks, NGOs and patient groups. We haven't tested demand or pricing yet.
 
+**Is the helpdesk dashboard a real system for hospitals?**
+It's an early version. It works today, but the list stays in one browser, with no login or batch upload. The demo cases are made up. A real rollout would need accounts, consent and data agreements.
+
 **Why not just use ChatGPT?**
 A chatbot can give different answers and can invent rules. This gives repeatable results, shows its evidence, and turns it into letters and deadlines.
 
@@ -55,6 +61,9 @@ Confirm the legal references, test on real consented documents, measure accuracy
 
 **How did you build it in 24 hours?**
 AI wrote most of the code under our direction, and we reviewed and tested it. There are several hundred automated tests, and they run on every change.
+
+**Which languages does it support?**
+English, Hindi and Kannada for the site. Explanations are in English and Hindi, and letters are in English.
 
 ## If you don't know
 
