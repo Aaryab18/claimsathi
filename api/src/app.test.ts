@@ -1,8 +1,10 @@
 import request from "supertest";
 import { afterEach, beforeEach, describe, expect, it, vi, type MockInstance } from "vitest";
 import { createApp } from "./app.js";
+import type { CaseStore } from "./case-store.js";
 import { checkDatabase, checkQueue } from "./readiness.js";
 
+const unusedStore = {} as CaseStore;
 const SECRET_URL = "postgres://admin:s3cret-password@db.internal:5432/claims";
 const ALLOWED_ORIGIN = "https://claimsathi-web.onrender.com";
 
@@ -11,7 +13,12 @@ const breaks = () => Promise.reject(new Error(`Could not connect to ${SECRET_URL
 const hangs = () => new Promise<void>(() => {});
 
 function appWith(database = works as () => Promise<void>, queue = works as () => Promise<void>) {
-  return createApp({ allowedOrigin: ALLOWED_ORIGIN, checks: { database, queue }, readinessTimeoutMs: 20 });
+  return createApp({
+    allowedOrigin: ALLOWED_ORIGIN,
+    checks: { database, queue },
+    store: unusedStore,
+    readinessTimeoutMs: 20,
+  });
 }
 
 let errorLog: MockInstance;
@@ -105,7 +112,7 @@ describe("browser requests", () => {
   });
 
   it("does not allow any origin when ALLOWED_ORIGIN is not set", async () => {
-    const app = createApp({ allowedOrigin: undefined, checks: { database: works, queue: works } });
+    const app = createApp({ allowedOrigin: undefined, checks: { database: works, queue: works }, store: unusedStore });
 
     const response = await request(app).get("/readyz").set("Origin", ALLOWED_ORIGIN);
 
