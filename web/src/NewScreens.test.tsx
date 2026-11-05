@@ -368,6 +368,35 @@ describe("ClaimSathi New Screens", () => {
       expect(card.textContent).not.toContain("private-token-123");
     });
 
+    it("counts the files, marks each one done and lets one be removed", () => {
+      render(<App initialEntries={["/"]} />);
+      expect(screen.getByTestId("files-chosen").textContent).toBe("0 of 3 files chosen");
+
+      fireEvent.change(screen.getByTestId("file-policy"), {
+        target: { files: [new File(["policy"], "policy.pdf", { type: "application/pdf" })] },
+      });
+
+      expect(screen.getByTestId("files-chosen").textContent).toBe("1 of 3 files chosen");
+      expect(screen.getByTestId("done-policy")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Remove policy document" }));
+
+      expect(screen.getByTestId("files-chosen").textContent).toBe("0 of 3 files chosen");
+      expect(screen.queryByTestId("done-policy")).toBeNull();
+    });
+
+    it("accepts a dropped file and checks it the same way", () => {
+      render(<App initialEntries={["/"]} />);
+      const slot = screen.getByTestId("slot-bill");
+
+      fireEvent.drop(slot, { dataTransfer: { files: [new File(["bill"], "bill.pdf", { type: "application/pdf" })] } });
+      expect(screen.getByTestId("done-bill")).toBeTruthy();
+
+      fireEvent.click(screen.getByRole("button", { name: "Remove hospital bill" }));
+      fireEvent.drop(slot, { dataTransfer: { files: [new File(["x"], "notes.exe", { type: "application/x-msdownload" })] } });
+      expect(screen.getByTestId("error-bill").textContent).toContain("Only PDF");
+    });
+
     it("offers made-up documents to try", () => {
       render(<App initialEntries={["/"]} />);
 

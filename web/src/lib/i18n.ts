@@ -115,6 +115,9 @@ export interface Translations {
   billedLabel: string;
   sourceLabel: string;
   noRegulationCited: string;
+  dropFileHere: string;
+  fileChosenLabel: string;
+  filesChosen: (count: number) => string;
   lettersTitle: string;
   lettersDesc: string;
   letterGrievanceButton: string;
@@ -299,6 +302,9 @@ export const translations: Record<Language, Translations> = {
     billedLabel: "Billed",
     sourceLabel: "Source",
     noRegulationCited: "No external regulation cited.",
+    dropFileHere: "or drop it here",
+    fileChosenLabel: "File chosen",
+    filesChosen: (count) => `${count} of 3 files chosen`,
     lettersTitle: "Your appeal letters",
     lettersDesc: "Drafts written from the findings above. Send the complaint to the insurer first, then go to the Ombudsman if needed. This is information, not legal advice.",
     letterGrievanceButton: "Draft complaint to insurer",
@@ -491,6 +497,9 @@ export const translations: Record<Language, Translations> = {
     billedLabel: "बिल राशि",
     sourceLabel: "स्रोत",
     noRegulationCited: "कोई बाहरी नियम उद्धृत नहीं है।",
+    dropFileHere: "या यहां खींचकर छोड़ें",
+    fileChosenLabel: "फ़ाइल चुनी गई",
+    filesChosen: (count) => `3 में से ${count} फ़ाइलें चुनी गईं`,
     lettersTitle: "आपके अपील पत्र",
     lettersDesc: "ऊपर के निष्कर्षों से बने मसौदे। पहले बीमा कंपनी को शिकायत भेजें, फिर ज़रूरत हो तो लोकपाल के पास जाएं। यह जानकारी है, कानूनी सलाह नहीं।",
     letterGrievanceButton: "बीमा कंपनी को शिकायत का मसौदा",

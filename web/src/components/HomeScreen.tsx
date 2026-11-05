@@ -1,8 +1,9 @@
-import { useState, useRef, type ChangeEvent } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { createCase, createSampleCase } from "../api/client";
 import { Header } from "./Header";
 import { Footer } from "./Footer";
+import { UploadSlot } from "./UploadSlot";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
 
@@ -36,10 +37,6 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [generalError, setGeneralError] = useState<string | null>(null);
 
-  const rejectionInputRef = useRef<HTMLInputElement>(null);
-  const policyInputRef = useRef<HTMLInputElement>(null);
-  const billInputRef = useRef<HTMLInputElement>(null);
-
   const validateFile = (file: File): string | null => {
     const extension = "." + file.name.split(".").pop()?.toLowerCase();
     const hasValidExt = ALLOWED_EXTENSIONS.includes(extension);
@@ -54,30 +51,12 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
     return null;
   };
 
-  const handleFileChange = (
-    e: ChangeEvent<HTMLInputElement>,
-    setSlot: React.Dispatch<React.SetStateAction<SlotState>>,
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  const chooseFile = (file: File, setSlot: React.Dispatch<React.SetStateAction<SlotState>>) => {
     const error = validateFile(file);
-    if (error) {
-      setSlot({ file: null, error });
-    } else {
-      setSlot({ file, error: null });
-    }
+    setSlot(error ? { file: null, error } : { file, error: null });
   };
 
-  const handleRemove = (
-    setSlot: React.Dispatch<React.SetStateAction<SlotState>>,
-    inputRef: React.RefObject<HTMLInputElement | null>,
-  ) => {
-    setSlot({ file: null, error: null });
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
-  };
+  const filesChosen = [rejectionSlot, policySlot, billSlot].filter((slot) => slot.file).length;
 
   const isAnalyseEnabled =
     rejectionSlot.file !== null &&
@@ -120,12 +99,6 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
     } finally {
       setIsSubmitting(false);
     }
-  };
-
-  const formatFileSize = (bytes: number): string => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
   return (
@@ -237,205 +210,48 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 gap-4">
-            {/* Slot 1: Rejection Letter */}
-            <div className="p-4 rounded-xl border border-[#E7E5D8] bg-[#FAF9F5] flex flex-col gap-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                <label
-                  htmlFor="upload-rejection-letter"
-                  className="font-bold text-sm text-[#113A2B] cursor-pointer"
-                >
-                  {t.uploadRejectionTitle}
-                </label>
-                <span className="text-xs text-[#6B7871]">{t.uploadRejectionDesc}</span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  ref={rejectionInputRef}
-                  id="upload-rejection-letter"
-                  data-testid="file-rejection"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                  onChange={(e) => handleFileChange(e, setRejectionSlot)}
-                  className="sr-only"
-                />
-                <button
-                  type="button"
-                  onClick={() => rejectionInputRef.current?.click()}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#E7E5D8] hover:bg-[#DAD6C5] text-[#113A2B] border border-[#D5D2C2] focus:ring-2 focus:ring-[#114B36] focus:outline-hidden cursor-pointer"
-                >
-                  {t.chooseFile}
-                </button>
-
-                {rejectionSlot.file ? (
-                  <div className="flex items-center gap-2 text-xs text-[#113A2B] font-medium bg-white px-2.5 py-1 rounded-md border border-[#D5D2C2]">
-                    <span className="truncate max-w-[180px] sm:max-w-xs">{rejectionSlot.file.name}</span>
-                    <span className="text-[#6B7871]">({formatFileSize(rejectionSlot.file.size)})</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(setRejectionSlot, rejectionInputRef)}
-                      className="text-red-700 hover:text-red-900 font-semibold ml-1 cursor-pointer"
-                      aria-label="Remove rejection letter"
-                    >
-                      {t.removeFile}
-                    </button>
-                  </div>
-                ) : (
-                  <span className="text-xs text-[#8C887B] italic">{t.noFileChosen}</span>
-                )}
-              </div>
-
-              {rejectionSlot.error && (
-                <p
-                  role="alert"
-                  data-testid="error-rejection"
-                  className="text-xs font-medium text-red-600 mt-1 flex items-center gap-1"
-                >
-                  <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {rejectionSlot.error}
-                </p>
-              )}
-            </div>
-
-            {/* Slot 2: Policy Document */}
-            <div className="p-4 rounded-xl border border-[#E7E5D8] bg-[#FAF9F5] flex flex-col gap-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                <label
-                  htmlFor="upload-policy-doc"
-                  className="font-bold text-sm text-[#113A2B] cursor-pointer"
-                >
-                  {t.uploadPolicyTitle}
-                </label>
-                <span className="text-xs text-[#6B7871]">{t.uploadPolicyDesc}</span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  ref={policyInputRef}
-                  id="upload-policy-doc"
-                  data-testid="file-policy"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                  onChange={(e) => handleFileChange(e, setPolicySlot)}
-                  className="sr-only"
-                />
-                <button
-                  type="button"
-                  onClick={() => policyInputRef.current?.click()}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#E7E5D8] hover:bg-[#DAD6C5] text-[#113A2B] border border-[#D5D2C2] focus:ring-2 focus:ring-[#114B36] focus:outline-hidden cursor-pointer"
-                >
-                  {t.chooseFile}
-                </button>
-
-                {policySlot.file ? (
-                  <div className="flex items-center gap-2 text-xs text-[#113A2B] font-medium bg-white px-2.5 py-1 rounded-md border border-[#D5D2C2]">
-                    <span className="truncate max-w-[180px] sm:max-w-xs">{policySlot.file.name}</span>
-                    <span className="text-[#6B7871]">({formatFileSize(policySlot.file.size)})</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(setPolicySlot, policyInputRef)}
-                      className="text-red-700 hover:text-red-900 font-semibold ml-1 cursor-pointer"
-                      aria-label="Remove policy document"
-                    >
-                      {t.removeFile}
-                    </button>
-                  </div>
-                ) : (
-                  <span className="text-xs text-[#8C887B] italic">{t.noFileChosen}</span>
-                )}
-              </div>
-
-              {policySlot.error && (
-                <p
-                  role="alert"
-                  data-testid="error-policy"
-                  className="text-xs font-medium text-red-600 mt-1 flex items-center gap-1"
-                >
-                  <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {policySlot.error}
-                </p>
-              )}
-            </div>
-
-            {/* Slot 3: Hospital Bill */}
-            <div className="p-4 rounded-xl border border-[#E7E5D8] bg-[#FAF9F5] flex flex-col gap-2.5">
-              <div className="flex flex-col sm:flex-row sm:items-baseline justify-between gap-1">
-                <label
-                  htmlFor="upload-hospital-bill"
-                  className="font-bold text-sm text-[#113A2B] cursor-pointer"
-                >
-                  {t.uploadBillTitle}
-                </label>
-                <span className="text-xs text-[#6B7871]">{t.uploadBillDesc}</span>
-              </div>
-
-              <div className="flex flex-wrap items-center gap-3">
-                <input
-                  ref={billInputRef}
-                  id="upload-hospital-bill"
-                  data-testid="file-bill"
-                  type="file"
-                  accept=".pdf,.jpg,.jpeg,.png,application/pdf,image/jpeg,image/png"
-                  onChange={(e) => handleFileChange(e, setBillSlot)}
-                  className="sr-only"
-                />
-                <button
-                  type="button"
-                  onClick={() => billInputRef.current?.click()}
-                  className="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-[#E7E5D8] hover:bg-[#DAD6C5] text-[#113A2B] border border-[#D5D2C2] focus:ring-2 focus:ring-[#114B36] focus:outline-hidden cursor-pointer"
-                >
-                  {t.chooseFile}
-                </button>
-
-                {billSlot.file ? (
-                  <div className="flex items-center gap-2 text-xs text-[#113A2B] font-medium bg-white px-2.5 py-1 rounded-md border border-[#D5D2C2]">
-                    <span className="truncate max-w-[180px] sm:max-w-xs">{billSlot.file.name}</span>
-                    <span className="text-[#6B7871]">({formatFileSize(billSlot.file.size)})</span>
-                    <button
-                      type="button"
-                      onClick={() => handleRemove(setBillSlot, billInputRef)}
-                      className="text-red-700 hover:text-red-900 font-semibold ml-1 cursor-pointer"
-                      aria-label="Remove hospital bill"
-                    >
-                      {t.removeFile}
-                    </button>
-                  </div>
-                ) : (
-                  <span className="text-xs text-[#8C887B] italic">{t.noFileChosen}</span>
-                )}
-              </div>
-
-              {billSlot.error && (
-                <p
-                  role="alert"
-                  data-testid="error-bill"
-                  className="text-xs font-medium text-red-600 mt-1 flex items-center gap-1"
-                >
-                  <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                    <path
-                      fillRule="evenodd"
-                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
-                      clipRule="evenodd"
-                    />
-                  </svg>
-                  {billSlot.error}
-                </p>
-              )}
-            </div>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <UploadSlot
+              inputId="upload-rejection-letter"
+              name="rejection"
+              title={t.uploadRejectionTitle}
+              description={t.uploadRejectionDesc}
+              removeLabel="Remove rejection letter"
+              file={rejectionSlot.file}
+              error={rejectionSlot.error}
+              onFile={(file) => chooseFile(file, setRejectionSlot)}
+              onRemove={() => setRejectionSlot({ file: null, error: null })}
+              t={t}
+            />
+            <UploadSlot
+              inputId="upload-policy-doc"
+              name="policy"
+              title={t.uploadPolicyTitle}
+              description={t.uploadPolicyDesc}
+              removeLabel="Remove policy document"
+              file={policySlot.file}
+              error={policySlot.error}
+              onFile={(file) => chooseFile(file, setPolicySlot)}
+              onRemove={() => setPolicySlot({ file: null, error: null })}
+              t={t}
+            />
+            <UploadSlot
+              inputId="upload-hospital-bill"
+              name="bill"
+              title={t.uploadBillTitle}
+              description={t.uploadBillDesc}
+              removeLabel="Remove hospital bill"
+              file={billSlot.file}
+              error={billSlot.error}
+              onFile={(file) => chooseFile(file, setBillSlot)}
+              onRemove={() => setBillSlot({ file: null, error: null })}
+              t={t}
+            />
           </div>
+
+          <p data-testid="files-chosen" aria-live="polite" className="text-xs sm:text-sm font-semibold text-center text-[#526059]">
+            {t.filesChosen(filesChosen)}
+          </p>
 
           {generalError && (
             <div role="alert" className="p-3 rounded-lg bg-red-50 border border-red-200 text-xs text-red-800">
