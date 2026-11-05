@@ -33,7 +33,12 @@ export function AnimatedRupees({ amount }: { amount: number }) {
       }
     };
     frame = requestAnimationFrame(step);
-    return () => cancelAnimationFrame(frame);
+    // Browsers pause animation frames on hidden pages, and the headline must never stay on an old amount.
+    const settle = window.setTimeout(() => setShown(amount), DURATION_MS + 100);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.clearTimeout(settle);
+    };
   }, [amount]);
 
   return <>{formatRupees(shown)}</>;

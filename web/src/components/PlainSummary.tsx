@@ -72,7 +72,7 @@ export function PlainSummary({ caseResult, language }: PlainSummaryProps) {
         )}
         {claim.amountClaimed && (
           <div>
-            <span className="text-[#68786F] block">Amount claimed</span>
+            <span className="text-[#68786F] block">{t.amountClaimedLabel}</span>
             <span className="font-semibold text-[#113A2B]">
               {formatRupees(claim.amountClaimed)}
             </span>

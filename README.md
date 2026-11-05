@@ -23,6 +23,7 @@ A family gets a letter saying part of a hospital claim won't be paid. It cites c
 | **Appeal letters** | An editable complaint to the insurer and an Ombudsman complaint with an annexure checklist, with Print or Save as PDF |
 | **Deadlines** | Ombudsman dates from the official rules, and a calendar file with reminders |
 | **Action plan** | Four clear next steps, using the case's own dates |
+| **Ombudsman finder** | Choose your state to see your office, from the Council for Insurance Ombudsmen's list |
 | **Listen and share** | Read the summary aloud where the browser has a voice for that language, or share it on WhatsApp without names |
 
 ## Why you can check its answers

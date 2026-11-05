@@ -248,7 +248,7 @@ export function EvidenceModal({
                     {evidence.regulation.text}
                   </p>
                   <span className="mt-1 block text-[11px] text-[#63756C]">
-                    Source: {evidence.regulation.sourceName}
+                    {t.sourceLabel}: {evidence.regulation.sourceName}
                   </span>
                 </div>
               ) : (
@@ -272,7 +272,7 @@ export function EvidenceModal({
               )
             ) : (
               <p className="text-xs text-[#7B8B82] italic">
-                No external regulation cited.
+                {t.noRegulationCited}
               </p>
             )}
 

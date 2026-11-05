@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { LetterType } from "@claimsathi/contracts";
 import { createLetter } from "../api/client";
+import { OmbudsmanFinder } from "./OmbudsmanFinder";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
 
@@ -83,6 +84,8 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
           {t.letterOmbudsmanButton}
         </button>
       </div>
+
+      <OmbudsmanFinder language={language} />
 
       {error && (
         <p role="alert" className="text-xs text-red-800">

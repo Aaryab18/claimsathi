@@ -292,10 +292,10 @@ export function ConfirmFactsPanel({
                         </span>
                       </div>
                       <div className="text-[11px] text-[#526059] mt-0.5">
-                        <span>Billed: {formatRupees(item.billed ?? 0)}</span>
+                        <span>{t.billedLabel}: {formatRupees(item.billed ?? 0)}</span>
                         {item.deducted ? (
                           <span className="ml-2 font-semibold text-amber-800">
-                            Deducted: {formatRupees(item.deducted)}
+                            {t.deductedLabel}: {formatRupees(item.deducted)}
                           </span>
                         ) : null}
                       </div>

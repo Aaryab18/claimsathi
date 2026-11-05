@@ -103,7 +103,7 @@ export function DeadlinesSection({ deadlines, language, caseToken }: DeadlinesSe
               <div className="pt-2 border-t border-[#F2EFE5] flex items-center justify-between text-[11px] text-[#78887F]">
                 <span>{t.statusLabel}</span>
                 <span className="font-medium">
-                  {deadline.verified ? "Verified" : t.sourceCheckPending}
+                  {deadline.verified ? t.verifiedLabel : t.sourceCheckPending}
                 </span>
               </div>
             </div>

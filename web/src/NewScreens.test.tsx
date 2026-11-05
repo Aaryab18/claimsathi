@@ -333,6 +333,41 @@ describe("ClaimSathi New Screens", () => {
       expect(screen.queryByTestId("listen-btn")).toBeNull();
     });
 
+    describe("Ombudsman office finder", () => {
+      async function choose(state: string) {
+        render(<App initialEntries={["/case/case-1"]} />);
+        fireEvent.change(await screen.findByTestId("ombudsman-state"), { target: { value: state } });
+        return screen.getByTestId("ombudsman-result");
+      }
+
+      it("names the one office for a state with one", async () => {
+        expect((await choose("Rajasthan")).textContent).toContain("Insurance Ombudsman, Jaipur");
+      });
+
+      it("explains which part of a split state goes where", async () => {
+        const text = (await choose("Haryana")).textContent;
+
+        expect(text).toContain("Insurance Ombudsman, Delhi");
+        expect(text).toContain("Gurugram");
+        expect(text).toContain("Insurance Ombudsman, Chandigarh");
+      });
+
+      it("links to the official page for contact details", async () => {
+        const link = (await choose("Kerala")).querySelector("a");
+
+        expect(link?.getAttribute("href")).toBe("https://www.cioins.co.in/Ombudsman");
+      });
+    });
+
+    it("never shows the private case token while reading", async () => {
+      client.setMockCaseStatus("private-token-123", { stage: "reading", progressMessage: "Reading" });
+      render(<App initialEntries={["/case/private-token-123"]} />);
+
+      const card = await screen.findByTestId("progress-card");
+
+      expect(card.textContent).not.toContain("private-token-123");
+    });
+
     it("offers made-up documents to try", () => {
       render(<App initialEntries={["/"]} />);
 
