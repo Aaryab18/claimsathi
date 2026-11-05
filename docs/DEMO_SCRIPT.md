@@ -31,6 +31,8 @@ Point at **₹71,400 likely recoverable out of ₹96,000**.
 
 In **Confirm the facts**, set **Continuous cover date** to 1 Jan 2024, then click **Apply corrections**.
 
+The page jumps back to the top and the number counts down.
+
 "AI can misread a date, so the user has the final say. Now the waiting period isn't over, so ₹20,600 stops being marked wrong, and recoverable falls to ₹50,800. That was instant, with no AI call. The same facts always give the same answer."
 
 Switch to **हिंदी**. "It's all available in Hindi too."

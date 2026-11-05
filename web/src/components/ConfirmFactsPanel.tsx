@@ -99,8 +99,9 @@ export function ConfirmFactsPanel({
 
   return (
     <section
+      id="facts"
       data-testid="confirm-facts-panel"
-      className="bg-white rounded-2xl border border-[#E7E5D8] shadow-xs overflow-hidden"
+      className="scroll-mt-24 bg-white rounded-2xl border border-[#E7E5D8] shadow-xs overflow-hidden"
     >
       {/* Header / Accordion toggle */}
       <div className="p-4 sm:p-5 border-b border-[#E7E5D8] flex items-center justify-between gap-3 bg-[#FDFCF7]">
@@ -260,16 +261,17 @@ export function ConfirmFactsPanel({
             )}
           </div>
 
-          {/* Bill Items Category Review */}
-          <div className="flex flex-col gap-3">
-            <div className="flex flex-col">
+          {/* Bill Items Category Review: kept out of the way, as most people only need the dates */}
+          <details className="flex flex-col gap-3 group">
+            <summary className="cursor-pointer list-none flex flex-col pb-2">
               <h3 className="text-sm font-bold text-[#113A2B]">
+                <span className="inline-block mr-1.5 transition-transform group-open:rotate-90">›</span>
                 {t.billItemCategoriesTitle}
               </h3>
               <p className="text-xs text-[#526059]">
                 {t.billItemCategoriesDesc}
               </p>
-            </div>
+            </summary>
 
             <div className="divide-y divide-[#E7E5D8] border border-[#E7E5D8] rounded-xl overflow-hidden">
               {extracted.lineItems.map((item) => {
@@ -327,7 +329,7 @@ export function ConfirmFactsPanel({
                 );
               })}
             </div>
-          </div>
+          </details>
 
           {/* Error Message */}
           {errorMessage && (

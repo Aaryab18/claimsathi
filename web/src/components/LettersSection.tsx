@@ -27,6 +27,16 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
   const [text, setText] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [copied, setCopied] = useState(false);
+
+  const copyLetter = async () => {
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopied(true);
+    } catch {
+      setError(t.letterCopyError);
+    }
+  };
 
   const openLetter = async (type: LetterType) => {
     setIsLoading(true);
@@ -35,6 +45,7 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
       const letter = await createLetter(caseToken, type);
       setLetterType(type);
       setText(letter.text);
+      setCopied(false);
     } catch {
       setError(t.letterError);
     } finally {
@@ -46,7 +57,7 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
     "px-4 py-2 rounded-xl bg-[#114B36] hover:bg-[#0E3A2A] text-white text-xs sm:text-sm font-semibold disabled:opacity-60 disabled:cursor-not-allowed";
 
   return (
-    <section aria-label={t.lettersTitle} className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E7E5D8] flex flex-col gap-3">
+    <section id="letters" aria-label={t.lettersTitle} className="scroll-mt-24 bg-white rounded-2xl p-5 sm:p-6 border border-[#E7E5D8] flex flex-col gap-3">
       <div>
         <h2 className="text-base sm:text-lg font-bold text-[#113A2B]">{t.lettersTitle}</h2>
         <p className="mt-1 text-xs sm:text-sm text-[#526059]">{t.lettersDesc}</p>
@@ -93,6 +104,14 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
           <div className="flex flex-col sm:flex-row gap-2">
             <button type="button" data-testid="letter-print-btn" onClick={() => printLetter(text)} className={buttonClass}>
               {t.letterPrintButton}
+            </button>
+            <button
+              type="button"
+              data-testid="letter-copy-btn"
+              onClick={copyLetter}
+              className="px-4 py-2 rounded-xl border border-[#114B36] text-[#114B36] hover:bg-[#E5F3EC] text-xs sm:text-sm font-semibold cursor-pointer"
+            >
+              {copied ? t.letterCopied : t.letterCopyButton}
             </button>
           </div>
         </div>

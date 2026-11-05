@@ -268,6 +268,71 @@ describe("ClaimSathi New Screens", () => {
       expect((await screen.findByTestId("assessment-warnings")).textContent).toContain("Totals differ.");
     });
 
+    it("explains how it works on the home page", () => {
+      render(<App initialEntries={["/"]} />);
+
+      expect(screen.getByTestId("how-it-works").textContent).toContain("Fixed rules check each cut");
+    });
+
+    it("gives a next-steps plan using the case's own dates", async () => {
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      const steps = await screen.findByTestId("next-steps");
+
+      expect(steps.textContent).toContain("Send a complaint to the insurer");
+      expect(steps.textContent).toContain("15 Oct 2027");
+    });
+
+    it("shows what the bill and the insurer's decision were", async () => {
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      expect((await screen.findByTestId("claim-flow")).textContent).toContain("₹2,10,000");
+    });
+
+    it("says what a correction changed", async () => {
+      const corrected = {
+        ...sampleCaseResult,
+        totals: { ...sampleCaseResult.totals, recoverableStrong: 50800, questionable: 28400 },
+      };
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async (input: RequestInfo | URL) =>
+          String(input).endsWith("/facts")
+            ? new Response(JSON.stringify(corrected))
+            : new Response(
+                JSON.stringify({ caseToken: "case-1", status: { stage: "done", progressMessage: "Done" }, result: sampleCaseResult }),
+              ),
+        ),
+      );
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      fireEvent.click(await screen.findByTestId("apply-corrections-btn"));
+
+      const change = await screen.findByTestId("correction-change");
+      expect(change.textContent).toContain("₹71,400");
+      expect(change.textContent).toContain("₹50,800");
+    });
+
+    it("shares the summary on WhatsApp without names or a case link", async () => {
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      const link = (await screen.findByTestId("whatsapp-share")) as HTMLAnchorElement;
+      const text = decodeURIComponent(link.href);
+
+      expect(text).toContain("wa.me");
+      expect(text).toContain("₹71,400");
+      expect(text).not.toContain("Suresh");
+      expect(text).not.toContain("case-1");
+    });
+
+    it("only offers to read aloud when the browser has a voice for that language", async () => {
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      await screen.findByTestId("whatsapp-share");
+
+      expect(screen.queryByTestId("listen-btn")).toBeNull();
+    });
+
     it("offers made-up documents to try", () => {
       render(<App initialEntries={["/"]} />);
 

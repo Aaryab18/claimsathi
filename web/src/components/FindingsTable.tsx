@@ -10,6 +10,12 @@ interface FindingsTableProps {
   onSelectFinding: (finding: Finding) => void;
 }
 
+const VERDICT_EDGE = {
+  wrong: "border-l-[#15803D]",
+  questionable: "border-l-[#D97706]",
+  valid: "border-l-[#94A3B8]",
+} as const;
+
 export function FindingsTable({
   findings,
   lineItems,
@@ -20,7 +26,7 @@ export function FindingsTable({
   const itemsMap = new Map(lineItems.map((item) => [item.id, item]));
 
   return (
-    <section aria-label={t.findingsTitle} className="flex flex-col gap-3">
+    <section id="breakdown" aria-label={t.findingsTitle} className="scroll-mt-24 flex flex-col gap-3">
       <div>
         <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#113A2B]">
           {t.findingsTitle}
@@ -52,7 +58,7 @@ export function FindingsTable({
                 }
               }}
               data-testid={`finding-row-${finding.id}`}
-              className="bg-white rounded-xl p-4 sm:p-5 border border-[#E3E0CE] hover:border-[#15803D] hover:shadow-sm transition-all cursor-pointer text-left focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:ring-offset-2"
+              className={`bg-white rounded-xl p-4 sm:p-5 border border-[#E3E0CE] border-l-[6px] ${VERDICT_EDGE[finding.verdict]} hover:shadow-md transition-all cursor-pointer text-left focus:outline-hidden focus:ring-2 focus:ring-[#15803D] focus:ring-offset-2`}
             >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-[#F2EFE6]">
                 <div className="flex flex-wrap items-center gap-2">
@@ -84,7 +90,7 @@ export function FindingsTable({
               </div>
 
               {/* Explanation preview */}
-              <p className="mt-2 text-xs sm:text-sm text-[#3E4F46] line-clamp-2 leading-relaxed">
+              <p className="mt-2 text-sm text-[#3E4F46] leading-relaxed">
                 {explanation}
               </p>
 

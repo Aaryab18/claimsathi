@@ -65,6 +65,43 @@ export interface Translations {
   analyseButton: string;
   quoteVerified: string;
   warningsTitle: string;
+  claimFlow: (claimed: string, approved: string) => string;
+  correctionChanged: (from: string, to: string) => string;
+  correctionNoChange: (amount: string) => string;
+  sectionNavLabel: string;
+  navBreakdown: string;
+  navNextSteps: string;
+  navFacts: string;
+  navDeadlines: string;
+  navLetters: string;
+  nextStepsTitle: string;
+  stepCheckTitle: string;
+  stepCheckDetail: string;
+  stepCheckLink: string;
+  stepSendTitle: string;
+  stepSendDetail: string;
+  stepSendLink: string;
+  stepWaitTitle: string;
+  stepWaitDetail: string;
+  stepWaitDetailDated: (date: string) => string;
+  stepEscalateTitle: string;
+  stepEscalateDetail: string;
+  stepEscalateDetailDated: (date: string) => string;
+  stepEscalateLink: string;
+  listenButton: string;
+  stopListening: string;
+  shareWhatsApp: string;
+  letterCopyButton: string;
+  letterCopied: string;
+  letterCopyError: string;
+  homeTagline: string;
+  howItWorksTitle: string;
+  howStepReadTitle: string;
+  howStepReadDesc: string;
+  howStepJudgeTitle: string;
+  howStepJudgeDesc: string;
+  howStepActTitle: string;
+  howStepActDesc: string;
   lettersTitle: string;
   lettersDesc: string;
   letterGrievanceButton: string;
@@ -199,6 +236,43 @@ export const translations: Record<Language, Translations> = {
       "Your files are sent to Google's Gemini AI to be read, and are deleted from our database within 24 hours. The AI can misread, so check the facts on the result page.",
     quoteVerified: "We found this exact quote in your document.",
     warningsTitle: "Please check these before relying on this result:",
+    claimFlow: (claimed, approved) => `You claimed ${claimed}. The insurer approved ${approved}.`,
+    correctionChanged: (from, to) => `Your correction changed the likely recoverable amount from ${from} to ${to}.`,
+    correctionNoChange: (amount) => `Your correction was saved. The likely recoverable amount stays at ${amount}.`,
+    sectionNavLabel: "Jump to a section",
+    navBreakdown: "Breakdown",
+    navNextSteps: "What to do",
+    navFacts: "Check facts",
+    navDeadlines: "Deadlines",
+    navLetters: "Letters",
+    nextStepsTitle: "What to do next",
+    stepCheckTitle: "Check the facts",
+    stepCheckDetail: "Make sure the dates and amounts match your documents. A wrong date can change the result.",
+    stepCheckLink: "Check the facts",
+    stepSendTitle: "Send a complaint to the insurer",
+    stepSendDetail: "The Ombudsman needs you to complain to the insurer first. We draft the letter for you.",
+    stepSendLink: "Draft the complaint",
+    stepWaitTitle: "Wait for a reply",
+    stepWaitDetail: "Allow about one month. Enter the date you sent it, and we'll work out your dates.",
+    stepWaitDetailDated: (date) => `If there is no reply by about ${date}, you can go to the Ombudsman.`,
+    stepEscalateTitle: "Go to the Insurance Ombudsman if needed",
+    stepEscalateDetail: "If the insurer rejects your complaint or doesn't reply, you generally have one year.",
+    stepEscalateDetailDated: (date) => `If the insurer rejects your complaint or doesn't reply, your last date is about ${date}.`,
+    stepEscalateLink: "Draft the Ombudsman complaint",
+    listenButton: "Listen to this",
+    stopListening: "Stop",
+    shareWhatsApp: "Share on WhatsApp",
+    letterCopyButton: "Copy text",
+    letterCopied: "Copied",
+    letterCopyError: "The text could not be copied. Please select it and copy it yourself.",
+    homeTagline: "The AI reads, the rules judge",
+    howItWorksTitle: "How ClaimSathi works",
+    howStepReadTitle: "AI reads your documents",
+    howStepReadDesc: "It copies the facts. Anything unclear stays unknown, and you can correct it.",
+    howStepJudgeTitle: "Fixed rules check each cut",
+    howStepJudgeDesc: "Every deduction is marked likely wrong, questionable or valid, with the reason.",
+    howStepActTitle: "You get a plan and letters",
+    howStepActDesc: "Draft complaints, deadlines and calendar reminders, in a few clicks.",
     lettersTitle: "Your appeal letters",
     lettersDesc: "Drafts written from the findings above. Send the complaint to the insurer first, then go to the Ombudsman if needed. This is information, not legal advice.",
     letterGrievanceButton: "Draft complaint to insurer",
@@ -341,6 +415,43 @@ export const translations: Record<Language, Translations> = {
       "आपकी फ़ाइलें पढ़ने के लिए Google के Gemini AI को भेजी जाती हैं, और 24 घंटे के भीतर हमारे डेटाबेस से हटा दी जाती हैं। AI से पढ़ने में गलती हो सकती है, इसलिए परिणाम पेज पर तथ्यों की जांच करें।",
     quoteVerified: "हमें यह सटीक उद्धरण आपके दस्तावेज़ में मिला।",
     warningsTitle: "इस परिणाम पर भरोसा करने से पहले इन्हें जांच लें:",
+    claimFlow: (claimed, approved) => `आपने ${claimed} का दावा किया। बीमा कंपनी ने ${approved} स्वीकृत किए।`,
+    correctionChanged: (from, to) => `आपके सुधार से संभावित वापसी योग्य राशि ${from} से बदलकर ${to} हो गई।`,
+    correctionNoChange: (amount) => `आपका सुधार सहेज लिया गया। संभावित वापसी योग्य राशि ${amount} ही है।`,
+    sectionNavLabel: "किसी भाग पर जाएं",
+    navBreakdown: "विवरण",
+    navNextSteps: "क्या करें",
+    navFacts: "तथ्य जांचें",
+    navDeadlines: "समय-सीमाएं",
+    navLetters: "पत्र",
+    nextStepsTitle: "आगे क्या करें",
+    stepCheckTitle: "तथ्य जांचें",
+    stepCheckDetail: "देख लें कि तारीखें और राशियां आपके दस्तावेज़ों से मेल खाती हैं। एक गलत तारीख से परिणाम बदल सकता है।",
+    stepCheckLink: "तथ्य जांचें",
+    stepSendTitle: "बीमा कंपनी को शिकायत भेजें",
+    stepSendDetail: "लोकपाल के पास जाने से पहले बीमा कंपनी से शिकायत करना ज़रूरी है। हम आपके लिए पत्र का मसौदा बनाते हैं।",
+    stepSendLink: "शिकायत का मसौदा बनाएं",
+    stepWaitTitle: "जवाब का इंतज़ार करें",
+    stepWaitDetail: "लगभग एक महीना दें। भेजने की तारीख दर्ज करें, और हम आपकी तारीखें निकाल देंगे।",
+    stepWaitDetailDated: (date) => `अगर लगभग ${date} तक जवाब न मिले, तो आप लोकपाल के पास जा सकते हैं।`,
+    stepEscalateTitle: "ज़रूरत हो तो बीमा लोकपाल के पास जाएं",
+    stepEscalateDetail: "अगर बीमा कंपनी शिकायत ठुकरा दे या जवाब न दे, तो आम तौर पर आपके पास एक साल होता है।",
+    stepEscalateDetailDated: (date) => `अगर बीमा कंपनी शिकायत ठुकरा दे या जवाब न दे, तो आपकी अंतिम तारीख लगभग ${date} है।`,
+    stepEscalateLink: "लोकपाल शिकायत का मसौदा बनाएं",
+    listenButton: "सुनें",
+    stopListening: "रोकें",
+    shareWhatsApp: "WhatsApp पर भेजें",
+    letterCopyButton: "टेक्स्ट कॉपी करें",
+    letterCopied: "कॉपी हो गया",
+    letterCopyError: "टेक्स्ट कॉपी नहीं हो सका। कृपया इसे चुनकर खुद कॉपी करें।",
+    homeTagline: "AI पढ़ता है, नियम फैसला करते हैं",
+    howItWorksTitle: "क्लेमसाथी कैसे काम करता है",
+    howStepReadTitle: "AI आपके दस्तावेज़ पढ़ता है",
+    howStepReadDesc: "यह तथ्य उतारता है। जो साफ़ न हो वह अज्ञात रहता है, और आप उसे सुधार सकते हैं।",
+    howStepJudgeTitle: "जांचे-परखे नियम हर कटौती देखते हैं",
+    howStepJudgeDesc: "हर कटौती को कारण सहित संभावित गलत, संदेहास्पद या उचित बताया जाता है।",
+    howStepActTitle: "आपको योजना और पत्र मिलते हैं",
+    howStepActDesc: "शिकायत के मसौदे, समय-सीमाएं और कैलेंडर रिमाइंडर, कुछ ही क्लिक में।",
     lettersTitle: "आपके अपील पत्र",
     lettersDesc: "ऊपर के निष्कर्षों से बने मसौदे। पहले बीमा कंपनी को शिकायत भेजें, फिर ज़रूरत हो तो लोकपाल के पास जाएं। यह जानकारी है, कानूनी सलाह नहीं।",
     letterGrievanceButton: "बीमा कंपनी को शिकायत का मसौदा",
