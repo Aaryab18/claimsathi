@@ -395,6 +395,9 @@ function reasonMentionsItem(reason: RejectionReason, item: LineItem): boolean {
   const reasonText = `${reason.text} ${reason.source?.quote ?? ""}`.toLowerCase();
   const descriptionWords = item.description?.toLowerCase().match(/[\p{L}\p{M}\p{N}]{4,}/gu) ?? [];
   const words = descriptionWords.filter((word) => !GENERIC_WORDS.has(word));
+  // Too short for the word match above, but it names the item exactly.
+  const shortName = item.description?.toLowerCase().match(/\b(?:i?ccu|icu)\b/)?.[0];
+  if (shortName) words.push(shortName);
   const categoryWord = item.category ? CATEGORY_WORDS[item.category] : undefined;
   if (categoryWord) words.push(categoryWord);
   return words.some((word) => reasonText.includes(word));
@@ -443,7 +446,7 @@ function findEvidence(
   let policyClause: string | null = null;
   const clauseCited = matchedReason?.clauseCited;
   if (clauseCited) {
-    const clauseObj = extracted.policyClauses.find((c) => c.clauseId === clauseCited);
+    const clauseObj = extracted.policyClauses.find((c) => clauseKey(c.clauseId) === clauseKey(clauseCited));
     if (clauseObj) {
       policyClause = clauseObj.text ? `${clauseObj.clauseId}: ${clauseObj.text}` : clauseObj.clauseId;
     } else {

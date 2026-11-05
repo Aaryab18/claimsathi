@@ -1,4 +1,5 @@
 export const OMBUDSMAN_LOOKUP_URL = "https://www.cioins.co.in/Ombudsman";
+export const OTHER_DISTRICT = "other";
 
 export interface OmbudsmanMatch {
   office: string;
@@ -8,6 +9,17 @@ export interface OmbudsmanMatch {
 
 // From the Council for Insurance Ombudsmen's list of centres, read on 5 November 2026. Contact details
 // aren't copied here, as they can change, so people get them from the official page.
+// A state split by named districts, so the person can get one answer.
+export const OMBUDSMAN_DISTRICTS: Record<string, { district: string; office: string }[]> = {
+  Haryana: [
+    { district: "Gurugram", office: "Delhi" },
+    { district: "Faridabad", office: "Delhi" },
+    { district: "Sonepat", office: "Delhi" },
+    { district: "Bahadurgarh", office: "Delhi" },
+    { district: OTHER_DISTRICT, office: "Chandigarh" },
+  ],
+};
+
 export const OMBUDSMAN_BY_STATE: Record<string, OmbudsmanMatch[]> = {
   "Andaman & Nicobar Islands": [{ office: "Kolkata" }],
   "Andhra Pradesh": [{ office: "Hyderabad" }],

@@ -15,7 +15,7 @@ export function CaseStrengthCard({ findings, language }: { findings: Finding[]; 
     <section
       data-testid="case-strength"
       aria-label={t.strengthTitle}
-      className="bg-white rounded-2xl p-5 sm:p-6 border border-[#E3E0CE] shadow-xs min-w-0"
+      className="break-inside-avoid bg-white rounded-2xl p-5 sm:p-6 border border-[#E3E0CE] shadow-xs min-w-0"
     >
       <h2 className="text-base sm:text-lg font-bold tracking-tight text-[#113A2B]">{t.strengthTitle}</h2>
 

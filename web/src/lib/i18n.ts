@@ -109,6 +109,8 @@ export interface Translations {
   ombudsmanChooseState: string;
   ombudsmanOffice: (city: string) => string;
   ombudsmanContactLink: string;
+  ombudsmanChooseDistrict: string;
+  ombudsmanOtherDistrict: string;
   instantPreview: string;
   orUploadYourOwn: string;
   uploadDocumentsTitle: string;
@@ -341,6 +343,8 @@ export const translations: Record<Language, Translations> = {
     ombudsmanChooseState: "Choose your state or territory",
     ombudsmanOffice: (city) => `Insurance Ombudsman, ${city}`,
     ombudsmanContactLink: "Get the address and contact details",
+    ombudsmanChooseDistrict: "Choose your district or area",
+    ombudsmanOtherDistrict: "Another district in Haryana",
     instantPreview: "Instant preview",
     orUploadYourOwn: "Or upload your own",
     uploadDocumentsTitle: "Upload your documents",
@@ -436,7 +440,7 @@ export const translations: Record<Language, Translations> = {
     collapseLabel: "Collapse",
     expandLabel: "Expand",
     strengthTitle: "How strong is your case?",
-    strengthNote: "A score from the rules' verdicts. It isn't a prediction of winning: the insurer or Ombudsman decides.",
+    strengthNote: "This score summarises the strength of the rule-based grounds. It is NOT a prediction of winning your complaint: the insurer or Ombudsman decides.",
     strengthBands: { strong: "Strong case", fair: "Worth pursuing", limited: "Limited grounds" },
     strengthHow: "How this is worked out",
     strengthHowDetail: "For each rupee deducted: likely wrong with strong grounds counts 100%, moderate 70%, weak 40%, questionable 25%, and valid 0%. These weights are our own judgement, not data from past cases.",
@@ -580,6 +584,8 @@ export const translations: Record<Language, Translations> = {
     ombudsmanChooseState: "अपना राज्य या केंद्र शासित प्रदेश चुनें",
     ombudsmanOffice: (city) => `बीमा लोकपाल, ${city}`,
     ombudsmanContactLink: "पता और संपर्क विवरण देखें",
+    ombudsmanChooseDistrict: "अपना ज़िला या क्षेत्र चुनें",
+    ombudsmanOtherDistrict: "हरियाणा का कोई अन्य ज़िला",
     instantPreview: "तुरंत देखें",
     orUploadYourOwn: "या अपने दस्तावेज़ अपलोड करें",
     uploadDocumentsTitle: "अपने दस्तावेज़ अपलोड करें",
@@ -675,7 +681,7 @@ export const translations: Record<Language, Translations> = {
     collapseLabel: "छिपाएं",
     expandLabel: "देखें",
     strengthTitle: "आपका केस कितना मज़बूत है?",
-    strengthNote: "यह नियमों के निर्णयों से बना अंक है। यह जीतने की भविष्यवाणी नहीं है: निर्णय बीमा कंपनी या लोकपाल करते हैं।",
+    strengthNote: "यह अंक नियमों पर आधारित आधारों की मज़बूती का सार है। यह आपकी शिकायत जीतने की भविष्यवाणी नहीं है: निर्णय बीमा कंपनी या लोकपाल करते हैं।",
     strengthBands: { strong: "मज़बूत केस", fair: "आगे बढ़ने योग्य", limited: "सीमित आधार" },
     strengthHow: "इसकी गणना कैसे होती है",
     strengthHowDetail: "काटे गए हर रुपये के लिए: मज़बूत आधार वाली गलत कटौती 100%, मध्यम 70%, कमज़ोर 40%, संदेहास्पद 25% और उचित 0%। ये भार हमारा अपना आकलन हैं, पिछले मामलों का डेटा नहीं।",

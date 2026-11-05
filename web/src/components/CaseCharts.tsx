@@ -12,7 +12,7 @@ export const CHART_COLORS = {
   valid: "#7C6BB0",
 } as const;
 
-const cardClass = "bg-white rounded-2xl p-5 sm:p-6 border border-[#E3E0CE] shadow-xs min-w-0";
+const cardClass = "break-inside-avoid bg-white rounded-2xl p-5 sm:p-6 border border-[#E3E0CE] shadow-xs min-w-0";
 const titleClass = "text-base sm:text-lg font-bold tracking-tight text-[#113A2B]";
 const noteClass = "mt-0.5 text-xs sm:text-sm text-[#526059]";
 

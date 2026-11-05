@@ -52,7 +52,7 @@ describe("case strength", () => {
 
     const card = await screen.findByTestId("case-strength");
 
-    expect(card.textContent).toContain("isn't a prediction of winning");
+    expect(card.textContent).toContain("NOT a prediction of winning");
     expect(card.textContent).toContain("not data from past cases");
   });
 });
@@ -176,6 +176,84 @@ describe("Kannada", () => {
     expect(screen.queryByTestId("case-text-english-note")).toBeNull();
     fireEvent.click(screen.getByRole("button", { name: "हिंदी" }));
     expect(screen.queryByTestId("case-text-english-note")).toBeNull();
+  });
+});
+
+describe("the Haryana Ombudsman finder", () => {
+  async function chooseHaryana() {
+    render(<App initialEntries={["/case/case-1"]} />);
+    fireEvent.change(await screen.findByTestId("ombudsman-state"), { target: { value: "Haryana" } });
+  }
+
+  it.each(["Gurugram", "Faridabad", "Sonepat", "Bahadurgarh"])("sends %s to Delhi only", async (district) => {
+    await chooseHaryana();
+
+    fireEvent.change(screen.getByTestId("ombudsman-district"), { target: { value: district } });
+
+    const text = screen.getByTestId("ombudsman-result").textContent;
+    expect(text).toContain("Insurance Ombudsman, Delhi");
+    expect(text).not.toContain("Chandigarh");
+  });
+
+  it("sends any other district to Chandigarh only", async () => {
+    await chooseHaryana();
+
+    fireEvent.change(screen.getByTestId("ombudsman-district"), { target: { value: "other" } });
+
+    const text = screen.getByTestId("ombudsman-result").textContent;
+    expect(text).toContain("Insurance Ombudsman, Chandigarh");
+    expect(text).not.toContain("Delhi");
+  });
+
+  it("doesn't ask for a district in other states, and forgets it when the state changes", async () => {
+    await chooseHaryana();
+    fireEvent.change(screen.getByTestId("ombudsman-district"), { target: { value: "Gurugram" } });
+
+    fireEvent.change(screen.getByTestId("ombudsman-state"), { target: { value: "Kerala" } });
+
+    expect(screen.queryByTestId("ombudsman-district")).toBeNull();
+    expect(screen.getByTestId("ombudsman-result").textContent).toContain("Kochi");
+  });
+});
+
+describe("after a correction", () => {
+  it("returns to the top of the page", async () => {
+    const scrollTo = vi.fn();
+    vi.stubGlobal("scrollTo", scrollTo);
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) =>
+        String(input).endsWith("/facts")
+          ? new Response(JSON.stringify(sampleCaseResult))
+          : new Response(
+              JSON.stringify({ caseToken: "case-1", status: { stage: "done", progressMessage: "Done" }, result: sampleCaseResult }),
+            ),
+      ),
+    );
+    render(<App initialEntries={["/case/case-1"]} />);
+
+    fireEvent.click(await screen.findByTestId("apply-corrections-btn"));
+
+    await screen.findByTestId("correction-change");
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: "smooth" });
+  });
+});
+
+describe("the printable report", () => {
+  it("carries each deduction's evidence, and shows none on screen", async () => {
+    render(<App initialEntries={["/case/case-1"]} />);
+
+    const evidence = await screen.findByTestId("print-evidence-F1");
+
+    expect(evidence.textContent).toContain("Pharmacy and implant charges");
+    expect(evidence.className).toContain("hidden print:block");
+  });
+
+  it("leaves the facts form and letters out", async () => {
+    render(<App initialEntries={["/case/case-1"]} />);
+
+    expect((await screen.findByTestId("confirm-facts-panel")).className).toContain("print:hidden");
+    expect(screen.getByRole("region", { name: translations.en.lettersTitle }).className).toContain("print:hidden");
   });
 });
 
