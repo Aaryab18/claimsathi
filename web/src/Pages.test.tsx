@@ -81,3 +81,61 @@ describe("the rules and sources page", () => {
     expect(within(screen.getByTestId("rule-R2")).queryByRole("link")).toBeNull();
   });
 });
+
+describe("the progress checklist", () => {
+  beforeEach(() => {
+    client.clearMockCases();
+    vi.stubEnv("VITE_API_URL", "https://api.example.com");
+    window.localStorage.clear();
+  });
+
+  afterEach(() => {
+    cleanup();
+    vi.restoreAllMocks();
+  });
+
+  const done = (id: string) => screen.getByTestId(`progress-${id}`).getAttribute("data-done");
+
+  it("ticks only what the person has done", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async (input: RequestInfo | URL) =>
+        String(input).endsWith("/letters")
+          ? new Response(JSON.stringify({ letterType: "grievance", text: "Dear Sir or Madam" }))
+          : caseResponse(),
+      ),
+    );
+    render(<App initialEntries={["/case/case-1"]} />);
+
+    expect((await screen.findByTestId("progress-checklist")).textContent).toContain("1 of 5 done");
+    expect(done("result")).toBe("true");
+    expect(done("letter")).toBe("false");
+    expect(done("call")).toBe("false");
+
+    fireEvent.click(screen.getByTestId("nav-letters"));
+    fireEvent.click(await screen.findByTestId("letter-grievance-btn"));
+    await screen.findByTestId("letter-text");
+    fireEvent.change(screen.getByTestId("grievance-reference"), { target: { value: "GRV-1" } });
+
+    await waitFor(() => expect(done("letter")).toBe("true"));
+    expect(done("call")).toBe("true");
+    expect(screen.getByTestId("progress-checklist").textContent).toContain("3 of 5 done");
+  });
+
+  it("counts the complaint as sent once its date gives a reply date", async () => {
+    const sent = {
+      ...sampleCaseResult,
+      deadlines: sampleCaseResult.deadlines.map((deadline) =>
+        deadline.label === "Grievance to the insurer" ? { ...deadline, date: "2026-12-05" } : deadline,
+      ),
+    };
+    vi.stubGlobal(
+      "fetch",
+      vi.fn(async () => new Response(JSON.stringify({ caseToken: "case-1", status: { stage: "done", progressMessage: "Done" }, result: sent }))),
+    );
+    render(<App initialEntries={["/case/case-1"]} />);
+
+    await screen.findByTestId("progress-checklist");
+    expect(done("sent")).toBe("true");
+  });
+});
