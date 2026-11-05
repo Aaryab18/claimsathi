@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { App } from "./App";
 import * as client from "./api/client";
@@ -7,7 +7,48 @@ import { sampleCaseResult } from "@claimsathi/contracts";
 describe("ClaimSathi Dashboard", () => {
   beforeEach(() => {
     window.history.pushState({}, "", "/case/sample");
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 200 })));
+    const defaultMockFetch = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+      const method = (init?.method || (typeof input === "object" && "method" in input ? (input as Request).method : "GET")).toUpperCase();
+
+      if (url.includes("/readyz")) {
+        return new Response(JSON.stringify({ status: "ok" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        });
+      }
+
+      if (url.endsWith("/cases/sample") && method === "POST") {
+        return new Response(
+          JSON.stringify({
+            caseToken: "sample",
+            status: { stage: "done", progressMessage: "Analysis complete" },
+          }),
+          { status: 201, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      if (url.includes("/facts") && (method === "PATCH" || method === "POST")) {
+        return new Response(
+          JSON.stringify(sampleCaseResult),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      if (url.includes("/cases/")) {
+        return new Response(
+          JSON.stringify({
+            caseToken: "sample",
+            status: { stage: "done", progressMessage: "Analysis complete" },
+            result: sampleCaseResult,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(null, { status: 200 });
+    });
+    vi.stubGlobal("fetch", defaultMockFetch);
     vi.stubEnv("VITE_API_URL", "https://api.example.com");
   });
 
@@ -48,6 +89,11 @@ describe("ClaimSathi Dashboard", () => {
         validDeductions: 5000,
       },
     };
+    vi.spyOn(client, "getCase").mockResolvedValueOnce({
+      caseToken: "sample",
+      status: { stage: "done", progressMessage: "Analysis complete" },
+      result: customResult,
+    });
     vi.spyOn(client, "getCaseResult").mockResolvedValueOnce(customResult);
 
     render(<App />);
@@ -121,6 +167,11 @@ describe("ClaimSathi Dashboard", () => {
     expect(hindiDeadlineNotices.length).toBe(2);
     expect(screen.queryByText(/हमारी कानूनी टीम/)).toBeNull();
 
+    // Hindi translated deadline labels
+    expect(screen.getByText("बीमा कंपनी को शिकायत")).toBeTruthy();
+    expect(screen.getByText("लोकपाल (ओम्बड्समैन) को शिकायत")).toBeTruthy();
+    expect(screen.getAllByText("स्थिति:").length).toBe(2);
+
     // Switch back to English
     const englishBtn = screen.getByRole("button", { name: "English" });
     fireEvent.click(englishBtn);
@@ -128,6 +179,11 @@ describe("ClaimSathi Dashboard", () => {
     expect(
       screen.getByText(/The insurer cut ₹24,133 from the pharmacy bill/i),
     ).toBeTruthy();
+
+    // English deadline labels
+    expect(screen.getByText("Grievance to the insurer")).toBeTruthy();
+    expect(screen.getByText("Complaint to the ombudsman")).toBeTruthy();
+    expect(screen.getAllByText("Status:").length).toBe(2);
   });
 
   it("opens evidence view on row click and closes easily", async () => {
@@ -243,6 +299,150 @@ describe("ClaimSathi Dashboard", () => {
 
       const disclaimers = screen.getAllByText(/Information, not legal advice/i);
       expect(disclaimers.length).toBeGreaterThan(0);
+    });
+
+    it("shows waking message while waiting for the server", () => {
+      vi.stubGlobal("fetch", vi.fn().mockReturnValue(new Promise(() => {})));
+
+      render(<App />);
+
+      expect(screen.getByTestId("waking-message")).toBeTruthy();
+      expect(
+        screen.getByText(/Starting the server, this can take up to a minute/i),
+      ).toBeTruthy();
+    });
+
+    it("shows the saved sample labelled 'Offline copy: corrections are unavailable' and disables Apply corrections when API can't be reached", async () => {
+      vi.stubGlobal("fetch", vi.fn().mockRejectedValue(new TypeError("Failed to fetch")));
+
+      render(<App />);
+
+      await screen.findByTestId("recoverable-amount");
+
+      expect(
+        screen.getAllByText(/Offline copy: corrections are unavailable/i).length,
+      ).toBeGreaterThan(0);
+      const applyBtn = screen.getByTestId("apply-corrections-btn") as HTMLButtonElement;
+      expect(applyBtn.disabled).toBe(true);
+    });
+
+    it("updates numbers and breakdown from API response and removes 'Preview only' note after a successful correction", async () => {
+      const updatedCaseResult = {
+        ...sampleCaseResult,
+        totals: {
+          totalDeducted: 96000,
+          recoverableStrong: 55000,
+          questionable: 10000,
+          validDeductions: 31000,
+        },
+      };
+
+      const mockFetchWithPatch = vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        if (url.includes("/facts")) {
+          return new Response(JSON.stringify(updatedCaseResult), {
+            status: 200,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (url.includes("/cases/")) {
+          return new Response(
+            JSON.stringify({
+              caseToken: "sample",
+              status: { stage: "done", progressMessage: "Analysis complete" },
+              result: sampleCaseResult,
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(JSON.stringify({ status: "ok" }), { status: 200 });
+      });
+
+      vi.stubGlobal("fetch", mockFetchWithPatch);
+
+      render(<App />);
+
+      await screen.findByTestId("recoverable-amount");
+      expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹71,400");
+      expect(screen.getByTestId("preview-only-note")).toBeTruthy();
+
+      // Submit corrections
+      const applyBtn = screen.getByTestId("apply-corrections-btn");
+      fireEvent.click(applyBtn);
+
+      // Verify numbers updated
+      await waitFor(() => {
+        expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹55,000");
+      });
+
+      // Verify preview only note is removed
+      expect(screen.queryByTestId("preview-only-note")).toBeNull();
+
+      // Verify success status
+      expect(screen.getByTestId("corrections-applied-status")).toBeTruthy();
+    });
+
+    it("shows an error message and does not update numbers when a correction fails", async () => {
+      const mockFetchWithError = vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        if (url.includes("/facts")) {
+          return new Response(JSON.stringify({ error: "Service unavailable" }), {
+            status: 500,
+            headers: { "Content-Type": "application/json" },
+          });
+        }
+        if (url.includes("/cases/")) {
+          return new Response(
+            JSON.stringify({
+              caseToken: "sample",
+              status: { stage: "done", progressMessage: "Analysis complete" },
+              result: sampleCaseResult,
+            }),
+            { status: 200, headers: { "Content-Type": "application/json" } }
+          );
+        }
+        return new Response(JSON.stringify({ status: "ok" }), { status: 200 });
+      });
+
+      vi.stubGlobal("fetch", mockFetchWithError);
+
+      render(<App />);
+
+      await screen.findByTestId("recoverable-amount");
+      expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹71,400");
+
+      // Submit corrections
+      const applyBtn = screen.getByTestId("apply-corrections-btn");
+      fireEvent.click(applyBtn);
+
+      // Expect error alert
+      const errorAlert = await screen.findByTestId("apply-facts-error");
+      expect(errorAlert).toBeTruthy();
+
+      // Numbers must NOT be altered or presented as if correction worked
+      expect(screen.getByTestId("recoverable-amount").textContent).toContain("₹71,400");
+      expect(screen.queryByTestId("corrections-applied-status")).toBeNull();
+    });
+
+    it("handles a trailing slash in VITE_API_URL when calling the API", async () => {
+      vi.stubEnv("VITE_API_URL", "https://api.example.com///");
+      const urlsCalled: string[] = [];
+      const trackingFetch = vi.fn(async (input: RequestInfo | URL) => {
+        const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+        urlsCalled.push(url);
+        return new Response(
+          JSON.stringify({
+            caseToken: "sample-token",
+            status: { stage: "done", progressMessage: "Done" },
+            result: sampleCaseResult,
+          }),
+          { status: 200, headers: { "Content-Type": "application/json" } }
+        );
+      });
+      vi.stubGlobal("fetch", trackingFetch);
+
+      await client.getCase("sample-token");
+      expect(urlsCalled[0]).toBe("https://api.example.com/cases/sample-token");
     });
   });
 });

@@ -5,9 +5,10 @@ interface HeaderProps {
   language: Language;
   onLanguageChange: (lang: Language) => void;
   resultSource?: "live" | "saved_sample";
+  isOffline?: boolean;
 }
 
-export function Header({ language, onLanguageChange, resultSource }: HeaderProps) {
+export function Header({ language, onLanguageChange, resultSource, isOffline }: HeaderProps) {
   const t = translations[language];
 
   return (
@@ -22,11 +23,18 @@ export function Header({ language, onLanguageChange, resultSource }: HeaderProps
               <h1 className="text-xl sm:text-2xl font-bold tracking-tight text-[#113A2B]">
                 {t.appName}
               </h1>
-              {resultSource === "saved_sample" && (
+              {isOffline ? (
+                <span
+                  data-testid="offline-copy-badge"
+                  className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#FEF3C7] text-[#92400E] border border-[#FDE68A]"
+                >
+                  {t.offlineCopyNotice}
+                </span>
+              ) : resultSource === "saved_sample" ? (
                 <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-semibold bg-[#E7E5D8] text-[#555243] border border-[#D5D2C2]">
                   {t.sampleCase}
                 </span>
-              )}
+              ) : null}
             </div>
             <p className="text-xs text-[#526059] hidden sm:block">{t.tagline}</p>
           </div>

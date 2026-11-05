@@ -33,12 +33,17 @@ export interface Translations {
   deadlinesSubtitle: string;
   datePending: string;
   deadlineVerificationPending: string;
+  deadlineGrievanceLabel: string;
+  deadlineOmbudsmanLabel: string;
+  statusLabel: string;
   verdictLabels: {
     wrong: string;
     questionable: string;
     valid: string;
   };
   loadingMessage: string;
+  serverWakingMessage: string;
+  offlineCopyNotice: string;
   errorMessage: string;
   retryButton: string;
 
@@ -59,6 +64,7 @@ export interface Translations {
   fileSizeError: string;
   analyseButton: string;
   analyseDisabledHint: string;
+  liveReadingComingNext: string;
   trySampleTitle: string;
   trySampleButton: string;
   trySampleDesc: string;
@@ -97,6 +103,7 @@ export interface Translations {
   applyCorrectionsBtn: string;
   applyingCorrections: string;
   correctionsSubmittedMsg: string;
+  correctionsAppliedMsg: string;
   categoryLabels: Record<string, string>;
 }
 
@@ -141,12 +148,17 @@ export const translations: Record<Language, Translations> = {
     datePending: "Date pending",
     deadlineVerificationPending:
       "We are still checking the official source for this deadline.",
+    deadlineGrievanceLabel: "Grievance to the insurer",
+    deadlineOmbudsmanLabel: "Complaint to the ombudsman",
+    statusLabel: "Status:",
     verdictLabels: {
       wrong: "Likely wrongly denied",
       questionable: "Questionable",
       valid: "Valid",
     },
     loadingMessage: "Loading claim analysis...",
+    serverWakingMessage: "Starting the server, this can take up to a minute",
+    offlineCopyNotice: "Offline copy: corrections are unavailable",
     errorMessage: "Could not load claim analysis. Please try again.",
     retryButton: "Try again",
 
@@ -167,7 +179,8 @@ export const translations: Record<Language, Translations> = {
     fileTypeError: "Only PDF, JPG, and PNG files are allowed.",
     fileSizeError: "File is larger than the 10 MB limit.",
     analyseButton: "Analyse claim",
-    analyseDisabledHint: "Select all three documents above to begin analysis",
+    analyseDisabledHint: "Live document reading is coming next. Try the sample case.",
+    liveReadingComingNext: "Live document reading is coming next. Try the sample case.",
     trySampleTitle: "Try it first without uploading",
     trySampleButton: "Try sample case",
     trySampleDesc: "Explore a realistic claim with Suresh Kumar's hospital bill and see the full breakdown.",
@@ -208,6 +221,7 @@ export const translations: Record<Language, Translations> = {
     applyCorrectionsBtn: "Apply corrections",
     applyingCorrections: "Applying...",
     correctionsSubmittedMsg: "Corrections received. (Preview mode: sample calculations remain unchanged).",
+    correctionsAppliedMsg: "Corrections applied. Totals and findings updated from the rules engine.",
     categoryLabels: {
       room: "Room & Nursing",
       pharmacy: "Pharmacy / Medicines",
@@ -259,12 +273,17 @@ export const translations: Record<Language, Translations> = {
     datePending: "तारीख लंबित",
     deadlineVerificationPending:
       "हम अभी भी इस समय-सीमा के आधिकारिक स्रोत की जांच कर रहे हैं।",
+    deadlineGrievanceLabel: "बीमा कंपनी को शिकायत",
+    deadlineOmbudsmanLabel: "लोकपाल (ओम्बड्समैन) को शिकायत",
+    statusLabel: "स्थिति:",
     verdictLabels: {
       wrong: "संभावित रूप से गलत कटौती",
       questionable: "संदेहास्पद",
       valid: "उचित",
     },
     loadingMessage: "क्लेम विश्लेषण लोड हो रहा है...",
+    serverWakingMessage: "सर्वर शुरू हो रहा है, इसमें एक मिनट तक का समय लग सकता है",
+    offlineCopyNotice: "ऑफ़लाइन प्रति: सुधार अनुपलब्ध हैं",
     errorMessage: "क्लेम विश्लेषण लोड करने में असमर्थ। कृपया पुन: प्रयास करें।",
     retryButton: "पुन: प्रयास करें",
 
@@ -285,7 +304,8 @@ export const translations: Record<Language, Translations> = {
     fileTypeError: "केवल PDF, JPG और PNG फ़ाइलें स्वीकृत हैं।",
     fileSizeError: "फ़ाइल 10 MB की सीमा से अधिक बड़ी है।",
     analyseButton: "क्लेम का विश्लेषण करें",
-    analyseDisabledHint: "विश्लेषण शुरू करने के लिए ऊपर तीनों दस्तावेज़ चुनें",
+    analyseDisabledHint: "लाइव दस्तावेज़ पढ़ना जल्द आ रहा है। सैंपल केस आज़माएं।",
+    liveReadingComingNext: "लाइव दस्तावेज़ पढ़ना जल्द आ रहा है। सैंपल केस आज़माएं।",
     trySampleTitle: "दस्तावेज़ अपलोड किए बिना आज़माएं",
     trySampleButton: "सैंपल केस देखें",
     trySampleDesc: "सुरेश कुमार के वास्तविक जैसे केस के साथ देखें कि क्लेमसाथी कैसे काम करता है।",
@@ -326,6 +346,7 @@ export const translations: Record<Language, Translations> = {
     applyCorrectionsBtn: "सुधार लागू करें",
     applyingCorrections: "लागू किया जा रहा है...",
     correctionsSubmittedMsg: "सुधार दर्ज किए गए। (पूर्वावलोकन मोड: सैंपल गणना अपरिवर्तित है)।",
+    correctionsAppliedMsg: "सुधार लागू हो गए। कुल राशि और निष्कर्ष अपडेट हो गए हैं।",
     categoryLabels: {
       room: "कमरा और नर्सिंग",
       pharmacy: "दवाइयां",

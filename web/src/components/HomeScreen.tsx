@@ -103,8 +103,10 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
     try {
       const response = await createSampleCase();
       navigate(`/case/${response.caseToken}`);
-    } catch (err) {
-      setGeneralError(err instanceof Error ? err.message : t.errorMessage);
+    } catch {
+      // If the API can't be reached, navigate to /case/sample which falls back to offline copy
+      navigate(`/case/sample`);
+    } finally {
       setIsSubmitting(false);
     }
   };
@@ -166,15 +168,25 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
               {t.trySampleDesc}
             </p>
           </div>
-          <button
-            type="button"
-            data-testid="try-sample-btn"
-            onClick={handleTrySample}
-            disabled={isSubmitting}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#114B36] hover:bg-[#0E3A2A] text-white text-sm font-semibold shadow-xs transition-colors focus:ring-2 focus:ring-[#114B36] focus:outline-hidden disabled:opacity-60 cursor-pointer text-center"
-          >
-            {t.trySampleButton} →
-          </button>
+          <div className="flex flex-col items-center sm:items-end w-full sm:w-auto">
+            <button
+              type="button"
+              data-testid="try-sample-btn"
+              onClick={handleTrySample}
+              disabled={isSubmitting}
+              className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#114B36] hover:bg-[#0E3A2A] text-white text-sm font-semibold shadow-xs transition-colors focus:ring-2 focus:ring-[#114B36] focus:outline-hidden disabled:opacity-60 cursor-pointer text-center"
+            >
+              {isSubmitting ? t.loadingMessage : `${t.trySampleButton} →`}
+            </button>
+            {isSubmitting && (
+              <p
+                data-testid="waking-message-sample"
+                className="text-xs text-[#8C887B] mt-1.5 text-center sm:text-right"
+              >
+                {t.serverWakingMessage}
+              </p>
+            )}
+          </div>
         </section>
 
         <div className="relative flex py-1 items-center">
@@ -405,25 +417,18 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
             <button
               type="button"
               data-testid="analyse-btn"
-              onClick={handleAnalyse}
-              disabled={!isAnalyseEnabled}
-              className={`w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all shadow-xs focus:ring-2 focus:ring-[#114B36] focus:outline-hidden ${
-                isAnalyseEnabled
-                  ? "bg-[#114B36] hover:bg-[#0E3A2A] text-white cursor-pointer"
-                  : "bg-[#E7E5D8] text-[#8C887B] cursor-not-allowed opacity-80"
-              }`}
+              disabled={true}
+              className="w-full py-3 px-4 rounded-xl text-sm font-semibold transition-all shadow-xs bg-[#E7E5D8] text-[#8C887B] cursor-not-allowed opacity-80"
             >
-              {isSubmitting ? t.loadingMessage : t.analyseButton}
+              {t.analyseButton}
             </button>
 
-            {!isAnalyseEnabled && (
-              <p
-                data-testid="analyse-hint"
-                className="text-xs text-center text-[#8C887B]"
-              >
-                {t.analyseDisabledHint}
-              </p>
-            )}
+            <p
+              data-testid="analyse-hint"
+              className="text-xs text-center text-[#8C887B]"
+            >
+              {t.liveReadingComingNext}
+            </p>
           </div>
         </section>
       </main>
