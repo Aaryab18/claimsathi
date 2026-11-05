@@ -6,6 +6,7 @@ import { sampleCaseResult } from "@claimsathi/contracts";
 
 describe("ClaimSathi Dashboard", () => {
   beforeEach(() => {
+    window.history.pushState({}, "", "/case/sample");
     vi.stubGlobal("fetch", vi.fn().mockResolvedValue(new Response(null, { status: 200 })));
     vi.stubEnv("VITE_API_URL", "https://api.example.com");
   });
