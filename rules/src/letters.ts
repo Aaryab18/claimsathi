@@ -37,7 +37,7 @@ function inLetterVoice(explanation: string): string {
     .replace(/,? so rules? R\d+(?: and R\d+)? (?:marks?) (?:this (?:cut|deduction)|this) as questionable/g, ", so I ask you to explain it")
     .replace(/\bThe insurer\b/g, "You")
     .replace(/\bthe insurer\b/g, "you")
-    .replace(/\bIt used\b/g, "You used")
+    .replace(/\bIt reduced\b/g, "You reduced")
     .replace(/\bbecause it\b/g, "because you")
     .replace(/₹/g, "Rs. ");
 }
@@ -53,7 +53,7 @@ function disputedItems(result: CaseResult): string[] {
       `   ${inLetterVoice(finding.explanationEn)}`,
     ];
     const { insurerText, policyClause, regulation } = finding.evidence;
-    if (insurerText) lines.push(`   Your letter says: "${insurerText}"`);
+    if (insurerText) lines.push(`   Your letter says: "${insurerText.replace(/\s+/g, " ")}"`);
     if (policyClause) lines.push(`   Policy wording: ${policyClause}`);
     if (regulation && !PENDING_SOURCE.test(regulation.sourceName)) {
       lines.push(`   Reference: ${regulation.sourceName}${regulation.verified ? "" : " [check this reference before sending]"}`);

@@ -1,26 +1,65 @@
 # ClaimSathi
 
-ClaimSathi explains health insurance claim deductions in India, in English and Hindi.
+**The AI reads, the rules judge.** ClaimSathi explains why a health insurance claim in India was rejected or cut, shows which deductions look wrong, and drafts the appeal.
 
-**The AI reads, the rules judge.** The AI only extracts and explains. Legal verdicts come only from tested code in `rules/`.
+**Live demo:** https://claimsathi-web.onrender.com. Click **Try sample case**, or download the made-up documents on the home page and upload them.
 
-Live site: https://claimsathi-web.onrender.com
+> This is a hackathon demo, not legal advice. Please don't upload real medical documents.
 
-## Project status
+## The problem
 
-Working now:
+A family gets a letter saying part of a hospital claim won't be paid. It cites clauses and uses terms they don't know, and they have no way to tell which deductions are fair. Many never challenge it.
 
-- The website, with a sample case, result breakdown, evidence view and Hindi
-- A tested rules engine
-- A first version of the API
+## What it does
 
-In progress:
+| Feature | What you get |
+|---|---|
+| **Upload** | Rejection letter, policy and bill, as PDFs or photos, plus a one-click sample case |
+| **Decoder** | Plain explanations in English and Hindi |
+| **Line-item audit** | Every deduction marked likely wrong, questionable or valid, with the reason |
+| **Evidence view** | The insurer's words, the policy clause and the legal reference side by side, with a Verified Quote check on PDFs |
+| **Recoverable meter** | One headline figure, and how the deducted money splits |
+| **Confirm the facts** | Correct a date or category, and the rules recalculate instantly with no AI call |
+| **Appeal letters** | An editable complaint to the insurer and an Ombudsman complaint with an annexure checklist, with Print or Save as PDF |
+| **Deadlines** | Ombudsman dates from the official rules, and a calendar file with reminders |
 
-- Connecting the website to the API
-- Live document reading with AI
-- Appeal letters and deadline tracking
+## Why you can check its answers
 
-Legal references are still being checked against official text.
+The AI only copies facts from the documents. Tested code makes every decision.
+
+1. **Gemini reads** the documents and returns data in a fixed format. A fact it can't support becomes "unknown", not a guess.
+2. **Rules judge** each deduction. The same facts always give the same result.
+3. **Quotes are checked** against the PDF's own text, without AI. Photos can't be checked this way, and the site says so.
+4. **Unsure means questionable.** The app never calls something wrong without a rule that supports it.
+
+See [the architecture](docs/ARCHITECTURE.md).
+
+## The rules
+
+| Rule | Checks | Legal source status |
+|---|---|---|
+| R1 | Cover of 60 months or more | Found in a copy of the 2024 IRDAI circular, clause 13; not yet confirmed on IRDAI's site |
+| R2 | Pre-existing disease waiting period, from the policy's own figure | Uses the policy's wording |
+| R3 | Proportionate cuts on pharmacy, consumables, implants and diagnostics | **Unverified:** widely reported, but the IRDAI text hasn't been found |
+| R4 | Non-payable items that belong to a package | Unverified |
+| R5 | Rejection for documents the insurer never asked for | Found in a copy of the circular, clause 17(c); not yet confirmed on IRDAI's site |
+| R6 | Co-pay and sub-limit arithmetic | Arithmetic on the policy's own figures |
+| R7 | Whether a cited clause was found in the policy | Found in a copy of the circular, clause 17(b); not yet confirmed on IRDAI's site |
+| R8 | Ombudsman deadlines | **Verified:** Insurance Ombudsman Rules 2017, Rule 14, as updated on 9.11.2023 |
+
+The app marks unverified references as unverified on screen.
+
+## Limits
+
+- It has been tested on made-up documents only, so we don't have an accuracy figure.
+- It runs on free plans. The API sleeps when idle, and Gemini can be busy. Free-tier data may be used by Google, which is why real documents aren't allowed in this demo.
+- Uploads are deleted from our database within 24 hours, but that doesn't cover what Google does with them.
+- Letters are drafts in English. Check every fact before sending.
+- Email, SMS and WhatsApp reminders aren't built. The calendar file covers reminders for now.
+
+## Tech
+
+TypeScript in an npm workspace: React and Vite (`web/`), Express and Prisma on Postgres (`api/`), the rules engine (`rules/`) and a shared Zod contract (`contracts/`). It's hosted on Render, and the AI is behind one replaceable file, `api/src/gemini-reader.ts`.
 
 ## Getting started
 
@@ -33,20 +72,6 @@ npm test
 npm run build
 ```
 
-## Folders
+Copy `.env.example` to `.env` to run it yourself. Never commit a key. Without `GEMINI_API_KEY`, everything except uploads still works.
 
-| Folder | Purpose | Owner |
-| --- | --- | --- |
-| `contracts/` | Shared data shapes used across the project | Whole team |
-| `rules/` | Tested code that decides legal verdicts | Member C |
-| `api/` | Backend web server | Member A |
-| `worker/` | Background task runner | Member A |
-| `jobs/` | Scheduled and one-off tasks | Member A |
-| `pdf-service/` | PDF handling (not built yet) | Member A |
-| `web/` | The website people use | Member B |
-| `samples/` | Made-up example documents for testing | Member C |
-| `templates/` | Document templates | Member C |
-| `docs/` | Project documentation | Member C |
-| `scripts/` | Team tooling, such as the ownership check | Whole team |
-
-See `CLAUDE.md` for the team rules and branch ownership.
+`node scripts/make-sample-documents.mjs` regenerates the sample PDFs. If they change, update their fingerprints in `api/src/saved-readings.ts`.

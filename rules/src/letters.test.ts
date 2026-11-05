@@ -89,6 +89,11 @@ describe("the letters' voice", () => {
     expect(letter).toContain("I believe");
   });
 
+  it("reads as one person writing", () => {
+    expect(letter).toContain("You reduced this in proportion");
+    expect(letter).not.toMatch(/It reduced/);
+  });
+
   it("writes money the same way throughout", () => {
     expect(letter).not.toContain("₹");
   });
