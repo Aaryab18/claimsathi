@@ -132,7 +132,20 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
     <div className="min-h-screen bg-[#FAF9F5] text-[#132A1E] flex flex-col font-sans">
       <Header language={language} onLanguageChange={onLanguageChange} />
 
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col gap-6 sm:gap-8">
+      {/* Hero headline and explanation */}
+      <section className="bg-[#114B36] text-[#FAF9F5]">
+        <div className="max-w-4xl mx-auto px-4 py-10 sm:py-16 flex flex-col gap-4">
+          <p className="text-xs sm:text-sm font-bold uppercase tracking-wider text-[#F2C879]">{t.homeTagline}</p>
+          <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight leading-tight max-w-3xl">
+            {t.homeHeadline}
+          </h1>
+          <p className="text-sm sm:text-lg text-[#D6E5DC] leading-relaxed max-w-2xl">
+            {t.homeSubtitle}
+          </p>
+        </div>
+      </section>
+
+      <main className="flex-1 max-w-4xl w-full mx-auto px-4 py-6 sm:py-10 flex flex-col gap-6 sm:gap-8">
         {/* Notice banner */}
         <div
           role="note"
@@ -156,18 +169,25 @@ export function HomeScreen({ language, onLanguageChange }: HomeScreenProps) {
           <p className="font-medium leading-relaxed">{t.demoNotice}</p>
         </div>
 
-        {/* Hero headline and explanation */}
-        <section className="text-center sm:text-left flex flex-col gap-3">
-          <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-[#113A2B] leading-tight">
-            {t.homeHeadline}
-          </h1>
-          <p className="text-sm sm:text-base text-[#526059] leading-relaxed max-w-2xl">
-            {t.homeSubtitle}
-          </p>
+        {/* How it works */}
+        <section aria-label={t.howItWorksTitle} data-testid="how-it-works" className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          {[
+            [t.howStepReadTitle, t.howStepReadDesc],
+            [t.howStepJudgeTitle, t.howStepJudgeDesc],
+            [t.howStepActTitle, t.howStepActDesc],
+          ].map(([title, description], index) => (
+            <div key={title} className="p-4 rounded-2xl bg-white border border-[#E3E0CE] shadow-xs">
+              <span className="w-8 h-8 rounded-full bg-[#114B36] text-white text-sm font-bold flex items-center justify-center">
+                {index + 1}
+              </span>
+              <h2 className="mt-3 text-sm sm:text-base font-bold text-[#113A2B]">{title}</h2>
+              <p className="mt-1 text-xs sm:text-sm text-[#526059] leading-relaxed">{description}</p>
+            </div>
+          ))}
         </section>
 
         {/* Prominent Sample Case Section */}
-        <section className="p-4 sm:p-5 rounded-2xl bg-[#F0EDE1] border-2 border-[#D5D0BC] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <section className="p-5 sm:p-6 rounded-2xl bg-[#FDF6E3] border-2 border-[#F2C879] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
           <div className="flex-1">
             <span className="inline-block px-2.5 py-0.5 rounded text-[11px] font-bold tracking-wide uppercase bg-[#114B36] text-white mb-1.5">
               Instant Preview

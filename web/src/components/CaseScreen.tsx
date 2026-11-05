@@ -11,6 +11,8 @@ import { FindingsTable } from "./FindingsTable";
 import { EvidenceModal } from "./EvidenceModal";
 import { DeadlinesSection } from "./DeadlinesSection";
 import { LettersSection } from "./LettersSection";
+import { NextSteps } from "./NextSteps";
+import { formatRupees } from "../lib/format";
 import { ConfirmFactsPanel } from "./ConfirmFactsPanel";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
@@ -35,6 +37,16 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
   const [selectedFinding, setSelectedFinding] = useState<Finding | null>(null);
 
   const [pollAttempt, setPollAttempt] = useState(0);
+  const [lastChange, setLastChange] = useState<{ from: number; to: number } | null>(null);
+
+  // A correction is made far down the page, so bring the person back up to see the number move.
+  const applyCorrection = (updated: CaseResult) => {
+    if (caseResult) {
+      setLastChange({ from: caseResult.totals.recoverableStrong, to: updated.totals.recoverableStrong });
+    }
+    setCaseResult(updated);
+    document.getElementById("result")?.scrollIntoView?.({ behavior: "smooth" });
+  };
 
   const pollTimerRef = useRef<number | null>(null);
   const failedPollsRef = useRef(0);
@@ -224,10 +236,42 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
         {caseResult && (
           <>
             {/* 1. Recoverable amount meter */}
-            <RecoverableMeter totals={caseResult.totals} language={language} />
+            {lastChange && (
+              <div
+                role="status"
+                data-testid="correction-change"
+                className="p-3.5 sm:p-4 rounded-xl bg-[#E5F3EC] border border-[#BDE3D0] text-[#0F5132] text-sm font-semibold"
+              >
+                {lastChange.from === lastChange.to
+                  ? t.correctionNoChange(formatRupees(lastChange.to))
+                  : t.correctionChanged(formatRupees(lastChange.from), formatRupees(lastChange.to))}
+              </div>
+            )}
+
+            <RecoverableMeter totals={caseResult.totals} language={language} claim={caseResult.extracted.claim} />
+
+            <nav aria-label={t.sectionNavLabel} className="flex flex-wrap gap-2">
+              {[
+                ["#breakdown", t.navBreakdown],
+                ["#next-steps", t.navNextSteps],
+                ["#facts", t.navFacts],
+                ["#deadlines", t.navDeadlines],
+                ["#letters", t.navLetters],
+              ].map(([href, label]) => (
+                <a
+                  key={href}
+                  href={href}
+                  className="px-3.5 py-1.5 rounded-full bg-white border border-[#D5D2C2] text-xs sm:text-sm font-semibold text-[#114B36] hover:border-[#114B36]"
+                >
+                  {label}
+                </a>
+              ))}
+            </nav>
 
             {/* 2. Plain-language summary */}
             <PlainSummary caseResult={caseResult} language={language} />
+
+            <NextSteps deadlines={caseResult.deadlines} language={language} />
 
             {/* 3. Bill items table */}
             <FindingsTable
@@ -250,7 +294,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
               caseResult={caseResult}
               language={language}
               isOffline={isOffline}
-              onApplyResult={(updated) => setCaseResult(updated)}
+              onApplyResult={applyCorrection}
             />
 
             {/* 6. Deadlines section */}

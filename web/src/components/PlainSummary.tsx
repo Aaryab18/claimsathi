@@ -2,6 +2,7 @@ import type { CaseResult } from "@claimsathi/contracts";
 import { formatRupees } from "../lib/format";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
+import { SummaryActions } from "./SummaryActions";
 
 interface PlainSummaryProps {
   caseResult: CaseResult;
@@ -46,6 +47,8 @@ export function PlainSummary({ caseResult, language }: PlainSummaryProps) {
       <p className="mt-2 text-sm sm:text-base text-[#2C3E35] leading-relaxed">
         {summaryParagraph}
       </p>
+
+      <SummaryActions summary={summaryParagraph} language={language} />
 
       {/* Claim metadata pills */}
       <div className="mt-4 pt-3 border-t border-[#E5E2D1] grid grid-cols-2 sm:grid-cols-4 gap-2 text-xs">

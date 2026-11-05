@@ -27,7 +27,7 @@ export function DeadlinesSection({ deadlines, language, caseToken }: DeadlinesSe
   const calendarFile = caseToken ? buildCalendarFile(deadlines, caseToken) : null;
 
   return (
-    <section aria-label={t.deadlinesTitle} className="flex flex-col gap-3">
+    <section id="deadlines" aria-label={t.deadlinesTitle} className="scroll-mt-24 flex flex-col gap-3">
       <div>
         <h2 className="text-lg sm:text-xl font-bold tracking-tight text-[#113A2B] flex items-center gap-2">
           <svg
