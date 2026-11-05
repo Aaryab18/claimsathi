@@ -139,7 +139,7 @@ export function ConfirmFactsPanel({
           onSubmit={handleSubmit}
           className="p-4 sm:p-6 flex flex-col gap-6"
         >
-          {/* Offline notice or Preview Only note */}
+          {/* Offline notice */}
           {isOffline && (
             <div
               role="note"
@@ -161,30 +161,6 @@ export function ConfirmFactsPanel({
                 />
               </svg>
               <span className="font-semibold">{t.offlineCopyNotice}</span>
-            </div>
-          )}
-
-          {!isOffline && !hasAppliedCorrections && (
-            <div
-              role="note"
-              data-testid="preview-only-note"
-              className="p-3 sm:p-3.5 rounded-xl bg-[#FAF5E6] border border-[#E5DFCA] text-[#786C3B] text-xs flex items-center gap-2.5"
-            >
-              <svg
-                className="w-4 h-4 shrink-0 text-[#9C8B4D]"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                aria-hidden="true"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                />
-              </svg>
-              <span className="font-semibold">{t.previewOnlyNote}</span>
             </div>
           )}
 
@@ -345,9 +321,9 @@ export function ConfirmFactsPanel({
 
           {/* Action buttons */}
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 pt-2">
-            {!hasAppliedCorrections && (
+            {isOffline && (
               <span className="text-[11px] text-[#8C887B] italic">
-                {isOffline ? t.offlineCopyNotice : t.previewOnlyNote}
+                {t.offlineCopyNotice}
               </span>
             )}
             <button
