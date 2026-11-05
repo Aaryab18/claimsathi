@@ -1,5 +1,8 @@
 import cors from "cors";
 import express from "express";
+import type { CaseStore } from "./case-store.js";
+import { createCasesRouter } from "./cases.js";
+import { errorHandler } from "./errors.js";
 import type { ReadinessCheck, ReadinessChecks } from "./readiness.js";
 
 const READINESS_TIMEOUT_MS = 3000;
@@ -7,6 +10,7 @@ const READINESS_TIMEOUT_MS = 3000;
 export interface AppOptions {
   allowedOrigin: string | undefined;
   checks: ReadinessChecks;
+  store: CaseStore;
   readinessTimeoutMs?: number;
 }
 
@@ -29,10 +33,11 @@ async function runCheck(name: string, check: ReadinessCheck, timeoutMs: number):
   }
 }
 
-export function createApp({ allowedOrigin, checks, readinessTimeoutMs = READINESS_TIMEOUT_MS }: AppOptions) {
+export function createApp({ allowedOrigin, checks, store, readinessTimeoutMs = READINESS_TIMEOUT_MS }: AppOptions) {
   const app = express();
 
-  app.use(cors({ origin: allowedOrigin ? [allowedOrigin] : false }));
+  app.disable("x-powered-by");
+  app.use(cors({ origin: allowedOrigin ? [allowedOrigin] : false, methods: ["GET", "HEAD", "POST", "PATCH"] }));
 
   app.get("/healthz", (_req, res) => {
     res.json({ status: "ok" });
@@ -50,6 +55,14 @@ export function createApp({ allowedOrigin, checks, readinessTimeoutMs = READINES
       .status(ready ? 200 : 503)
       .json({ status: ready ? "ok" : "unavailable", database, queue });
   });
+
+  app.use(createCasesRouter(store));
+
+  app.use((_req, res) => {
+    res.status(404).json({ error: "Not found." });
+  });
+
+  app.use(errorHandler);
 
   return app;
 }
