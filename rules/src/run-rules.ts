@@ -6,6 +6,7 @@ import type {
   Finding,
   LineItem,
   Regulation,
+  RejectionReason,
   RulesEngine,
   RulesEngineInput,
   RulesEngineResult,
@@ -245,11 +246,31 @@ function evaluateLineItem(
   };
 }
 
-function findEvidence(
+const CATEGORY_WORDS: Partial<Record<string, string>> = {
+  admin: "admin",
+  consumable: "consumable",
+  pharmacy: "pharmacy",
+  implant: "implant",
+  diagnostic: "diagnostic",
+};
+
+// Too common on a bill to show that a reason is about one particular item.
+const GENERIC_WORDS = new Set(["bill", "charge", "charges", "fees", "hospital", "item", "items", "payable", "treatment"]);
+
+function reasonMentionsItem(reason: RejectionReason, item: LineItem): boolean {
+  const reasonText = `${reason.text} ${reason.source?.quote ?? ""}`.toLowerCase();
+  const descriptionWords = item.description?.toLowerCase().match(/[\p{L}\p{M}\p{N}]{4,}/gu) ?? [];
+  const words = descriptionWords.filter((word) => !GENERIC_WORDS.has(word));
+  const categoryWord = item.category ? CATEGORY_WORDS[item.category] : undefined;
+  if (categoryWord) words.push(categoryWord);
+  return words.some((word) => reasonText.includes(word));
+}
+
+function findMatchingReason(
   deductionType: string,
   items: LineItem[],
   extracted: ExtractedClaim
-): Evidence {
+): RejectionReason | undefined {
   // Map deductionType to rejection category
   let targetCategory: string = deductionType;
   if (deductionType === "room_rent_excess") {
@@ -258,28 +279,21 @@ function findEvidence(
     targetCategory = "documentation_missing";
   }
 
-  const categories = new Set(items.map((i) => i.category));
+  const candidates = extracted.rejection.reasons.filter((r) => r.category === targetCategory);
 
-  const matchedReason = extracted.rejection.reasons.find((r) => {
-    if (r.category !== targetCategory) return false;
-    if (targetCategory === "non_payable") {
-      if (categories.has("admin")) {
-        return (
-          r.text.toLowerCase().includes("admin") ||
-          (r.source?.quote?.toLowerCase().includes("admin") ?? false)
-        );
-      }
-      if (categories.has("consumable")) {
-        return (
-          r.text.toLowerCase().includes("consumable") ||
-          (r.source?.quote?.toLowerCase().includes("consumable") ?? false)
-        );
-      }
-      return true;
-    }
-    return true;
-  });
+  // "Non-payable" covers unrelated items, and several reasons can share a category. In those
+  // cases a reason must name every item, so one item never gets another item's evidence.
+  if (targetCategory === "non_payable" || candidates.length > 1) {
+    return candidates.find((r) => items.every((item) => reasonMentionsItem(r, item)));
+  }
+  return candidates[0];
+}
 
+function findEvidence(
+  items: LineItem[],
+  matchedReason: RejectionReason | undefined,
+  extracted: ExtractedClaim
+): Evidence {
   // insurerText may only come from a rejection reason, or from a line item's source when its document is rejection_letter. Otherwise it is null.
   let insurerText: string | null = null;
   if (matchedReason) {
@@ -407,82 +421,73 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
     const id = `F${index + 1}`;
     const lineItemIds = g.items.map((i) => i.id);
     const amount = g.items.reduce((sum, i) => sum + (i.deducted ?? 0), 0);
-    const evidence = findEvidence(g.deductionType, g.items, extracted);
+    const matchedReason = findMatchingReason(g.deductionType, g.items, extracted);
+    const evidence = findEvidence(g.items, matchedReason, extracted);
 
     let explanations: { en: string; hi: string };
 
     if (g.ruleIds.includes("R3")) {
       explanations = buildR3Explanation(g.items, amount);
     } else if (g.ruleIds.includes("R4") && g.verdict === "wrong") {
+      // A package is only named when the bill calls it one, and never from the deducted items themselves.
       const pkgItem = extracted.lineItems.find(
         (i) =>
-          (i.category === "procedure" || /package/i.test(i.description ?? "")) &&
-          (i.approved ?? 0) > 0
+          /package/i.test(i.description ?? "") &&
+          (i.approved ?? 0) > 0 &&
+          !g.items.some((item) => item.id === i.id)
       );
       const pkgName = pkgItem?.description
         ? pkgItem.description.replace(/package/i, "").trim()
         : null;
       const insurerApprovedPackage = pkgItem !== undefined;
-      const firstItem = g.items[0];
       explanations = buildR4WrongExplanation({
         amount,
-        itemDescription: firstItem?.description,
+        itemDescriptions: g.items.map((i) => i.description),
         packageName: pkgName,
         insurerApprovedPackage,
       });
     } else if (g.ruleIds.includes("R4") && g.verdict === "questionable") {
-      const matchedReason = extracted.rejection.reasons.find((r) => {
-        if (r.category !== "non_payable") return false;
-        const categories = new Set(g.items.map((i) => i.category));
-        if (categories.has("admin")) {
-          return (
-            r.text.toLowerCase().includes("admin") ||
-            (r.source?.quote?.toLowerCase().includes("admin") ?? false)
-          );
-        }
-        return true;
-      });
-      const clauseCited = matchedReason?.clauseCited ?? null;
+      const clauseCited = matchedReason ? matchedReason.clauseCited : undefined;
       explanations = buildR4QuestionableExplanation(amount, g.items, clauseCited);
     } else if (g.ruleIds.includes("R1") || g.ruleIds.includes("R2")) {
-      const rawDesc = g.items[0]?.description?.trim();
-      let conditionNameEn: string;
-      let conditionNameHi: string;
-
-      if (rawDesc) {
-        if (/hypertension/i.test(rawDesc)) {
-          conditionNameEn = "hypertension";
-          conditionNameHi = "हाइपरटेंशन (उच्च रक्तचाप)";
-        } else {
-          conditionNameEn = rawDesc;
-          conditionNameHi = rawDesc;
-        }
-      } else {
-        conditionNameEn = "this condition";
-        conditionNameHi = "इस स्थिति";
-      }
+      const descriptions = g.items.flatMap((i) => i.description?.trim() || []);
+      const conditions =
+        descriptions.length === g.items.length
+          ? descriptions.map((description) =>
+              /hypertension/i.test(description)
+                ? { en: "hypertension", hi: "हाइपरटेंशन (उच्च रक्तचाप)" }
+                : { en: description, hi: description }
+            )
+          : null;
 
       explanations = buildPedExplanation({
         amount,
-        conditionNameEn,
-        conditionNameHi,
-        patientName: extracted.claim.patient.name ?? "the insured",
+        conditions,
+        patientName: extracted.claim.patient.name,
         waitingMonths: extracted.policy.pedWaitingMonths,
         coverStartDate: effectiveCoverStart,
         ruleIds: g.ruleIds,
       });
     } else if (g.deductionType === "room_rent_excess" && g.verdict === "valid") {
       const days = differenceInDays(effectiveAdmissionDate, extracted.claim.dischargeDate);
-      const firstItem = g.items[0];
-      const perDay = firstItem?.billed && days ? Math.round(firstItem.billed / days) : null;
+      const limit = extracted.policy.roomRentLimit;
+      const billed = g.items.length === 1 ? g.items[0]?.billed : null;
+      // The daily figures are only stated when they exactly explain this one deduction.
+      const figuresExplainDeduction =
+        billed && days && limit && billed % days === 0 && amount === billed - limit * days;
       explanations = buildRoomRentValidExplanation(
         amount,
-        extracted.policy.roomRentLimit,
-        perDay,
+        limit,
+        figuresExplainDeduction ? billed / days : null,
         days
       );
     } else {
-      explanations = buildUndecidedExplanation(amount, g.deductionType, g.items[0]?.description);
+      explanations = buildUndecidedExplanation(
+        amount,
+        g.deductionType,
+        g.items[0]?.description,
+        overrides?.insurerAskedForMissingDocument
+      );
     }
 
     return {
@@ -535,12 +540,12 @@ export const runRules: RulesEngine = (input: RulesEngineInput): RulesEngineResul
   // Assessment warnings
   const warnings: AssessmentWarning[] = [];
 
-  // 1. Full rejection with no line items
-  if (extracted.rejection.type === "full" && extracted.lineItems.length === 0) {
+  // 1. No line items, whatever the type of rejection
+  if (extracted.lineItems.length === 0) {
     warnings.push({
       code: "no_line_items",
-      messageEn: "The claim was fully rejected, but no line items were found in the bill.",
-      messageHi: "दावा पूरी तरह खारिज कर दिया गया था, लेकिन बिल में कोई मद नहीं मिली।",
+      messageEn: "No bill items were found in the documents, so the deductions could not be assessed.",
+      messageHi: "दस्तावेज़ों में बिल की कोई मद नहीं मिली, इसलिए कटौतियों का आकलन नहीं हो सका।",
     });
   }
 

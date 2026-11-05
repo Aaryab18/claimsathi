@@ -86,54 +86,61 @@ export function friendlyDeductionTypeHi(type: string | null | undefined): string
   }
 }
 
+function joinNames(names: string[], lastJoiner: string): string {
+  if (names.length < 2) return names[0] ?? "";
+  return names.slice(0, -1).join(", ") + lastJoiner + names[names.length - 1];
+}
+
+// An implant can be anything, so it is named from the bill, never assumed to be a stent.
+function billPhraseEn(item: LineItem): string {
+  if (item.category === "implant") {
+    const description = item.description?.trim();
+    return description ? `the bill for ${description}` : "the implant bill";
+  }
+  return `the ${friendlyCategoryEn(item.category)} bill`;
+}
+
+function billNameHi(item: LineItem): string {
+  if (item.category === "implant") {
+    return item.description?.trim() || friendlyCategoryHi(item.category);
+  }
+  return friendlyCategoryHi(item.category);
+}
+
 export function buildR3Explanation(
   items: LineItem[],
   totalAmount: number
 ): { en: string; hi: string } {
   if (items.length > 1) {
-    const enParts = items.map((i) => {
-      const cat = i.category === "pharmacy" ? "pharmacy" : i.category === "implant" ? "stent" : friendlyCategoryEn(i.category);
-      return `₹${formatRupees(i.deducted ?? 0)} from the ${cat} bill`;
-    });
-    const enBreakdown = enParts.slice(0, -1).join(", ") + " and " + enParts[enParts.length - 1];
-
-    const hiParts = items.map((i) => {
-      const cat = i.category === "pharmacy" ? "दवाइयों" : i.category === "implant" ? "स्टेंट" : friendlyCategoryHi(i.category);
-      return `${cat} के बिल से ₹${formatRupees(i.deducted ?? 0)}`;
-    });
-    const hiBreakdown = hiParts.slice(0, -1).join(", ") + " और " + hiParts[hiParts.length - 1];
+    const enBreakdown = joinNames(
+      items.map((i) => `₹${formatRupees(i.deducted ?? 0)} from ${billPhraseEn(i)}`),
+      " and "
+    );
+    const hiBreakdown = joinNames(
+      items.map((i) => `${billNameHi(i)} के बिल से ₹${formatRupees(i.deducted ?? 0)}`),
+      " और "
+    );
 
     // Determine subject based on actual categories
-    const cats = items.map((i) => i.category);
-    const hasPharmacy = cats.includes("pharmacy");
-    const hasImplant = cats.includes("implant");
-    const hasOnlyPharmacyAndImplant = cats.every((c) => c === "pharmacy" || c === "implant");
+    const distinctCats = [...new Set(items.map((i) => i.category).filter(Boolean))];
+    const enSubjects = distinctCats.map((c) => {
+      if (c === "pharmacy") return "medicines";
+      if (c === "implant") return "implants";
+      if (c === "consumable") return "consumables";
+      if (c === "diagnostic") return "diagnostic tests";
+      return "these items";
+    });
+    const enSubject = joinNames(enSubjects, " and ") || "these items";
+    const subjectEn = enSubject.charAt(0).toUpperCase() + enSubject.slice(1);
 
-    let subjectEn: string;
-    let subjectHi: string;
-    if (hasPharmacy && hasImplant && hasOnlyPharmacyAndImplant) {
-      subjectEn = "Medicines and a stent";
-      subjectHi = "दवाइयों और स्टेंट";
-    } else {
-      const distinctCats = [...new Set(cats.filter(Boolean))];
-      const enSubjects = distinctCats.map((c) => {
-        if (c === "pharmacy") return "Medicines";
-        if (c === "implant") return "Implants";
-        if (c === "consumable") return "Consumables";
-        if (c === "diagnostic") return "Diagnostic tests";
-        return "These items";
-      });
-      subjectEn = enSubjects.length > 1 ? enSubjects.slice(0, -1).join(", ") + " and " + enSubjects[enSubjects.length - 1] : enSubjects[0] ?? "These items";
-
-      const hiSubjects = distinctCats.map((c) => {
-        if (c === "pharmacy") return "दवाइयों";
-        if (c === "implant") return "इम्प्लांट";
-        if (c === "consumable") return "उपभोग्य सामग्री";
-        if (c === "diagnostic") return "जांच";
-        return "इन मदों";
-      });
-      subjectHi = hiSubjects.length > 1 ? hiSubjects.slice(0, -1).join(", ") + " और " + hiSubjects[hiSubjects.length - 1] : hiSubjects[0] ?? "इन मदों";
-    }
+    const hiSubjects = distinctCats.map((c) => {
+      if (c === "pharmacy") return "दवाइयों";
+      if (c === "implant") return "इम्प्लांट";
+      if (c === "consumable") return "उपभोग्य सामग्री";
+      if (c === "diagnostic") return "जांच";
+      return "इन मदों";
+    });
+    const subjectHi = joinNames(hiSubjects, " और ") || "इन मदों";
 
     const en = `The insurer cut ${enBreakdown}, ₹${formatRupees(totalAmount)} in total. It used the same proportion it applied because the room cost more than the policy limit. ${subjectEn} cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`;
     const hi = `बीमा कंपनी ने ${hiBreakdown}, यानी कुल ₹${formatRupees(totalAmount)} काटे। यह कटौती उसी अनुपात में की गई, जो कमरे का किराया पॉलिसी की सीमा से ज़्यादा होने के कारण लगाया गया था। मरीज़ किसी भी कमरे में रहे, ${subjectHi} की कीमत वही रहती है, इसलिए नियम R3 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।`;
@@ -142,44 +149,37 @@ export function buildR3Explanation(
 
   const item = items[0]!;
   const amount = item.deducted ?? 0;
-  const categoryEn = item.category === "pharmacy" ? "pharmacy" : item.category === "implant" ? "stent" : friendlyCategoryEn(item.category);
-  const categoryHi = item.category === "pharmacy" ? "दवाइयों" : item.category === "implant" ? "स्टेंट" : friendlyCategoryHi(item.category);
+  const categoryHi = billNameHi(item);
 
-  const en = `The insurer cut ₹${formatRupees(amount)} from the ${categoryEn} bill. It used the same proportion it applied because the room cost more than the policy limit. Medicines, consumables, implants and diagnostic tests cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`;
+  const en = `The insurer cut ₹${formatRupees(amount)} from ${billPhraseEn(item)}. It used the same proportion it applied because the room cost more than the policy limit. Medicines, consumables, implants and diagnostic tests cost the same whichever room the patient stays in, so rule R3 marks this cut as wrong. The legal reference for this rule has not been checked yet.`;
   const hi = `बीमा कंपनी ने ${categoryHi} के बिल से ₹${formatRupees(amount)} काटे। यह कटौती उसी अनुपात में की गई, जो कमरे का किराया पॉलिसी की सीमा से ज़्यादा होने के कारण लगाया गया था। कमरे की श्रेणी बदलने से इन वस्तुओं की कीमत नहीं बदलती, इसलिए नियम R3 इस कटौती को गलत मानता है। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।`;
   return { en, hi };
 }
 
 export function buildR4WrongExplanation(options: {
   amount: number;
-  itemDescription?: string | null;
+  itemDescriptions: (string | null)[];
   packageName?: string | null;
   insurerApprovedPackage?: boolean;
 }): { en: string; hi: string } {
-  const { amount, itemDescription, packageName, insurerApprovedPackage } = options;
+  const { amount, itemDescriptions, packageName, insurerApprovedPackage } = options;
 
-  let itemDescEn: string;
-  let itemDescHi: string;
+  const names = itemDescriptions.flatMap((description) => description?.trim() || []);
+  const allNamed = names.length > 0 && names.length === itemDescriptions.length;
+  const itemDescEn = allNamed ? joinNames(names, " and ") : "these charges";
+  const itemDescHi = allNamed ? joinNames(names, " और ") : "इन शुल्कों";
 
-  if (itemDescription) {
-    itemDescEn = itemDescription;
-    itemDescHi = itemDescription;
-  } else {
-    itemDescEn = "these charges";
-    itemDescHi = "इन शुल्कों";
-  }
-
-  const pkgEn = packageName ? `${packageName.toLowerCase()} package` : "package";
+  const pkgEn = packageName ? `${packageName} package` : "package";
   const pkgHi = packageName ? `${packageName} पैकेज` : "पैकेज";
 
   let pkgSentenceEn: string;
   let pkgSentenceHi: string;
 
   if (insurerApprovedPackage) {
-    pkgSentenceEn = `The hospital bill shows these ${itemDescEn === "consumables" ? "consumables" : "items"} as part of the ${pkgEn}, and the insurer approved that package,`;
+    pkgSentenceEn = `The hospital bill shows these items as part of the ${pkgEn}, and the insurer approved that package,`;
     pkgSentenceHi = `अस्पताल के बिल में यह सामग्री ${pkgHi} का हिस्सा दिखाई गई है, और बीमा कंपनी ने वह पैकेज मंज़ूर किया है,`;
   } else {
-    pkgSentenceEn = `The hospital bill shows these ${itemDescEn === "consumables" ? "consumables" : "items"} as part of a package,`;
+    pkgSentenceEn = `The hospital bill shows these items as part of a package,`;
     pkgSentenceHi = `अस्पताल के बिल में यह सामग्री पैकेज का हिस्सा दिखाई गई है,`;
   }
 
@@ -191,7 +191,8 @@ export function buildR4WrongExplanation(options: {
 export function buildR4QuestionableExplanation(
   amount: number,
   items: LineItem[],
-  clauseCited?: string | null
+  // undefined means no rejection reason was matched, so nothing can be said about a clause.
+  clauseCited: string | null | undefined
 ): { en: string; hi: string } {
   let descEn: string;
   let descHi: string;
@@ -212,24 +213,43 @@ export function buildR4QuestionableExplanation(
     }
   }
 
-  const clauseStrEn = clauseCited ? ` citing ${clauseCited}` : " without citing a policy clause";
-  const clauseStrHi = clauseCited ? ` ${clauseCited} का हवाला देते हुए` : " पॉलिसी की कोई धारा बताए बिना";
+  let clauseStrEn = "";
+  let clauseStrHi = "";
+  if (clauseCited) {
+    clauseStrEn = ` citing ${clauseCited}`;
+    clauseStrHi = ` ${clauseCited} का हवाला देते हुए`;
+  } else if (clauseCited === null) {
+    clauseStrEn = " without citing a policy clause";
+    clauseStrHi = " पॉलिसी की कोई धारा बताए बिना";
+  }
 
-  const en = `The insurer disallowed ₹${formatRupees(amount)} of ${descEn}${clauseStrEn}. The documents do not show clearly what these charges cover or whether they belong to the package, so rule R4 marks this as questionable. It is worth asking the insurer and the hospital for a breakdown. The legal reference for this rule has not been checked yet.`;
-  const hi = `बीमा कंपनी ने${clauseStrHi} ₹${formatRupees(amount)} के ${descHi} काट दिए। दस्तावेज़ों से साफ़ नहीं होता कि इन शुल्कों में क्या शामिल है या वे पैकेज का हिस्सा हैं या नहीं, इसलिए नियम R4 इसे संदिग्ध मानता है। बीमा कंपनी और अस्पताल से इसका पूरा ब्योरा माँगना उचित रहेगा। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।`;
+  // The package question is only unclear if the documents have not already answered it.
+  const knownOutsidePackage = items.length > 0 && items.every((i) => i.partOfPackage === false);
+  const unclearEn = knownOutsidePackage
+    ? "what these charges cover"
+    : "what these charges cover or whether they belong to the package";
+  const unclearHi = knownOutsidePackage
+    ? "इन शुल्कों में क्या शामिल है"
+    : "इन शुल्कों में क्या शामिल है या वे पैकेज का हिस्सा हैं या नहीं";
+
+  const en = `The insurer disallowed ₹${formatRupees(amount)} of ${descEn}${clauseStrEn}. The documents do not show clearly ${unclearEn}, so rule R4 marks this as questionable. It is worth asking the insurer and the hospital for a breakdown. The legal reference for this rule has not been checked yet.`;
+  const hi = `बीमा कंपनी ने${clauseStrHi} ₹${formatRupees(amount)} के ${descHi} काट दिए। दस्तावेज़ों से साफ़ नहीं होता कि ${unclearHi}, इसलिए नियम R4 इसे संदिग्ध मानता है। बीमा कंपनी और अस्पताल से इसका पूरा ब्योरा माँगना उचित रहेगा। इस नियम के कानूनी संदर्भ की जाँच अभी बाकी है।`;
   return { en, hi };
 }
 
 export function buildPedExplanation(options: {
   amount: number;
-  conditionNameEn: string;
-  conditionNameHi: string;
-  patientName: string;
+  conditions: { en: string; hi: string }[] | null;
+  patientName: string | null;
   waitingMonths: number | null;
   coverStartDate: string | null;
   ruleIds: string[];
 }): { en: string; hi: string } {
-  const { amount, conditionNameEn, conditionNameHi, patientName, waitingMonths, coverStartDate, ruleIds } = options;
+  const { amount, conditions, patientName, waitingMonths, coverStartDate, ruleIds } = options;
+  const conditionNameEn = conditions ? joinNames(conditions.map((c) => c.en), " and ") : "this condition";
+  const conditionNameHi = conditions ? joinNames(conditions.map((c) => c.hi), " और ") : "इस स्थिति";
+  const patientNameEn = patientName ?? "the insured";
+  const patientNameHi = patientName ?? "बीमित व्यक्ति";
   const isR1 = ruleIds.includes("R1");
   const isR2 = ruleIds.includes("R2");
 
@@ -238,8 +258,8 @@ export function buildPedExplanation(options: {
   const rulesTextHi = isR1 && isR2 ? "नियम R1 और R2 इस कटौती को गलत मानते हैं" : isR1 ? "नियम R1 इस कटौती को गलत मानता है" : "नियम R2 इस कटौती को गलत मानता है";
 
   if (isR1 && isR2 && waitingMonths) {
-    const en = `The insurer deducted ₹${formatRupees(amount)} because it treated ${conditionNameEn} as a pre-existing disease. The policy's waiting period is ${waitingMonths} months, and ${patientName} has had continuous cover since ${formattedDate.en}, more than ${waitingMonths} months before this admission. The waiting period had already ended, so ${rulesTextEn} this deduction as wrong. The legal reference for these rules has not been checked yet.`;
-    const hi = `बीमा कंपनी ने ${conditionNameHi} को पहले से मौजूद बीमारी मानकर ₹${formatRupees(amount)} काटे। पॉलिसी में प्रतीक्षा अवधि ${waitingMonths} महीने की है, और ${patientName} का बीमा ${formattedDate.hi} से लगातार चल रहा है, जो इस भर्ती से ${waitingMonths} महीने से भी ज़्यादा पहले की बात है। प्रतीक्षा अवधि पहले ही पूरी हो चुकी थी, इसलिए ${rulesTextHi}। इन नियमों के कानूनी संदर्भ की जाँच अभी बाकी है।`;
+    const en = `The insurer deducted ₹${formatRupees(amount)} because it treated ${conditionNameEn} as a pre-existing disease. The policy's waiting period is ${waitingMonths} months, and ${patientNameEn} has had continuous cover since ${formattedDate.en}, more than ${waitingMonths} months before this admission. The waiting period had already ended, so ${rulesTextEn} this deduction as wrong. The legal reference for these rules has not been checked yet.`;
+    const hi = `बीमा कंपनी ने ${conditionNameHi} को पहले से मौजूद बीमारी मानकर ₹${formatRupees(amount)} काटे। पॉलिसी में प्रतीक्षा अवधि ${waitingMonths} महीने की है, और ${patientNameHi} का बीमा ${formattedDate.hi} से लगातार चल रहा है, जो इस भर्ती से ${waitingMonths} महीने से भी ज़्यादा पहले की बात है। प्रतीक्षा अवधि पहले ही पूरी हो चुकी थी, इसलिए ${rulesTextHi}। इन नियमों के कानूनी संदर्भ की जाँच अभी बाकी है।`;
     return { en, hi };
   }
 
@@ -276,20 +296,32 @@ export function buildRoomRentValidExplanation(
 export function buildUndecidedExplanation(
   amount: number,
   deductionType: string,
-  itemDescription?: string | null
+  itemDescription?: string | null,
+  insurerAskedForMissingDocument?: boolean
 ): { en: string; hi: string } {
   const typeEn = friendlyDeductionTypeEn(deductionType);
   const typeHi = friendlyDeductionTypeHi(deductionType);
 
+  // This records what the person confirmed. It changes no verdict, because no agreed rule covers it yet.
+  let confirmedEn = "";
+  let confirmedHi = "";
+  if (deductionType === "documentation" && insurerAskedForMissingDocument === true) {
+    confirmedEn = " You confirmed that the insurer asked you for the missing document.";
+    confirmedHi = " आपने पुष्टि की है कि बीमा कंपनी ने आपसे छूटा हुआ दस्तावेज़ माँगा था।";
+  } else if (deductionType === "documentation" && insurerAskedForMissingDocument === false) {
+    confirmedEn = " You confirmed that the insurer did not ask you for the missing document.";
+    confirmedHi = " आपने पुष्टि की है कि बीमा कंपनी ने आपसे छूटा हुआ दस्तावेज़ नहीं माँगा।";
+  }
+
   if (amount === 0) {
     const descEn = itemDescription ? ` for ${itemDescription}` : "";
     const descHi = itemDescription ? ` (${itemDescription})` : "";
-    const en = `The insurer made a deduction under ${typeEn}${descEn}, but the deduction amount was not specified in the documents. No specific rule could determine the validity of this deduction based on the available documents, so it is marked as questionable. Further review is recommended. The legal reference for this deduction has not been checked yet.`;
-    const hi = `बीमा कंपनी ने ${typeHi} के तहत कटौती की${descHi}, लेकिन दस्तावेज़ों में कटौती की राशि निर्दिष्ट नहीं है। उपलब्ध दस्तावेज़ों के आधार पर कोई विशिष्ट नियम इस कटौती की वैधता तय नहीं कर सका, इसलिए इसे संदिग्ध माना गया है। आगे समीक्षा की सलाह दी जाती है। इस कटौती के कानूनी संदर्भ की जाँच अभी बाकी है।`;
+    const en = `The insurer made a deduction under ${typeEn}${descEn}, but the deduction amount was not specified in the documents.${confirmedEn} No specific rule could determine the validity of this deduction based on the available documents, so it is marked as questionable. Further review is recommended. The legal reference for this deduction has not been checked yet.`;
+    const hi = `बीमा कंपनी ने ${typeHi} के तहत कटौती की${descHi}, लेकिन दस्तावेज़ों में कटौती की राशि निर्दिष्ट नहीं है।${confirmedHi} उपलब्ध दस्तावेज़ों के आधार पर कोई विशिष्ट नियम इस कटौती की वैधता तय नहीं कर सका, इसलिए इसे संदिग्ध माना गया है। आगे समीक्षा की सलाह दी जाती है। इस कटौती के कानूनी संदर्भ की जाँच अभी बाकी है।`;
     return { en, hi };
   }
 
-  const en = `The insurer deducted ₹${formatRupees(amount)} under ${typeEn}. No specific rule could determine the validity of this deduction based on the available documents, so it is marked as questionable. Further review is recommended. The legal reference for this deduction has not been checked yet.`;
-  const hi = `बीमा कंपनी ने ${typeHi} के तहत ₹${formatRupees(amount)} काटे। उपलब्ध दस्तावेज़ों के आधार पर कोई विशिष्ट नियम इस कटौती की वैधता तय नहीं कर सका, इसलिए इसे संदिग्ध माना गया है। आगे समीक्षा की सलाह दी जाती है। इस कटौती के कानूनी संदर्भ की जाँच अभी बाकी है।`;
+  const en = `The insurer deducted ₹${formatRupees(amount)} under ${typeEn}.${confirmedEn} No specific rule could determine the validity of this deduction based on the available documents, so it is marked as questionable. Further review is recommended. The legal reference for this deduction has not been checked yet.`;
+  const hi = `बीमा कंपनी ने ${typeHi} के तहत ₹${formatRupees(amount)} काटे।${confirmedHi} उपलब्ध दस्तावेज़ों के आधार पर कोई विशिष्ट नियम इस कटौती की वैधता तय नहीं कर सका, इसलिए इसे संदिग्ध माना गया है। आगे समीक्षा की सलाह दी जाती है। इस कटौती के कानूनी संदर्भ की जाँच अभी बाकी है।`;
   return { en, hi };
 }
