@@ -48,6 +48,7 @@ export interface LetterText {
   patientAndTreatment: (patient: string, admitted: string, discharged: string, diagnosis: string | null) => string;
   decisionDate: (date: string) => string;
   complaintDate: string;
+  referenceNumber: (value: string) => string;
   insurerReply: string;
   natureHeading: string;
   natureIntro: (approved: string, claimed: string) => string;
@@ -118,6 +119,7 @@ export const LETTER_TEXT: Record<TranslatedLanguage, LetterText> = {
       `5. मरीज़ और उपचार: ${patient}, भर्ती ${admitted}, छुट्टी ${discharged}${diagnosis ? `, ${diagnosis}` : ""}`,
     decisionDate: (date) => `6. बीमा कंपनी के निर्णय की तारीख: ${date}`,
     complaintDate: "7. बीमा कंपनी को लिखित शिकायत भेजने की तारीख: [तारीख]",
+    referenceNumber: (value) => `   बीमा कंपनी की शिकायत संदर्भ संख्या: ${value}`,
     insurerReply: "8. बीमा कंपनी का उत्तर: [(तारीख) को अस्वीकार / (तारीख) का उत्तर स्वीकार्य नहीं / एक महीने बाद भी कोई उत्तर नहीं]",
     natureHeading: "9. शिकायत का विवरण:",
     natureIntro: (approved, claimed) => `बीमा कंपनी ने ${claimed} के दावे में से ${approved} स्वीकृत किए। मैं इन कटौतियों पर आपत्ति करता/करती हूं:`,
@@ -186,6 +188,7 @@ export const LETTER_TEXT: Record<TranslatedLanguage, LetterText> = {
       `5. ರೋಗಿ ಮತ್ತು ಚಿಕಿತ್ಸೆ: ${patient}, ದಾಖಲಾತಿ ${admitted}, ಬಿಡುಗಡೆ ${discharged}${diagnosis ? `, ${diagnosis}` : ""}`,
     decisionDate: (date) => `6. ವಿಮಾ ಕಂಪನಿಯ ನಿರ್ಧಾರದ ದಿನಾಂಕ: ${date}`,
     complaintDate: "7. ವಿಮಾ ಕಂಪನಿಗೆ ಲಿಖಿತ ದೂರು ಕಳುಹಿಸಿದ ದಿನಾಂಕ: [ದಿನಾಂಕ]",
+    referenceNumber: (value) => `   ವಿಮಾ ಕಂಪನಿಯ ದೂರಿನ ಉಲ್ಲೇಖ ಸಂಖ್ಯೆ: ${value}`,
     insurerReply: "8. ವಿಮಾ ಕಂಪನಿಯ ಉತ್ತರ: [(ದಿನಾಂಕ) ರಂದು ತಿರಸ್ಕೃತ / (ದಿನಾಂಕ) ರ ಉತ್ತರ ಒಪ್ಪಿಗೆಯಾಗಿಲ್ಲ / ಒಂದು ತಿಂಗಳ ನಂತರವೂ ಉತ್ತರವಿಲ್ಲ]",
     natureHeading: "9. ದೂರಿನ ವಿವರ:",
     natureIntro: (approved, claimed) => `ವಿಮಾ ಕಂಪನಿ ${claimed} ಕ್ಲೈಮ್‌ನಲ್ಲಿ ${approved} ಅನುಮೋದಿಸಿದೆ. ಈ ಕಡಿತಗಳನ್ನು ನಾನು ಆಕ್ಷೇಪಿಸುತ್ತೇನೆ:`,

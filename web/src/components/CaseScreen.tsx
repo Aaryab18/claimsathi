@@ -13,7 +13,9 @@ import { DeadlinesSection } from "./DeadlinesSection";
 import { CaseStrengthCard } from "./CaseStrengthCard";
 import { CoverTimeline, DeductionsChart, MoneyFlowChart } from "./CaseCharts";
 import { CaseNav, CASE_SECTIONS, type CaseSection } from "./CaseNav";
+import { ContactInsurer } from "./ContactInsurer";
 import { EvidenceList } from "./EvidenceList";
+import { readGrievanceReference, saveGrievanceReference } from "../lib/grievance-reference";
 import { recordCase } from "../lib/helpdesk";
 import { LettersSection } from "./LettersSection";
 import { NextSteps } from "./NextSteps";
@@ -33,6 +35,7 @@ interface CaseScreenProps {
 export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
   const { token = "sample", section } = useParams<{ token: string; section: string }>();
   const navigate = useNavigate();
+  const [grievanceReference, setGrievanceReference] = useState(() => readGrievanceReference(token));
   const activeSection: CaseSection = CASE_SECTIONS.includes(section as CaseSection) ? (section as CaseSection) : "overview";
   const t = translations[language];
 
@@ -323,7 +326,27 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
             </div>
 
             <div data-testid="page-letters" className={pageClass("letters")}>
-              <LettersSection caseToken={caseResult.caseToken} language={language} isOffline={isOffline} />
+              <LettersSection
+                caseToken={caseResult.caseToken}
+                language={language}
+                isOffline={isOffline}
+                grievanceReference={grievanceReference}
+              />
+            </div>
+
+            <div data-testid="page-contact" className={pageClass("contact")}>
+              <ContactInsurer
+                caseToken={caseResult.caseToken}
+                insurer={caseResult.extracted.claim.insurer}
+                claimId={caseResult.extracted.claim.claimId}
+                language={language}
+                isOffline={isOffline}
+                reference={grievanceReference}
+                onReferenceChange={(value) => {
+                  setGrievanceReference(value);
+                  saveGrievanceReference(token, value);
+                }}
+              />
             </div>
 
             <EvidenceModal

@@ -17,7 +17,7 @@ These results come from made-up documents only, and from a browser pane that was
 
 Last re-tested on the live site after commit `9bc810f`. Re-run these tests after any later deploy.
 
-## The 27 tests
+## The 28 tests
 
 ### 1. Language selector
 - **Do:** click हिंदी, ಕನ್ನಡ and English.
@@ -156,6 +156,16 @@ Last re-tested on the live site after commit `9bc810f`. Re-run these tests after
 - **Do:** on **Letters**, choose English, हिंदी or ಕನ್ನಡ, then draft each letter.
 - **Expect:** the letter is in that language, with the case's own claim number and amounts. The insurer's quotes and legal names stay in English. A questionable item is asked about, not called wrong. The choice starts in the site's language.
 - **Status:** all three languages Tested live through the API, and Kannada Tested live on the website. Automated for both letters in Hindi and Kannada. **Manual:** a Hindi and a Kannada reader must check the wording before anyone sends one.
+
+### 28. Contact your insurer
+- **Do:** open **Contact insurer** on a case. Click **Show what to say** in each language, type a complaint reference number, then draft the Ombudsman complaint on **Letters**.
+- **Expect:**
+  - For HDFC ERGO, Niva Bupa, New India Assurance, Bajaj General or Tata AIG: a **Call** button with the number from that insurer's own grievance page.
+  - For any other insurer, including the sample's made-up one: no number, and a note to use the number on the policy.
+  - The script has the case's own numbers and every disputed item.
+  - The reference number appears in the Ombudsman complaint.
+  - The IRDAI Bima Bharosa and Ombudsman links open their complaint forms.
+- **Status:** Automated, and the page Tested locally at phone and desktop width in English and Kannada. **Manual:** tapping **Call** on a real phone, the email button with a real email app, and a Hindi and Kannada reader checking the script.
 
 ## R3 and ICU charges
 

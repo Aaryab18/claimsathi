@@ -137,3 +137,36 @@ describe("letters in Hindi and Kannada", () => {
     expect(buildLetter(result, "grievance", "2026-11-05")).toBe(buildLetter(result, "grievance", "2026-11-05", "en"));
   });
 });
+
+describe("the call script", () => {
+  for (const language of ["en", "hi", "kn"] as const) {
+    const script = buildLetter(result, "call_script", "2026-11-05", language);
+
+    it(`gives the ${language} script the case's own numbers and every disputed item`, () => {
+      expect(script).toContain(result.extracted.claim.policyNumber!);
+      expect(script).toContain(result.extracted.claim.claimId!);
+      for (const finding of result.findings.filter(({ verdict }) => verdict !== "valid")) {
+        expect(script).toContain(`Rs. ${finding.amount.toLocaleString("en-IN")}`);
+      }
+      expect(script).toContain("OTP");
+      expect(script).not.toContain("undefined");
+    });
+  }
+
+  it("leaves out the valid deduction", () => {
+    const valid = result.findings.find(({ verdict }) => verdict === "valid")!;
+    expect(buildLetter(result, "call_script", "2026-11-05")).not.toContain(`Rs. ${valid.amount.toLocaleString("en-IN")}.`);
+  });
+});
+
+describe("the complaint reference number", () => {
+  it("goes into the Ombudsman complaint in each language when given", () => {
+    expect(buildLetter(result, "ombudsman", "2026-11-05", "en", "GRV-12345")).toContain("The insurer's complaint reference number: GRV-12345");
+    expect(buildLetter(result, "ombudsman", "2026-11-05", "hi", "GRV-12345")).toContain("GRV-12345");
+    expect(buildLetter(result, "ombudsman", "2026-11-05", "kn", "GRV-12345")).toContain("GRV-12345");
+  });
+
+  it("is left out when not given", () => {
+    expect(buildLetter(result, "ombudsman", "2026-11-05")).not.toContain("reference number:");
+  });
+});

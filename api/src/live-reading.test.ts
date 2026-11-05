@@ -449,6 +449,39 @@ describe("appeal letters", () => {
     expect(body.text).not.toContain("1 March 2019");
   });
 
+  it("writes a call script in the chosen language", async () => {
+    const { app, token } = await readyCase();
+
+    const { body } = await request(app)
+      .post(lettersPath(token))
+      .send({ letterType: "call_script", language: "hi" })
+      .expect(200);
+
+    expect(body.letterType).toBe("call_script");
+    expect(body.text).toContain("कॉल पर क्या कहें");
+    expect(body.text).toContain("Rs. 71,400");
+  });
+
+  it("puts the insurer's complaint reference into the Ombudsman complaint", async () => {
+    const { app, token } = await readyCase();
+
+    const { body } = await request(app)
+      .post(lettersPath(token))
+      .send({ letterType: "ombudsman", grievanceReference: "  GRV-889  " })
+      .expect(200);
+
+    expect(body.text).toContain("The insurer's complaint reference number: GRV-889");
+  });
+
+  it("refuses a reference number that is too long", async () => {
+    const { app, token } = await readyCase();
+
+    await request(app)
+      .post(lettersPath(token))
+      .send({ letterType: "ombudsman", grievanceReference: "x".repeat(61) })
+      .expect(400);
+  });
+
   it("refuses an unknown letter type", async () => {
     const { app, token } = await readyCase();
 

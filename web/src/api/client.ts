@@ -131,12 +131,13 @@ export async function createLetter(
   token: string,
   letterType: LetterType,
   language: LetterLanguage,
+  grievanceReference?: string,
 ): Promise<CreateLetterResponse> {
   const path = API_ROUTES.createLetter.path.replace(":token", encodeURIComponent(token));
   const response = await fetch(`${getBaseUrl()}${path}`, {
     method: API_ROUTES.createLetter.method,
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ letterType, language }),
+    body: JSON.stringify({ letterType, language, grievanceReference: grievanceReference?.trim() || undefined }),
   });
   if (!response.ok) {
     throw new Error(`Failed to create letter: ${response.status}`);

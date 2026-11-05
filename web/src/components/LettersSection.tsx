@@ -9,6 +9,7 @@ interface LettersSectionProps {
   caseToken: string;
   language: Language;
   isOffline: boolean;
+  grievanceReference: string;
 }
 
 function printLetter(text: string): void {
@@ -22,7 +23,7 @@ function printLetter(text: string): void {
   printWindow.print();
 }
 
-export function LettersSection({ caseToken, language, isOffline }: LettersSectionProps) {
+export function LettersSection({ caseToken, language, isOffline, grievanceReference }: LettersSectionProps) {
   const t = translations[language];
   const [letterType, setLetterType] = useState<LetterType | null>(null);
   // Follows the page's language until the person picks another one for the letter.
@@ -46,7 +47,7 @@ export function LettersSection({ caseToken, language, isOffline }: LettersSectio
     setIsLoading(true);
     setError(null);
     try {
-      const letter = await createLetter(caseToken, type, lang);
+      const letter = await createLetter(caseToken, type, lang, type === "ombudsman" ? grievanceReference : undefined);
       setLetterType(type);
       setText(letter.text);
       setCopied(false);

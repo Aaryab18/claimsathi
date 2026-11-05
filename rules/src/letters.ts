@@ -1,4 +1,5 @@
 import type { CaseResult, Finding, LetterLanguage, LetterType } from "@claimsathi/contracts";
+import { buildCallScript } from "./call-script.js";
 import { LETTER_TEXT, type LetterText } from "./letter-text.js";
 
 const rupees = (amount: number) => `Rs. ${amount.toLocaleString("en-IN")}`;
@@ -104,7 +105,7 @@ function grievanceLetter(result: CaseResult, today: string): string {
   ].join("\n");
 }
 
-function ombudsmanComplaint(result: CaseResult, today: string): string {
+function ombudsmanComplaint(result: CaseResult, today: string, reference: string | undefined): string {
   const { claim, rejection } = result.extracted;
   const { recoverableStrong, questionable } = result.totals;
 
@@ -122,6 +123,7 @@ function ombudsmanComplaint(result: CaseResult, today: string): string {
     `5. Patient and treatment: ${claim.patient.name ?? "[patient name]"}, admitted ${formatDate(claim.admissionDate)}, discharged ${formatDate(claim.dischargeDate)}${claim.diagnosis ? `, ${claim.diagnosis}` : ""}`,
     `6. Date of the insurer's decision: ${formatDate(rejection.letterDate)}`,
     "7. Date I sent my written complaint to the insurer: [date]",
+    ...(reference ? [`   The insurer's complaint reference number: ${reference}`] : []),
     "8. The insurer's reply: [rejected on (date) / reply not acceptable, dated (date) / no reply after one month]",
     "",
     "9. Nature of the complaint:",
@@ -218,7 +220,7 @@ function translatedGrievance(result: CaseResult, today: string, text: LetterText
   ].join("\n");
 }
 
-function translatedOmbudsman(result: CaseResult, today: string, text: LetterText): string {
+function translatedOmbudsman(result: CaseResult, today: string, text: LetterText, reference: string | undefined): string {
   const { claim, rejection } = result.extracted;
   const { recoverableStrong, questionable } = result.totals;
   return [
@@ -235,6 +237,7 @@ function translatedOmbudsman(result: CaseResult, today: string, text: LetterText
     text.patientAndTreatment(claim.patient.name ?? text.patientPlaceholder, formatLocalDate(claim.admissionDate, text), formatLocalDate(claim.dischargeDate, text), claim.diagnosis),
     text.decisionDate(formatLocalDate(rejection.letterDate, text)),
     text.complaintDate,
+    ...(reference ? [text.referenceNumber(reference)] : []),
     text.insurerReply,
     "",
     text.natureHeading,
@@ -257,10 +260,19 @@ function translatedOmbudsman(result: CaseResult, today: string, text: LetterText
 }
 
 // Written from the rules' findings with no AI call, so a letter can't state anything the rules didn't decide.
-export function buildLetter(result: CaseResult, letterType: LetterType, today: string, language: LetterLanguage = "en"): string {
+export function buildLetter(
+  result: CaseResult,
+  letterType: LetterType,
+  today: string,
+  language: LetterLanguage = "en",
+  grievanceReference?: string,
+): string {
+  if (letterType === "call_script") return buildCallScript(result, language);
   if (language === "en") {
-    return letterType === "grievance" ? grievanceLetter(result, today) : ombudsmanComplaint(result, today);
+    return letterType === "grievance" ? grievanceLetter(result, today) : ombudsmanComplaint(result, today, grievanceReference);
   }
   const text = LETTER_TEXT[language];
-  return letterType === "grievance" ? translatedGrievance(result, today, text) : translatedOmbudsman(result, today, text);
+  return letterType === "grievance"
+    ? translatedGrievance(result, today, text)
+    : translatedOmbudsman(result, today, text, grievanceReference);
 }

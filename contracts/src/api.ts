@@ -68,7 +68,8 @@ export const ApplyFactsResponseSchema = CaseResultSchema;
 export type ApplyFactsResponse = z.infer<typeof ApplyFactsResponseSchema>;
 
 // POST /cases/:token/letters
-export const LetterTypeSchema = z.enum(["grievance", "ombudsman"]);
+// call_script is what to say on the phone to the insurer, built from the same findings as the letters.
+export const LetterTypeSchema = z.enum(["grievance", "ombudsman", "call_script"]);
 export type LetterType = z.infer<typeof LetterTypeSchema>;
 
 export const LetterLanguageSchema = z.enum(["en", "hi", "kn"]);
@@ -77,6 +78,8 @@ export type LetterLanguage = z.infer<typeof LetterLanguageSchema>;
 export const CreateLetterRequestSchema = z.object({
   letterType: LetterTypeSchema,
   language: LetterLanguageSchema.default("en"),
+  // The number the insurer gave when the person complained, so the Ombudsman complaint can quote it.
+  grievanceReference: z.string().trim().min(1).max(60).optional(),
 });
 export type CreateLetterRequest = z.infer<typeof CreateLetterRequestSchema>;
 
