@@ -130,5 +130,6 @@ export const sampleCaseResult: CaseResult = {
     questionable: 7800,
     validDeductions: 16800,
   },
+  warnings: [],
   resultSource: "saved_sample",
 };
