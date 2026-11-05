@@ -132,7 +132,7 @@ export const translations: Record<Language, Translations> = {
     regulationTitle: "Regulation & legal reference",
     sourceCheckPending: "Source check pending",
     sourceCheckPendingNotice:
-      "Our legal research team is currently verifying the exact regulatory circular for this rule. We do not present unverified clauses as established law.",
+      "We are still checking the official source for this rule. We do not present unverified clauses as established law.",
     quoteVerificationPending:
       "Original document quote verification in progress",
     deadlinesTitle: "Important dispute deadlines",
@@ -140,7 +140,7 @@ export const translations: Record<Language, Translations> = {
       "Key milestones to submit your grievance or approach the ombudsman.",
     datePending: "Date pending",
     deadlineVerificationPending:
-      "Statutory deadline verification by our legal team is in progress.",
+      "We are still checking the official source for this deadline.",
     verdictLabels: {
       wrong: "Likely wrongly denied",
       questionable: "Questionable",
@@ -250,7 +250,7 @@ export const translations: Record<Language, Translations> = {
     regulationTitle: "नियम एवं कानूनी संदर्भ",
     sourceCheckPending: "स्रोत सत्यापन बाकी",
     sourceCheckPendingNotice:
-      "हमारी कानूनी टीम इस नियम के सटीक विनियामक परिपत्र का सत्यापन कर रही है। असत्यापित नियमों को हम वास्तविक कानून के रूप में प्रस्तुत नहीं करते हैं।",
+      "हम अभी भी इस नियम के आधिकारिक स्रोत की जांच कर रहे हैं। असत्यापित नियमों को हम वास्तविक कानून के रूप में प्रस्तुत नहीं करते हैं।",
     quoteVerificationPending:
       "मूल दस्तावेज़ से उद्धरण का सत्यापन जारी है",
     deadlinesTitle: "महत्वपूर्ण समय-सीमाएं",
@@ -258,7 +258,7 @@ export const translations: Record<Language, Translations> = {
       "शिकायत दर्ज करने अथवा लोकपाल (ओम्बड्समैन) के पास जाने की प्रमुख समय-सीमाएं।",
     datePending: "तारीख लंबित",
     deadlineVerificationPending:
-      "हमारी कानूनी टीम द्वारा समय-सीमा का सत्यापन जारी है।",
+      "हम अभी भी इस समय-सीमा के आधिकारिक स्रोत की जांच कर रहे हैं।",
     verdictLabels: {
       wrong: "संभावित रूप से गलत कटौती",
       questionable: "संदेहास्पद",
