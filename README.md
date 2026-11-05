@@ -17,10 +17,12 @@ A family gets a letter saying part of a hospital claim won't be paid. It cites c
 | **Upload** | Rejection letter, policy and bill, as PDFs or photos, plus a one-click sample case |
 | **Decoder** | Plain explanations in English and Hindi |
 | **Line-item audit** | Every deduction marked likely wrong, questionable or valid, with the reason |
-| **Evidence view** | The insurer's words, the policy clause and the legal reference side by side, with a Verified Quote check on PDFs |
+| **Case pages** | Overview, Breakdown, Evidence, Check facts, Your plan and Letters, as a sidebar on desktop and tabs on phones |
+| **Evidence view** | The insurer's words, the policy clause and the official source side by side, with its status, a link to the official PDF, and a Verified Quote check on PDFs |
+| **Rules and sources** | Every rule, what it checks, its status and a link to the official source, in all three languages |
 | **Recoverable meter** | One headline figure, and how the deducted money splits |
 | **Confirm the facts** | Correct a date or category, and the rules recalculate instantly with no AI call |
-| **Appeal letters** | An editable complaint to the insurer and an Ombudsman complaint with an annexure checklist, with Print or Save as PDF |
+| **Appeal letters** | An editable complaint to the insurer and an Ombudsman complaint with an annexure checklist, in English, Hindi or Kannada, with Print or Save as PDF |
 | **Deadlines** | Ombudsman dates from the official rules, and a calendar file with reminders |
 | **Charts** | Where the claim went, the biggest cuts, and the cover timeline against the hospital stay |
 | **Printable report** | Save the result as a PDF, with strength of grounds on each deduction |
@@ -48,20 +50,20 @@ See [the architecture](docs/ARCHITECTURE.md).
 | R1 | Cover of 60 months or more | **Verified:** IRDAI Master Circular on Health Insurance, 29.05.2024, clause 13 |
 | R2 | Pre-existing disease waiting period, from the policy's own figure | Uses the policy's wording |
 | R3 | Proportionate cuts on pharmacy, consumables, implants, diagnostics and ICU charges | **Source found, status open:** IRDAI circular 151/06/2020, paragraphs 4, 5 and 7. We haven't confirmed whether the May 2024 Master Circular kept it |
-| R4 | Non-payable items that belong to a package | Unverified |
+| R4 | Non-payable items that belong to a package | **Source found, status open:** IRDAI Master Circular on Standardization 193/07/2020, Annexure I, Lists II to IV. Same open 2024 question as R3 |
 | R5 | Rejection for documents the insurer never asked for | **Verified text:** 2024 Master Circular, clause 17(c), on insurers collecting documents from hospitals. Whether it covers every missing document is a judgment, so R5 needs the person's confirmation |
 | R6 | Co-pay and sub-limit arithmetic | Arithmetic on the policy's own figures |
 | R7 | Whether a cited clause was found in the policy | **Verified:** 2024 Master Circular, clause 17(b) |
 | R8 | Ombudsman deadlines | **Verified:** Insurance Ombudsman Rules 2017, Rule 14, as updated on 9.11.2023 |
 
-The app marks unverified references as unverified on screen.
+The app shows each source's status on screen, with a link to the official PDF.
 
 ## Limits
 
 - It has been tested on made-up documents only, so we don't have an accuracy figure.
 - It runs on free plans. The API sleeps when idle, and Gemini can be busy. Free-tier data may be used by Google, which is why real documents aren't allowed in this demo.
 - Uploads are deleted from our database within 24 hours, but that doesn't cover what Google does with them.
-- Letters are drafts in English. Check every fact before sending.
+- Letters are drafts. The Hindi and Kannada versions still need a native reader's review. Check every fact before sending.
 - Email, SMS and WhatsApp reminders aren't built. The calendar file covers reminders for now.
 
 ## Tech

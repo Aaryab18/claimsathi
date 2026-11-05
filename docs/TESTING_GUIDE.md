@@ -15,9 +15,9 @@ Each correction stays saved on its case, so go back to the home page and click *
 
 These results come from made-up documents only, and from a browser pane that was hidden while testing. A hidden pane pauses animation and smooth scrolling, so those can't be judged there.
 
-Last re-tested on the live site after commit `5914dc6`. Re-run these tests after any later deploy.
+Last re-tested on the live site after commit `9bc810f`. Re-run these tests after any later deploy.
 
-## The 23 tests
+## The 27 tests
 
 ### 1. Language selector
 - **Do:** click हिंदी, ಕನ್ನಡ and English.
@@ -39,7 +39,7 @@ Last re-tested on the live site after commit `5914dc6`. Re-run these tests after
 
 ### 5. Evidence popup
 - **Do:** click a row, then **Close**.
-- **Expect:** the insurer's words, the policy clause, and the legal reference or a note that it's still being checked.
+- **Expect:** the insurer's words, the policy clause, and the official source with its status and a **Read the official source** link. The valid room-rent row says it relies on the policy's own wording.
 - **Status:** Tested live, including the fix for clause names written differently and ICU evidence.
 
 ### 6. Apply corrections
@@ -66,7 +66,7 @@ Last re-tested on the live site after commit `5914dc6`. Re-run these tests after
 - **Status:** file contents Tested live. **Manual:** opening it in a calendar app.
 
 ### 9. Appeal letters
-- **Do:** click both draft buttons, edit the text, then try **Copy text** and **Print or save as PDF**.
+- **Do:** open **Letters**, click both draft buttons, edit the text, then try **Copy text** and **Print or save as PDF**.
 - **Expect:** blanks in [square brackets], a request for Rs. 71,400, no room rent, and "[check this reference before sending]" beside the 2020 circular.
 - **Status:** letter contents Tested live. **Manual:** copying and printing.
 
@@ -134,8 +134,28 @@ Last re-tested on the live site after commit `5914dc6`. Re-run these tests after
 
 ### 23. Kannada on a case
 - **Do:** click ಕನ್ನಡ on a case.
-- **Expect:** site text changes, and a note says case explanations, deadline notes and letters are in English.
+- **Expect:** site text changes, and a note says case explanations and deadline notes are in English, and letters are available in Kannada.
 - **Status:** Tested live. **Manual:** a Kannada reader must check the wording.
+
+### 24. Case pages
+- **Do:** open the sample case and click each item in the menu: Overview, Breakdown, Evidence, Check facts, Your plan, Letters.
+- **Expect:** one page at a time, and the web address ends in the page name, such as `/letters`. On a computer the menu is on the left. On a phone it's a row of tabs you swipe, and the open tab stays in view. After **Apply corrections** you land on Overview.
+- **Status:** Tested live in a narrow window, and Automated. Desktop layout Tested locally. **Manual:** a real phone.
+
+### 25. Evidence page
+- **Do:** click **Evidence**.
+- **Expect:** a card for each deduction. On the sample: hypertension shows **Official source checked**; pharmacy and stent, consumables and admin show **Official source found, still confirming it applies**; room rent shows that it uses the policy's own wording. No card says "Source check pending".
+- **Status:** Tested live. All three IRDAI links returned real PDFs.
+
+### 26. Rules and sources page
+- **Do:** click **Rules and sources** in the header or the case menu.
+- **Expect:** R1 to R8, each with what it checks and its status. Six rules have an official link, and R2 and R6 have none because they use the policy's own wording.
+- **Status:** Tested live, and in Kannada locally.
+
+### 27. Letters in three languages
+- **Do:** on **Letters**, choose English, हिंदी or ಕನ್ನಡ, then draft each letter.
+- **Expect:** the letter is in that language, with the case's own claim number and amounts. The insurer's quotes and legal names stay in English. A questionable item is asked about, not called wrong. The choice starts in the site's language.
+- **Status:** all three languages Tested live through the API, and Kannada Tested live on the website. Automated for both letters in Hindi and Kannada. **Manual:** a Hindi and a Kannada reader must check the wording before anyone sends one.
 
 ## R3 and ICU charges
 
@@ -152,5 +172,6 @@ We have no accuracy figure, and the app shows none. Made-up cases have been run 
 | Check | Status |
 |---|---|
 | **Console errors** | None on the home and case pages locally, or on the live case page after this deploy |
+| **Printing with the new pages** | Automated only: hidden pages are set to print. **Manual:** print from any page and check that every section appears |
 | **Sideways scrolling at phone width** | None on the case page locally, in all three languages. **Manual:** a real phone |
 | **Sideways scrolling at desktop width** | None on the home and case pages locally, in all three languages |
