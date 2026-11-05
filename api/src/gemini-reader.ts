@@ -1,12 +1,15 @@
 import { extractedClaimJsonSchema, type ExtractedClaim } from "@claimsathi/contracts";
 import type { StoredDocument } from "./case-store.js";
 import { cleanExtraction, ReadError, type DocumentReader } from "./document-reader.js";
+import { logSafely } from "./errors.js";
 
 const GEMINI_API = "https://generativelanguage.googleapis.com/v1beta/models";
 const DEFAULT_MODEL = "gemini-flash-latest";
+// A lighter model that is often free when the main one is overloaded.
+const FALLBACK_MODEL = "gemini-flash-lite-latest";
 const REQUEST_TIMEOUT_MS = 120_000;
-const ATTEMPTS = 2;
-const RETRY_DELAY_MS = 5_000;
+const ATTEMPTS_PER_MODEL = 3;
+const RETRY_DELAY_MS = 8_000;
 
 function buildPrompt(): string {
   return `You read Indian health insurance documents and copy facts from them into JSON. You do not judge the claim or give advice.
@@ -32,6 +35,7 @@ const wait = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 export interface GeminiReaderOptions {
   apiKey: string;
   model?: string | undefined;
+  fallbackModel?: string | undefined;
   retryDelayMs?: number;
 }
 
@@ -39,11 +43,13 @@ export interface GeminiReaderOptions {
 export function createGeminiReader({
   apiKey,
   model,
+  fallbackModel,
   retryDelayMs = RETRY_DELAY_MS,
 }: GeminiReaderOptions): DocumentReader {
-  const url = `${GEMINI_API}/${encodeURIComponent(model || DEFAULT_MODEL)}:generateContent`;
+  const models = [...new Set([model || DEFAULT_MODEL, fallbackModel || FALLBACK_MODEL])];
 
-  async function askOnce(documents: StoredDocument[]): Promise<ExtractedClaim> {
+  async function askOnce(modelName: string, documents: StoredDocument[]): Promise<ExtractedClaim> {
+    const url = `${GEMINI_API}/${encodeURIComponent(modelName)}:generateContent`;
     const parts = [
       { text: buildPrompt() },
       ...documents.flatMap(({ documentType, fileType, contents }) => [
@@ -87,13 +93,17 @@ export function createGeminiReader({
   return {
     async read(documents) {
       let lastError: unknown;
-      for (let attempt = 1; attempt <= ATTEMPTS; attempt += 1) {
-        try {
-          return await askOnce(documents);
-        } catch (error) {
-          lastError = error;
-          if (attempt < ATTEMPTS) {
-            await wait(retryDelayMs);
+      for (const modelName of models) {
+        for (let attempt = 1; attempt <= ATTEMPTS_PER_MODEL; attempt += 1) {
+          try {
+            return await askOnce(modelName, documents);
+          } catch (error) {
+            lastError = error;
+            // The code is safe to log, and shows which model is struggling.
+            logSafely(`Gemini attempt ${attempt} on ${modelName} failed`, error);
+            if (attempt < ATTEMPTS_PER_MODEL) {
+              await wait(retryDelayMs * attempt);
+            }
           }
         }
       }
