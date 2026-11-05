@@ -216,3 +216,58 @@ describe("R8: deadlines", () => {
     }
   });
 });
+
+describe("what real documents showed", () => {
+  it("matches a clause however the insurer writes it", () => {
+    const reason = (clauseCited: string) => ({ text: "Room rent", category: "room_rent" as const, clauseCited, source: null });
+    const room = item({ description: "Room rent", category: "room", billed: 41800, deducted: 16800, deductionType: "room_rent_excess" });
+    const clauses = [{ clauseId: "4.2", title: null, text: "Limit", source: { document: "policy" as const, page: 1, quote: "Limit" } }];
+    for (const cited of ["Cl. 4.2", "Clause 4.2", "4.2", "clause 4.2."]) {
+      const claim = claimWith([room], {
+        policyClauses: clauses,
+        rejection: { ...sampleExtractedClaim.rejection, reasons: [reason(cited)] },
+      });
+      expect(run(claim).findings[0]?.ruleIds).not.toContain("R7");
+    }
+  });
+
+  it("spots co-pay taken on the whole bill when it isn't a bill line", () => {
+    const claim = claimWith(
+      [
+        item({ id: "A", billed: 342500, approved: 275250, deducted: 67250, deductionType: "other" }),
+        item({ id: "C", description: "Co-payment", billed: null, approved: null, deducted: 34250, deductionType: "copay" }),
+      ],
+      { policy: { ...sampleExtractedClaim.policy, copayPercent: 10 } },
+    );
+
+    const finding = run(claim).findings.find((f) => f.lineItemIds.includes("C"));
+
+    // 10% of the admissible 2,75,250 is 27,525, and the insurer took 34,250.
+    expect(finding?.verdict).toBe("questionable");
+    expect(finding?.explanationEn).toContain("₹27,525");
+    expect(finding?.explanationEn).toContain("₹6,725 too much");
+  });
+
+  it("marks a quote verified only when our own check found it", () => {
+    const quote = "Consumables are not payable.";
+    const consumables = item({ deductionType: "non_payable", partOfPackage: true, category: "consumable" });
+    const claimWithSource = (verified: boolean | undefined) =>
+      claimWith([consumables], {
+        rejection: {
+          ...sampleExtractedClaim.rejection,
+          reasons: [
+            {
+              text: "Consumables are not payable",
+              category: "non_payable",
+              clauseCited: null,
+              source: { document: "rejection_letter", page: 1, quote, ...(verified !== undefined && { verified }) },
+            },
+          ],
+        },
+      });
+
+    expect(run(claimWithSource(true)).findings[0]?.evidence.quoteVerified).toBe(true);
+    expect(run(claimWithSource(false)).findings[0]?.evidence.quoteVerified).toBe(false);
+    expect(run(claimWithSource(undefined)).findings[0]?.evidence.quoteVerified).toBe(false);
+  });
+});

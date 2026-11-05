@@ -79,3 +79,17 @@ describe("the Ombudsman complaint", () => {
     expect(complaint).toContain("Remove or correct this if it isn't true");
   });
 });
+
+describe("the letters' voice", () => {
+  const letter = buildLetter(result, "grievance", "2026-11-05");
+
+  it("talks to the insurer, and never uses our internal rule names", () => {
+    expect(letter).not.toMatch(/\brule R\d|\brules R\d|The insurer|Confirm the facts/);
+    expect(letter).toContain("You cut");
+    expect(letter).toContain("I believe");
+  });
+
+  it("writes money the same way throughout", () => {
+    expect(letter).not.toContain("₹");
+  });
+});

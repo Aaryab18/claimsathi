@@ -206,6 +206,21 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
           </div>
         )}
 
+        {caseResult && caseResult.warnings.length > 0 && (
+          <div
+            role="note"
+            data-testid="assessment-warnings"
+            className="p-3.5 sm:p-4 rounded-xl bg-[#FEF3C7] border border-[#FDE68A] text-[#92400E] text-xs sm:text-sm"
+          >
+            <p className="font-semibold">{t.warningsTitle}</p>
+            <ul className="mt-1 list-disc pl-4">
+              {caseResult.warnings.map((warning) => (
+                <li key={warning.code}>{language === "hi" ? warning.messageHi : warning.messageEn}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
         {caseResult && (
           <>
             {/* 1. Recoverable amount meter */}

@@ -4,6 +4,7 @@ import { ReadError, type DocumentReader } from "./document-reader.js";
 import { logSafely } from "./errors.js";
 import { assessClaim } from "./rules.js";
 import { savedReadingFor } from "./saved-readings.js";
+import { markVerifiedQuotes } from "./verify-quotes.js";
 
 const MESSAGES = {
   reading: "Reading your documents.",
@@ -58,12 +59,14 @@ export function createCaseProcessor({
   async function process(token: string): Promise<void> {
     try {
       await store.setProgress(token, "reading", MESSAGES.reading);
-      const { extracted, resultSource } = await readClaim(await store.findDocuments(token));
-      if (!hasClaim(extracted)) {
+      const documents = await store.findDocuments(token);
+      const { extracted: read, resultSource } = await readClaim(documents);
+      if (!hasClaim(read)) {
         throw new ReadError("unreadable", "no_claim_found");
       }
 
       await store.setProgress(token, "checking", MESSAGES.checking);
+      const extracted = await markVerifiedQuotes(read, documents);
       const result = CaseResultSchema.parse(assessClaim({ caseToken: token, extracted, asOfDate: today(), resultSource }));
       await store.completeCase(token, MESSAGES.done, extracted, result);
     } catch (error) {

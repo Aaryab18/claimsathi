@@ -252,6 +252,22 @@ describe("ClaimSathi New Screens", () => {
       });
     });
 
+    it("shows the rules' warnings on the result, in the chosen language", async () => {
+      const warned = {
+        ...sampleCaseResult,
+        warnings: [{ code: "totals_do_not_match", messageEn: "Totals differ.", messageHi: "कुल अलग हैं।" }],
+      };
+      vi.stubGlobal(
+        "fetch",
+        vi.fn(async () =>
+          new Response(JSON.stringify({ caseToken: "case-1", status: { stage: "done", progressMessage: "Done" }, result: warned })),
+        ),
+      );
+      render(<App initialEntries={["/case/case-1"]} />);
+
+      expect((await screen.findByTestId("assessment-warnings")).textContent).toContain("Totals differ.");
+    });
+
     it("offers made-up documents to try", () => {
       render(<App initialEntries={["/"]} />);
 

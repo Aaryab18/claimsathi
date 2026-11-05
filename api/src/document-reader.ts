@@ -151,7 +151,8 @@ export function cleanExtraction(raw: unknown): ExtractedClaim {
         const clauseId = text(clause.clauseId);
         const clauseText = text(clause.text);
         const clauseSource = source(clause.source);
-        return clauseId && clauseText && clauseSource
+        // A clause only exists if it was read in the policy, so a letter citing one can't prove it's there.
+        return clauseId && clauseText && clauseSource?.document === "policy"
           ? [{ clauseId, title: text(clause.title), text: clauseText, source: clauseSource }]
           : [];
       }),

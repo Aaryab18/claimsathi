@@ -9,6 +9,7 @@ import { cleanExtraction, ReadError, type DocumentReader } from "./document-read
 import { createGeminiReader } from "./gemini-reader.js";
 import { createCaseProcessor } from "./process-case.js";
 import { SAMPLE_DOCUMENT_HASHES, savedReadingFor } from "./saved-readings.js";
+import { markVerifiedQuotes } from "./verify-quotes.js";
 
 const API_KEY = "test-key-do-not-log";
 const PDF = Buffer.from("%PDF-1.7 made up");
@@ -455,5 +456,66 @@ describe("appeal letters", () => {
     const { app, token } = await readyCase(readerFailing(new ReadError("busy", "gemini_503")));
 
     await request(app).post(lettersPath(token)).send({ letterType: "grievance" }).expect(409);
+  });
+});
+
+describe("checking quotes against the file", () => {
+  const samplePdf = (name: string) => readFileSync(new URL(`../../web/public/samples/${name}`, import.meta.url));
+  const LETTER: StoredDocument = {
+    documentType: "rejection_letter",
+    fileName: "a.pdf",
+    fileType: "application/pdf",
+    contents: samplePdf("sample-rejection-letter.pdf"),
+  };
+  const reasonQuoting = (quote: string, page = 1) =>
+    cleanExtraction({
+      rejection: { reasons: [{ text: "Reason", source: { document: "rejection_letter", page, quote } }] },
+    });
+
+  it("confirms a real quote, even when it wraps across lines in the PDF", async () => {
+    const read = reasonQuoting("Room rent exceeds the eligible limit of Rs. 5,000 per day. Excess of Rs. 16,800 is deducted.");
+
+    const marked = await markVerifiedQuotes(read, [LETTER]);
+
+    expect(marked.rejection.reasons[0]?.source?.verified).toBe(true);
+  });
+
+  it("refuses a quote the file doesn't contain", async () => {
+    const marked = await markVerifiedQuotes(reasonQuoting("Everything is excluded under this policy."), [LETTER]);
+
+    expect(marked.rejection.reasons[0]?.source?.verified).toBe(false);
+  });
+
+  it("refuses a real quote given with the wrong page", async () => {
+    const marked = await markVerifiedQuotes(reasonQuoting("Consumables of Rs. 12,600 are not payable under the policy.", 2), [LETTER]);
+
+    expect(marked.rejection.reasons[0]?.source?.verified).toBe(false);
+  });
+
+  it("leaves a photo's quotes unverified, not wrong", async () => {
+    const photo: StoredDocument = { ...LETTER, fileType: "image/jpeg", contents: Buffer.from([0xff, 0xd8, 0xff]) };
+
+    const marked = await markVerifiedQuotes(reasonQuoting("Anything"), [photo]);
+
+    expect(marked.rejection.reasons[0]?.source?.verified).toBe(false);
+  });
+
+  it("doesn't let the AI claim its own quote is verified", () => {
+    const read = cleanExtraction({
+      rejection: { reasons: [{ text: "Reason", source: { document: "bill", page: 1, quote: "x", verified: true } }] },
+    });
+
+    expect(read.rejection.reasons[0]?.source?.verified).toBeUndefined();
+  });
+
+  it("only accepts a clause read in the policy itself", () => {
+    const read = cleanExtraction({
+      policyClauses: [
+        { clauseId: "12.7", text: "Attendant charges", source: { document: "rejection_letter", page: 1, quote: "12.7" } },
+        { clauseId: "6.3", text: "Limit", source: { document: "policy", page: 1, quote: "Limit" } },
+      ],
+    });
+
+    expect(read.policyClauses.map(({ clauseId }) => clauseId)).toEqual(["6.3"]);
   });
 });
