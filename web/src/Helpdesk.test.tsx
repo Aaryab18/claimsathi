@@ -29,6 +29,12 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
+// The helpdesk page loads on demand, so wait for it before checking it.
+async function renderHelpdesk() {
+  render(<App initialEntries={["/helpdesk"]} />);
+  await screen.findAllByText(translations.en.helpdeskTitle);
+}
+
 describe("case strength", () => {
   it("gives full weight only to strong grounds, and none to valid deductions", () => {
     expect(caseStrength([finding({ amount: 100, verdict: "wrong", confidence: "strong" })])?.score).toBe(100);
@@ -58,8 +64,8 @@ describe("case strength", () => {
 });
 
 describe("the helpdesk dashboard", () => {
-  it("starts empty, and clearly labels the demo cases as made up", () => {
-    render(<App initialEntries={["/helpdesk"]} />);
+  it("starts empty, and clearly labels the demo cases as made up", async () => {
+    await renderHelpdesk();
     expect(screen.getByTestId("helpdesk-empty")).toBeTruthy();
 
     fireEvent.click(screen.getByTestId("helpdesk-load-demo"));
@@ -68,18 +74,18 @@ describe("the helpdesk dashboard", () => {
     expect(within(screen.getByTestId("helpdesk-cases")).getAllByRole("listitem")).toHaveLength(DEMO_CASES.length);
   });
 
-  it("adds up the cases", () => {
+  it("adds up the cases", async () => {
     window.localStorage.setItem("claimsathi.helpdesk", JSON.stringify(DEMO_CASES.slice(0, 2)));
-    render(<App initialEntries={["/helpdesk"]} />);
+    await renderHelpdesk();
 
     expect(screen.getByTestId("kpi-Cases").textContent).toBe("2");
     expect(screen.getByTestId("kpi-Total deducted").textContent).toBe("₹1,97,500");
     expect(screen.getByTestId("kpi-Likely recoverable").textContent).toBe("₹79,400");
   });
 
-  it("lists the nearest deadline first, with resolved cases last", () => {
+  it("lists the nearest deadline first, with resolved cases last", async () => {
     window.localStorage.setItem("claimsathi.helpdesk", JSON.stringify(DEMO_CASES));
-    render(<App initialEntries={["/helpdesk"]} />);
+    await renderHelpdesk();
 
     const rows = within(screen.getByTestId("helpdesk-cases")).getAllByRole("listitem");
 
@@ -87,18 +93,18 @@ describe("the helpdesk dashboard", () => {
     expect(rows[rows.length - 1]?.textContent).toContain("Demo 4");
   });
 
-  it("remembers a status change", () => {
+  it("remembers a status change", async () => {
     window.localStorage.setItem("claimsathi.helpdesk", JSON.stringify(DEMO_CASES.slice(0, 1)));
-    render(<App initialEntries={["/helpdesk"]} />);
+    await renderHelpdesk();
 
     fireEvent.change(screen.getByTestId("status-demo-Demo 1"), { target: { value: "resolved" } });
 
     expect(loadCases()[0]?.status).toBe("resolved");
   });
 
-  it("can be cleared", () => {
+  it("can be cleared", async () => {
     window.localStorage.setItem("claimsathi.helpdesk", JSON.stringify(DEMO_CASES));
-    render(<App initialEntries={["/helpdesk"]} />);
+    await renderHelpdesk();
 
     fireEvent.click(screen.getByTestId("helpdesk-clear"));
 

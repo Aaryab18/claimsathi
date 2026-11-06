@@ -76,8 +76,9 @@ describe("the case dashboard pages", () => {
 describe("the rules and sources page", () => {
   afterEach(cleanup);
 
-  it("lists every rule with its status and an official link where there is one", () => {
+  it("lists every rule with its status and an official link where there is one", async () => {
     render(<App initialEntries={["/rules"]} />);
+    await screen.findByTestId("rule-R1");
 
     for (const id of ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"]) {
       expect(screen.getByTestId(`rule-${id}`)).toBeTruthy();
