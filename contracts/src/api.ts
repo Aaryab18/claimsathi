@@ -80,6 +80,8 @@ export const CreateLetterRequestSchema = z.object({
   language: LetterLanguageSchema.default("en"),
   // The number the insurer gave when the person complained, so the Ombudsman complaint can quote it.
   grievanceReference: z.string().trim().min(1).max(60).optional(),
+  // The insurer's grievance email, from the contacts the person chose, so the letter is ready to send.
+  insurerEmail: z.string().trim().max(100).email().optional(),
 });
 export type CreateLetterRequest = z.infer<typeof CreateLetterRequestSchema>;
 

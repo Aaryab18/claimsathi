@@ -10,6 +10,7 @@ interface EvidenceModalProps {
   finding: Finding | null;
   lineItems: LineItem[];
   language: Language;
+  isSample?: boolean;
   onClose: () => void;
 }
 
@@ -17,6 +18,7 @@ export function EvidenceModal({
   finding,
   lineItems,
   language,
+  isSample = false,
   onClose,
 }: EvidenceModalProps) {
   const t = translations[language];
@@ -238,7 +240,7 @@ export function EvidenceModal({
               </p>
             ) : (
               <p className="text-[11px] text-[#7A8780] italic">
-                * {t.quoteVerificationPending}
+                * {isSample ? t.quoteSampleNotChecked : t.quoteVerificationPending}
               </p>
             )}
           </div>

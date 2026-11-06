@@ -5,7 +5,6 @@ import { createLetter } from "../api/client";
 import { formatDate } from "../lib/format";
 import type { Language } from "../lib/i18n";
 import { translations } from "../lib/i18n";
-import { readChosenInsurer, saveChosenInsurer } from "../lib/grievance-reference";
 import {
   CONTACTS_CHECKED_ON,
   INSURER_CONTACTS,
@@ -22,6 +21,8 @@ interface ContactInsurerProps {
   isOffline: boolean;
   reference: string;
   onReferenceChange: (value: string) => void;
+  chosenInsurer: string;
+  onChosenInsurerChange: (name: string) => void;
 }
 
 const cardClass = "bg-white rounded-2xl p-5 sm:p-6 border border-[#E7E5D8] flex flex-col gap-3";
@@ -38,11 +39,12 @@ export function ContactInsurer({
   isOffline,
   reference,
   onReferenceChange,
+  chosenInsurer,
+  onChosenInsurerChange,
 }: ContactInsurerProps) {
   const t = translations[language];
   const matched = findInsurerContact(insurer);
   // If the letter's insurer isn't one we recognise, the person can say which it is.
-  const [chosenInsurer, setChosenInsurer] = useState(() => readChosenInsurer(caseToken));
   const contact = matched ?? INSURER_CONTACTS.find(({ name }) => name === chosenInsurer) ?? null;
   const [chosenLanguage, setChosenLanguage] = useState<LetterLanguage | null>(null);
   const scriptLanguage = chosenLanguage ?? language;
@@ -132,8 +134,7 @@ export function ContactInsurer({
               data-testid="choose-insurer"
               value={contact ? contact.name : ""}
               onChange={(e) => {
-                setChosenInsurer(e.target.value);
-                saveChosenInsurer(caseToken, e.target.value);
+                onChosenInsurerChange(e.target.value);
               }}
               className="w-full sm:w-72 px-3 py-2 rounded-lg border border-[#D5D2C2] bg-white text-sm"
             >

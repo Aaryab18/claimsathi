@@ -15,7 +15,7 @@ Each correction stays saved on its case, so go back to the home page and click *
 
 These results come from made-up documents only, and from a browser pane that was hidden while testing. A hidden pane pauses animation and smooth scrolling, so those can't be judged there.
 
-Last re-tested on the live site after commit `488c2fb`. Re-run these tests after any later deploy.
+Last full run on the live site on 6 Nov 2026, after commit `b645786`: every page, letters in three languages, Contact insurer, fact correction to ₹50,800, the progress checklist reaching 5 of 5, the helpdesk, a real AI upload of the three sample PDFs (same ₹71,400 result, with quotes found in the documents), and no sideways scrolling at phone width. Re-run these tests after any later deploy.
 
 ## The 28 tests
 
@@ -144,7 +144,7 @@ Last re-tested on the live site after commit `488c2fb`. Re-run these tests after
 
 ### 25. Evidence page
 - **Do:** click **Evidence**.
-- **Expect:** a card for each deduction. On the sample: hypertension shows **Official source checked**; pharmacy and stent, consumables and admin show **Official source found, still confirming it applies**; room rent shows that it uses the policy's own wording. No card says "Source check pending".
+- **Expect:** a card for each deduction. On the sample: hypertension shows **Official source checked**; pharmacy and stent, consumables and admin show **Official source found, still confirming it applies**; room rent shows that it uses the policy's own wording. No card says "Source check pending". On the saved sample, each quote says it can't be checked because there is no file. After uploading the sample PDFs, quotes show **We found this exact quote in your document**.
 - **Status:** Tested live. All three IRDAI links returned real PDFs.
 
 ### 26. Rules and sources page
@@ -164,6 +164,7 @@ Last re-tested on the live site after commit `488c2fb`. Re-run these tests after
   - For any other insurer, including the sample's made-up one: no number at first, and a list to choose the insurer. Choosing one, for example HDFC ERGO, shows its Call button. This is how to show the Call button in a demo.
   - The script has the case's own numbers and every disputed item.
   - The reference number appears in the Ombudsman complaint.
+  - After choosing a listed insurer with an email, the complaint to the insurer shows that email instead of `[Insurer address or grievance email]`.
   - The IRDAI Bima Bharosa and Ombudsman links open their complaint forms.
 - **Status:** Tested live: the script in all three languages, the sample's made-up insurer showing no number, the reference number in the Ombudsman complaint, a too-long reference refused, and all 8 official links returning 200. Also Automated, and the layout Tested locally at phone and desktop width. **Manual:** tapping **Call** on a real phone, the email button with a real email app, and a Hindi and Kannada reader checking the script.
 

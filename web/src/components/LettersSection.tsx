@@ -10,6 +10,7 @@ interface LettersSectionProps {
   language: Language;
   isOffline: boolean;
   grievanceReference: string;
+  insurerEmail?: string | null;
   onDrafted?: () => void;
 }
 
@@ -24,7 +25,14 @@ function printLetter(text: string): void {
   printWindow.print();
 }
 
-export function LettersSection({ caseToken, language, isOffline, grievanceReference, onDrafted }: LettersSectionProps) {
+export function LettersSection({
+  caseToken,
+  language,
+  isOffline,
+  grievanceReference,
+  insurerEmail,
+  onDrafted,
+}: LettersSectionProps) {
   const t = translations[language];
   const [letterType, setLetterType] = useState<LetterType | null>(null);
   // Follows the page's language until the person picks another one for the letter.
@@ -48,7 +56,13 @@ export function LettersSection({ caseToken, language, isOffline, grievanceRefere
     setIsLoading(true);
     setError(null);
     try {
-      const letter = await createLetter(caseToken, type, lang, type === "ombudsman" ? grievanceReference : undefined);
+      const letter = await createLetter(
+        caseToken,
+        type,
+        lang,
+        type === "ombudsman" ? grievanceReference : undefined,
+        type === "grievance" ? (insurerEmail ?? undefined) : undefined,
+      );
       setLetterType(type);
       setText(letter.text);
       onDrafted?.();

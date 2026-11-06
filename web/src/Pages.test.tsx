@@ -40,6 +40,14 @@ describe("the case dashboard pages", () => {
     expect(within(page).getAllByTestId(/^evidence-/).length).toBeGreaterThan(0);
   });
 
+  it("explains that the saved sample has no file to check quotes against", async () => {
+    render(<App initialEntries={["/case/case-1/evidence"]} />);
+
+    const page = await screen.findByTestId("page-evidence");
+    expect(within(page).getAllByText(/This is the saved sample case/).length).toBeGreaterThan(0);
+    expect(within(page).queryByText(/for example because it is a photo/)).toBeNull();
+  });
+
   it("falls back to the overview for an unknown page", async () => {
     render(<App initialEntries={["/case/case-1/nonsense"]} />);
 
@@ -68,8 +76,9 @@ describe("the case dashboard pages", () => {
 describe("the rules and sources page", () => {
   afterEach(cleanup);
 
-  it("lists every rule with its status and an official link where there is one", () => {
+  it("lists every rule with its status and an official link where there is one", async () => {
     render(<App initialEntries={["/rules"]} />);
+    await screen.findByTestId("rule-R1");
 
     for (const id of ["R1", "R2", "R3", "R4", "R5", "R6", "R7", "R8"]) {
       expect(screen.getByTestId(`rule-${id}`)).toBeTruthy();

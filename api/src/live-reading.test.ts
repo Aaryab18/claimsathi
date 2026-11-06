@@ -473,6 +473,25 @@ describe("appeal letters", () => {
     expect(body.text).toContain("The insurer's complaint reference number: GRV-889");
   });
 
+  it("puts the insurer's grievance email into the complaint letter, in any language", async () => {
+    const { app, token } = await readyCase();
+
+    for (const language of ["en", "hi", "kn"]) {
+      const { body } = await request(app)
+        .post(lettersPath(token))
+        .send({ letterType: "grievance", language, insurerEmail: " grievance@hdfcergo.com " })
+        .expect(200);
+      expect(body.text).toContain("grievance@hdfcergo.com");
+      expect(body.text).not.toContain("[Insurer address or grievance email]");
+    }
+  });
+
+  it("refuses an insurer email that isn't an email address", async () => {
+    const { app, token } = await readyCase();
+
+    await request(app).post(lettersPath(token)).send({ letterType: "grievance", insurerEmail: "call me" }).expect(400);
+  });
+
   it("refuses a reference number that is too long", async () => {
     const { app, token } = await readyCase();
 

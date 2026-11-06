@@ -65,7 +65,7 @@ function disputedItems(result: CaseResult): string[] {
   });
 }
 
-function grievanceLetter(result: CaseResult, today: string): string {
+function grievanceLetter(result: CaseResult, today: string, insurerEmail?: string): string {
   const { claim, policy, rejection } = result.extracted;
   const { recoverableStrong, questionable } = result.totals;
 
@@ -74,7 +74,7 @@ function grievanceLetter(result: CaseResult, today: string): string {
     "",
     "To: The Grievance Redressal Officer",
     claim.insurer ?? "[Insurer name]",
-    "[Insurer address or grievance email]",
+    insurerEmail ?? "[Insurer address or grievance email]",
     "",
     `Subject: Grievance against the decision on claim ${claim.claimId ?? "[claim number]"}, policy ${claim.policyNumber ?? "[policy number]"}`,
     "",
@@ -177,7 +177,7 @@ function translatedItems(result: CaseResult, text: LetterText): string[] {
   });
 }
 
-function translatedGrievance(result: CaseResult, today: string, text: LetterText): string {
+function translatedGrievance(result: CaseResult, today: string, text: LetterText, insurerEmail?: string): string {
   const { claim, policy, rejection } = result.extracted;
   const { recoverableStrong, questionable } = result.totals;
   return [
@@ -185,7 +185,7 @@ function translatedGrievance(result: CaseResult, today: string, text: LetterText
     "",
     text.grievanceTo,
     claim.insurer ?? text.insurerNamePlaceholder,
-    text.insurerAddressPlaceholder,
+    insurerEmail ?? text.insurerAddressPlaceholder,
     "",
     text.subject(claim.claimId ?? text.claimNumberPlaceholder, claim.policyNumber ?? text.policyNumberPlaceholder),
     "",
@@ -266,13 +266,14 @@ export function buildLetter(
   today: string,
   language: LetterLanguage = "en",
   grievanceReference?: string,
+  insurerEmail?: string,
 ): string {
   if (letterType === "call_script") return buildCallScript(result, language);
   if (language === "en") {
-    return letterType === "grievance" ? grievanceLetter(result, today) : ombudsmanComplaint(result, today, grievanceReference);
+    return letterType === "grievance" ? grievanceLetter(result, today, insurerEmail) : ombudsmanComplaint(result, today, grievanceReference);
   }
   const text = LETTER_TEXT[language];
   return letterType === "grievance"
-    ? translatedGrievance(result, today, text)
+    ? translatedGrievance(result, today, text, insurerEmail)
     : translatedOmbudsman(result, today, text, grievanceReference);
 }

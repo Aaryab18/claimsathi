@@ -74,11 +74,23 @@ describe("contact your insurer", () => {
 
     expect(screen.getByTestId("call-insurer").getAttribute("href")).toBe("tel:02264898282");
     expect(screen.getByTestId("insurer-contact").textContent).toContain("You chose Tata AIG");
-    expect(window.localStorage.getItem("claimsathi.insurer.sample-case")).toBe("Tata AIG");
+    expect(window.localStorage.getItem("claimsathi.insurer.case-1")).toBe("Tata AIG");
 
     fireEvent.change(screen.getByTestId("choose-insurer"), { target: { value: "" } });
     expect(screen.queryByTestId("call-insurer")).toBeNull();
-    expect(window.localStorage.getItem("claimsathi.insurer.sample-case")).toBeNull();
+    expect(window.localStorage.getItem("claimsathi.insurer.case-1")).toBeNull();
+  });
+
+  it("puts the chosen insurer's grievance email into the complaint letter", async () => {
+    const fetchMock = serve(sampleCaseResult);
+    render(<App initialEntries={["/case/case-1/contact"]} />);
+
+    fireEvent.change(await screen.findByTestId("choose-insurer"), { target: { value: "HDFC ERGO" } });
+    fireEvent.click(screen.getAllByRole("link", { name: "Letters" })[0]);
+    fireEvent.click(await screen.findByRole("button", { name: "Draft complaint to insurer" }));
+
+    await waitFor(() => expect(letterBodies(fetchMock)).toHaveLength(1));
+    expect(letterBodies(fetchMock)[0]).toMatchObject({ letterType: "grievance", insurerEmail: "grievance@hdfcergo.com" });
   });
 
   it("doesn't offer a choice when the letter's insurer was recognised", async () => {
