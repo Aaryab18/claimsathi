@@ -9,9 +9,10 @@ interface EvidenceListProps {
   findings: Finding[];
   lineItems: LineItem[];
   language: Language;
+  isSample?: boolean;
 }
 
-export function EvidenceList({ findings, lineItems, language }: EvidenceListProps) {
+export function EvidenceList({ findings, lineItems, language, isSample = false }: EvidenceListProps) {
   const t = translations[language];
 
   return (
@@ -41,7 +42,7 @@ export function EvidenceList({ findings, lineItems, language }: EvidenceListProp
               <p className="mt-0.5 text-xs sm:text-sm text-[#3E4F46]">{insurerText ? `"${insurerText}"` : t.noInsurerWords}</p>
               {insurerText && (
                 <p className={`mt-0.5 text-[11px] ${quoteVerified ? "font-semibold text-[#15803D]" : "text-[#6B7971]"}`}>
-                  {quoteVerified ? `✓ ${t.quoteVerified}` : t.quoteVerificationPending}
+                  {quoteVerified ? `✓ ${t.quoteVerified}` : isSample ? t.quoteSampleNotChecked : t.quoteVerificationPending}
                 </p>
               )}
             </div>

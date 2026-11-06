@@ -15,7 +15,13 @@ import { CoverTimeline, DeductionsChart, MoneyFlowChart } from "./CaseCharts";
 import { CaseNav, CASE_SECTIONS, type CaseSection } from "./CaseNav";
 import { ContactInsurer } from "./ContactInsurer";
 import { EvidenceList } from "./EvidenceList";
-import { readGrievanceReference, saveGrievanceReference } from "../lib/grievance-reference";
+import {
+  readChosenInsurer,
+  readGrievanceReference,
+  saveChosenInsurer,
+  saveGrievanceReference,
+} from "../lib/grievance-reference";
+import { findInsurerContact, INSURER_CONTACTS } from "../lib/insurer-contacts";
 import { readProgress, saveProgress, type CaseProgressFlags } from "../lib/case-progress";
 import { ProgressChecklist } from "./ProgressChecklist";
 import { recordCase } from "../lib/helpdesk";
@@ -38,6 +44,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
   const { token = "sample", section } = useParams<{ token: string; section: string }>();
   const navigate = useNavigate();
   const [grievanceReference, setGrievanceReference] = useState(() => readGrievanceReference(token));
+  const [chosenInsurer, setChosenInsurer] = useState(() => readChosenInsurer(token));
   const [progress, setProgress] = useState(() => readProgress(token));
   const markDone = (step: keyof CaseProgressFlags) => {
     setProgress((current) => {
@@ -322,7 +329,12 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
             </div>
 
             <div data-testid="page-evidence" className={pageClass("evidence")}>
-              <EvidenceList findings={caseResult.findings} lineItems={caseResult.extracted.lineItems} language={language} />
+              <EvidenceList
+                findings={caseResult.findings}
+                lineItems={caseResult.extracted.lineItems}
+                language={language}
+                isSample={caseResult.resultSource === "saved_sample"}
+              />
             </div>
 
             <div data-testid="page-facts" className={pageClass("facts")}>
@@ -349,6 +361,12 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
                 language={language}
                 isOffline={isOffline}
                 grievanceReference={grievanceReference}
+                insurerEmail={
+                  (
+                    findInsurerContact(caseResult.extracted.claim.insurer) ??
+                    INSURER_CONTACTS.find(({ name }) => name === chosenInsurer)
+                  )?.email
+                }
                 onDrafted={() => markDone("letter")}
               />
             </div>
@@ -365,6 +383,11 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
                   setGrievanceReference(value);
                   saveGrievanceReference(token, value);
                 }}
+                chosenInsurer={chosenInsurer}
+                onChosenInsurerChange={(name) => {
+                  setChosenInsurer(name);
+                  saveChosenInsurer(token, name);
+                }}
               />
             </div>
 
@@ -372,6 +395,7 @@ export function CaseScreen({ language, onLanguageChange }: CaseScreenProps) {
               finding={selectedFinding}
               lineItems={caseResult.extracted.lineItems}
               language={language}
+              isSample={caseResult.resultSource === "saved_sample"}
               onClose={() => setSelectedFinding(null)}
             />
           </>

@@ -40,6 +40,14 @@ describe("the case dashboard pages", () => {
     expect(within(page).getAllByTestId(/^evidence-/).length).toBeGreaterThan(0);
   });
 
+  it("explains that the saved sample has no file to check quotes against", async () => {
+    render(<App initialEntries={["/case/case-1/evidence"]} />);
+
+    const page = await screen.findByTestId("page-evidence");
+    expect(within(page).getAllByText(/This is the saved sample case/).length).toBeGreaterThan(0);
+    expect(within(page).queryByText(/for example because it is a photo/)).toBeNull();
+  });
+
   it("falls back to the overview for an unknown page", async () => {
     render(<App initialEntries={["/case/case-1/nonsense"]} />);
 

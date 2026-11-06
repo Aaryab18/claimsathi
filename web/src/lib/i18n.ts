@@ -31,6 +31,7 @@ export interface Translations {
   sourceCheckPending: string;
   sourceCheckPendingNotice: string;
   quoteVerificationPending: string;
+  quoteSampleNotChecked: string;
   deadlinesTitle: string;
   deadlinesSubtitle: string;
   datePending: string;
@@ -323,6 +324,8 @@ export const translations: Record<Language, Translations> = {
       "We are still checking the official source for this rule. We do not present unverified clauses as established law.",
     quoteVerificationPending:
       "We could not check this quote against the file, for example because it is a photo. Compare it with your document.",
+    quoteSampleNotChecked:
+      "This is the saved sample case, so there is no file to check this quote against. Upload the sample documents to see the check.",
     deadlinesTitle: "Important dispute deadlines",
     deadlinesSubtitle:
       "Key milestones to submit your grievance or approach the ombudsman.",
@@ -628,6 +631,8 @@ export const translations: Record<Language, Translations> = {
       "हम अभी भी इस नियम के आधिकारिक स्रोत की जांच कर रहे हैं। असत्यापित नियमों को हम वास्तविक कानून के रूप में प्रस्तुत नहीं करते हैं।",
     quoteVerificationPending:
       "हम इस उद्धरण को फ़ाइल से नहीं जांच सके, उदाहरण के लिए क्योंकि यह एक फ़ोटो है। इसे अपने दस्तावेज़ से मिलाएं।",
+    quoteSampleNotChecked:
+      "यह सहेजा गया नमूना केस है, इसलिए इस उद्धरण को जांचने के लिए कोई फ़ाइल नहीं है। जांच देखने के लिए नमूना दस्तावेज़ अपलोड करें।",
     deadlinesTitle: "महत्वपूर्ण समय-सीमाएं",
     deadlinesSubtitle:
       "शिकायत दर्ज करने अथवा लोकपाल (ओम्बड्समैन) के पास जाने की प्रमुख समय-सीमाएं।",

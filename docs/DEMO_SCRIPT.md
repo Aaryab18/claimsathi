@@ -25,7 +25,9 @@ Point at **₹71,400 likely recoverable out of ₹96,000**, then **Your progress
 
 "Here's what this family could challenge." Show **How strong is your case?**: "This summarises the rules' verdicts. It isn't a prediction of winning." Open **Evidence** to show the insurer's words, the policy clause and the official source link.
 
-"This shows the insurer's own words and the policy clause. On a PDF, this tick means we found the exact quote in the document, with no AI involved. It stops the AI inventing quotes."
+"This shows the insurer's own words and the policy clause. When you upload a PDF, a tick means we found the exact quote in the document, with no AI involved. It stops the AI inventing quotes."
+
+If you're on the saved sample case, there is no tick, and the card says there's no file to check against. Say: "On an uploaded case you'd see a tick here."
 
 ## 4. The rules decide (45 seconds)
 
@@ -43,7 +45,7 @@ The app returns to **Overview**. Show the timeline: "Now the hospital stay comes
 
 Open **Your plan**: "Every family leaves with a clear plan." Then open **Letters**, choose a language, and click **Draft complaint to insurer**.
 
-"It writes the complaint from those findings, using the corrected facts, and the user can edit it and save it as a PDF. Deadlines come from the official Ombudsman Rules, and they can be added to a calendar."
+"It writes the complaint from those findings, using the corrected facts, and the user can edit it and save it as a PDF. Once an insurer is chosen on Contact insurer, its official grievance email goes into the letter. Deadlines come from the official Ombudsman Rules, and they can be added to a calendar."
 
 Open **Contact insurer**. In **Is your insurer one of these?**, choose **HDFC ERGO**, then click **Show what to say**.
 
